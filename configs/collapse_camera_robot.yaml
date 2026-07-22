@@ -1,0 +1,27 @@
+# Portable defaults: all machine-specific paths come from CLI arguments or
+# LIBERO_PLUS_ROOT/LIBERO_PLUS_TASK_CATALOG, RASE_COLLAPSE_OUTPUT,
+# RASE_POLICY_PATH, and RASE_ENV_LOCK.
+default_profile: smoke
+
+profiles:
+  smoke:
+    # One deterministic task from every suite × dimension × level cell.
+    tasks_per_cell: 1
+    episodes_per_task: 1
+  full:
+    # The full profile does not apply tasks_per_cell.
+    tasks_per_cell: 1
+    # LIBERO-Plus upstream protocol uses one trial for each classified task.
+    episodes_per_task: 1
+
+selection:
+  dimensions: [camera, robot]
+  levels: [1, 2, 3, 4, 5]
+  suites: null
+
+evaluation:
+  seed: 0
+  batch_size: 2
+  num_steps: 10
+  n_action_steps: 10
+  device: cuda

@@ -1,0 +1,15 @@
+name: rase-rl
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+      - "numpy>=1.26,<3"
+      - "PyYAML>=6,<7"
+      - "pyzmq>=26,<28"
+      - "-e ."
+
+# Add the verified PyTorch/CUDA build for the target machine only after its
+# exact versions have been recorded in env.lock.md. Base package imports must
+# not require PyTorch.

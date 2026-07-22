@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Local environments and editor state
+.venv/
+venv/
+.env
+.env.*
+.idea/
+.vscode/
+
+# Build output
+build/
+dist/
+
+# Large or generated research artifacts
+ckpts/
+runs/
+pool/
+results/
+
+# Temporary files
+*.log
+*.tmp
+*.swp
+
+# Experiment provenance is intentionally tracked.
+!progress/
+!progress/**

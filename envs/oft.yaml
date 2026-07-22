@@ -1,0 +1,17 @@
+name: rase-oft
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      - "numpy>=1.26,<2"
+      - "PyYAML>=6,<7"
+      - "pyzmq>=26,<28"
+      - "protobuf==4.25.9"
+      - "tensorflow-metadata==1.14.0"
+      - "-e ."
+
+# Install the local OpenVLA-OFT, transformers fork, and dlimp checkouts
+# separately. They came from source archives and have no local Git SHA; see
+# env.lock.md and third_party/PINS.md before using this environment formally.

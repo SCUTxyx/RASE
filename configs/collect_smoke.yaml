@@ -1,0 +1,13 @@
+{
+  "run_name": "ngc-step1-smoke",
+  "adapter": null,
+  "collection": {
+    "output_dir": "runs/collect_smoke/state_pool",
+    "episodes": 10,
+    "seed": 17,
+    "action_chunks_per_episode": 6,
+    "snapshot_cadence_action_chunks": 2,
+    "successful_snapshot_retention": 0.20,
+    "dry_run": true
+  }
+}

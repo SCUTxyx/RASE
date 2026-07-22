@@ -3,6 +3,11 @@
 配套文档：RASE-Lite 设计报告 v3.1、施工指南一/二/三。
 本文回答一个问题：**哪些代码用现成的（base code），哪些必须自己写，整个 repo 怎么组织。**
 
+> 实施事实（2026-07-17）：实际仓库根目录是 `RASE/`，Python 使用 3.12，
+> SmolVLA 主评测为 `num_steps=10`、`n_action_steps=10`、`batch_size=2`，
+> LIBERO-Plus 固定 `4976dc3`。旧目录名与示例环境参数由根目录
+> `env.lock.md`、`configs/` 覆盖。
+
 ---
 
 ## 0. 结论先行

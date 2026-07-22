@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rase-lite"
+version = "0.1.0"
+description = "Reliability-aware selection and fallback execution for frozen VLA policies"
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+authors = [{ name = "RASE contributors" }]
+dependencies = [
+  "numpy>=1.26,<3",
+  "PyYAML>=6,<7",
+]
+
+[project.optional-dependencies]
+oracle = [
+  "pyzmq>=25,<28",
+]
+dev = [
+  "pytest>=8,<9",
+  "ruff>=0.5,<1",
+]
+
+[tool.setuptools.packages.find]
+include = ["rase*", "protocol*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]

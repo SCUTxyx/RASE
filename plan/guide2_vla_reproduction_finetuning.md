@@ -2,6 +2,11 @@
 
 配套文档：RASE-Lite 设计报告 v3.1 §2、§8-E3。覆盖三条轨道：主线 SmolVLA-0.45B 复现与自测、副线 OpenVLA-OFT / OFT+ 推理部署、以及 E3 所需的 SmolVLA LoRA policy-RL 基线微调。
 
+> 实施事实（2026-07-17）：仓库使用 `RASE/`、Python 3.12、LeRobot 0.5.1，
+> SmolVLA 主评测固定 `num_steps=10`、`n_action_steps=10`、`batch_size=2`，
+> LIBERO-Plus 固定 `4976dc3`。下文旧路径、Python 3.10、RTX 4090 与
+> batch size 8 仅为示例；执行时以 `env.lock.md` 与 `configs/` 为准。
+
 **总原则**：本项目所有 VLA 均以"官方 checkpoint + 冻结推理"为主，唯一涉及训练的是 E3 的 LoRA 基线。复现的目标不是打平论文数字，而是**得到一个被完整记录、可被审稿人重跑的自测 baseline**。
 
 ---

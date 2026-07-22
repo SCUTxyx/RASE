@@ -1,0 +1,34 @@
+version: 1
+run_name: ngc_w2_w3_pilot
+
+candidates:
+  k: 8
+  chunk_length: 10
+  action_dim: 7
+  temperature: 0.7
+  base_seed: 17072026
+  output_dir: runs/ngc_w2_candidates_pilot/candidates
+  # SHA-256 of ckpts/smolvla_libero/model.safetensors (frozen LIBERO checkpoint).
+  policy_hash: 71d9563c8295284acba8fc2d5c19de000d6fe9ba58a406832af7ef3d221ed52f
+
+adaptive:
+  confidence: 0.95
+  threshold: 0.5
+  first_stage_rollouts: 3
+  total_rollouts: 10
+  set_a_min_good_candidates: 3
+
+scheduler:
+  root: runs/ngc_pilot/scheduler
+  max_attempts: 3
+  lease_seconds: 3600
+  # The idempotency tuple is (state, candidate, rollout).
+  workers: 8
+
+oracle:
+  protocol: rase-oracle
+  protocol_version: 1
+  endpoint: tcp://127.0.0.1:5555
+  request_timeout_ms: 30000
+  # Server-side only; points to a zero-argument adapter factory.
+  adapter: REPLACE_WITH_MODULE:factory

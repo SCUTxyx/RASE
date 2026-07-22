@@ -1,0 +1,36 @@
+{
+  "run_name": "ngc-step1-scale-camera-heavy",
+  "adapter": "rase.collect.lerobot_libero_plus_adapter:make_adapter",
+  "adapter_config": {
+    "policy_path": null,
+    "tokenizer_path": null,
+    "libero_plus_root": null,
+    "device": "cuda",
+    "num_steps": 10,
+    "n_action_steps": 10,
+    "observation_height": 360,
+    "observation_width": 360
+  },
+  "sampling": {
+    "dimension_quotas": {
+      "camera": 70,
+      "robot": 30
+    },
+    "suite_quotas": {
+      "Long": 35,
+      "Object": 30,
+      "Goal": 20,
+      "Spatial": 15
+    }
+  },
+  "collection": {
+    "output_dir": "pool/ngc_step1_scale200",
+    "episodes": 200,
+    "seed": 20260718,
+    "action_chunks_per_episode": 52,
+    "max_action_chunks": null,
+    "snapshot_cadence_action_chunks": 2,
+    "successful_snapshot_retention": 0.20,
+    "dry_run": false
+  }
+}

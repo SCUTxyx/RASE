@@ -2,6 +2,11 @@
 
 配套文档：RASE-Lite 设计报告 v3.1 §4、§6。覆盖：系统架构、特征管线、动作空间与 fallback 执行器实现、offline warm-start（BC+CQL）、online DQN、并行采样 infra、奖励与预算记账、稳定性预案、评测与日志。
 
+> 实施事实（2026-07-17）：当前仓库根目录为 `RASE/`；SmolVLA 环境使用
+> Python 3.12，OFT 环境使用 Python 3.10，LIBERO-Plus 固定 commit
+> `4976dc3`。本指南属于 W10 之后的设计，任何示例版本或硬件参数均由
+> 届时的 `env.lock.md` 与 `configs/` 覆盖。
+
 ---
 
 ## 0. 系统总览

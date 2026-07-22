@@ -2,6 +2,12 @@
 
 版本：v3.1　日期：2026-07-10　前置文档：v3.0（2026-07-08）
 
+> 实施事实（2026-07-17）：当前仓库根目录为 `RASE/`；SmolVLA 使用
+> Python 3.12、LeRobot 0.5.1，主评测固定 `num_steps=10`、
+> `n_action_steps=10`、`batch_size=2`；LIBERO-Plus 固定 commit `4976dc3`。
+> 文中的 Python 3.10、`ngcplus`、RTX 4090 和 batch size 8 是早期示例，
+> 实际复现以根目录 `env.lock.md` 与 `configs/` 为准。
+
 本版相对 v3.0 的核心变化（八条主线）：
 
 1. **事实纠偏**：修正 "OFT 扰动下跌穿 30%" 与 "SmolVLA 复现 43–51%" 两处会被审稿人查表推翻的数字表述，全部改为按维度/按 suite 的精确引用。
@@ -475,7 +481,7 @@ LIBERO-Plus built-on-top；Foresight/B2FF 正面引用；**VoLo/HELM 定位为"�
 | 文献快照 | 2026-07-08 | 2026-07-10：补 HELM、VoLo、ReCoVLA、VLA-FAIL、RePO-VLA、AFIL、FailSafe、LiLo-VLA、FARL、LIBERO-PRO、value-probing、vla-eval、StarVLA-α/ABot-M0/VLANeXt |
 | C3 分界 | 统一 fallback 空间 + learned selector | **learned RL selector** 为核心（统一空间概念归功 VoLo/orchestrator 线；rollback+replan 组合归功 HELM） |
 | FEB | "定理" | "恒等式" + N-Scaling Lemma + partial-fallback 可测量 FEB 坐标轴 |
-| Set C 判定 | 固定 \(N_{\text{roll}}=5\) | 两阶段自适应（3→10）+ Wilson 95% 上界判据 + per-state 置信度发布 |
+| Set C 判定 | 固定 \(N_{\text{roll}}=5\) | 两阶段自适应：**正式协议** one-sided alpha-spending `6→20`（`α₁=0.01, α₂=0.04`）+ Wilson 上/下界；旧文 `3→10` 双侧 95% 对 0/3–3/3 **永不早停**，仅保留为协议保真测试，不作成本叙事 |
 | 风险信号 | \((\varphi, d, \sigma)\) 三元组 | 七路信号，\(d\) 拆 pre/post；新增 ACC 与 value probe |
 | 动作空间 | REPLAN-lite（文字改写） | REPLAN-text + REPLAN-goal 双实现；ROLLBACK 可达域声明 + 物理可逆性标注 |
 | matched-budget | 未计 warm-start | §6.7 显式记账 |

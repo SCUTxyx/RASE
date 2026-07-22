@@ -1,0 +1,19 @@
+name: rase-smolvla
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - imagemagick
+  - pip:
+      - "lerobot[libero]==0.5.1"
+      - "num2words==0.5.14"
+      - "Wand==0.7.2"
+      - "scikit-image>=0.24"
+      - "gym==0.26.2"
+      - "-e ."
+
+# Install LIBERO-plus separately from a checkout pinned to 4976dc3:
+#   pip install -e /path/to/LIBERO-plus
+# Confirm `import libero` resolves to that checkout before evaluation.
+# LIBERO-plus env_wrapper also needs ImageMagick (conda) + Wand (pip).

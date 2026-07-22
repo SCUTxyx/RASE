@@ -2,6 +2,10 @@
 
 配套文档：RASE-Lite 设计报告 v3.1 §3。本指南覆盖从环境搭建到 benchmark 发布物打包的每一步，含目录结构、命令、代码骨架、数据 schema、QC 流程与排期。
 
+> 实施事实（2026-07-17）：仓库使用 `RASE/`、Python 3.12、LeRobot 0.5.1
+> 与 LIBERO-Plus `4976dc3`。下文 Python 3.10、`ngcplus`、RTX 4090 和
+> batch size 8 仅是早期示例；执行时以 `env.lock.md` 与 `configs/` 为准。
+
 ---
 
 ## 0. 总览：产出物与流水线

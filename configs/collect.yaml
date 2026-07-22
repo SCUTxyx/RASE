@@ -1,0 +1,13 @@
+{
+  "run_name": "ngc-step1-full",
+  "adapter": null,
+  "collection": {
+    "output_dir": "pool/ngc_step1",
+    "episodes": 4000,
+    "seed": 20260717,
+    "action_chunks_per_episode": 12,
+    "snapshot_cadence_action_chunks": 2,
+    "successful_snapshot_retention": 0.20,
+    "dry_run": false
+  }
+}

@@ -1,0 +1,59 @@
+version: 1
+run_name: ngc_w3_smoke
+mode: smoke
+
+pool: pool/ngc_step1_scale200
+candidates_dir: runs/ngc_w3_smoke_candidates/candidates
+output_dir: runs/ngc_w3_smoke_v2
+
+sample:
+  strategy: explicit
+  # Early-horizon states (timestep≈10). W2 pilot keys sit near t=290/300 and
+  # only exercise the candidate chunk — not SmolVLA continuation.
+  state_keys:
+    - sp1_03058fd0dba9567f5158afa4090e09da
+    - sp1_35474b45718c29447785f5efc5419e96
+  sample_seed: 0
+
+candidates:
+  k: 8
+  chunk_length: 10
+  action_dim: 7
+  temperature: 0.7
+  policy_hash: 71d9563c8295284acba8fc2d5c19de000d6fe9ba58a406832af7ef3d221ed52f
+
+adapter:
+  policy_path: ckpts/smolvla_libero
+  tokenizer_path: ckpts/SmolVLM2-500M-Instruct
+  device: cuda
+  num_steps: 10
+  n_action_steps: 10
+  observation_height: 360
+  observation_width: 360
+  continuation_temperature: 0.5
+
+adaptive:
+  protocol_version: wilson-onesided-alpha-spend-v1
+  sidedness: one-sided
+  confidence: 0.95
+  threshold: 0.5
+  first_stage_rollouts: 6
+  total_rollouts: 20
+  alpha_first: 0.01
+  alpha_final: 0.04
+  set_a_min_good_candidates: 3
+
+scheduler:
+  root: runs/ngc_w3_smoke_v2/scheduler
+  max_attempts: 3
+  lease_seconds: 3600
+  worker: smoke-worker
+
+oracle:
+  protocol: rase-oracle
+  protocol_version: 1
+  endpoint: tcp://127.0.0.1:5555
+  request_timeout_ms: 60000
+
+smoke:
+  max_rollouts: 20
