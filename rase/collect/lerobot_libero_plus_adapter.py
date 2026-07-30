@@ -121,6 +121,23 @@ def select_catalog_task(
         suite = _SUITE_NAMES[request.suite]
     except KeyError as exc:
         raise ValueError(f"unknown suite quota label {request.suite!r}") from exc
+    if request.dimension == "clean":
+        # LIBERO-Plus keeps the ten original LIBERO tasks first in every suite.
+        # Their 1-based IDs therefore preserve the pool/factory task-id contract.
+        task_id = (
+            int(request.task_id)
+            if request.task_id is not None
+            else int(request.seed % 10) + 1
+        )
+        if task_id not in range(1, 11):
+            raise ValueError(f"clean task_id must be in [1, 10], got {task_id}")
+        return _CatalogTask(
+            suite=suite,
+            task_id=task_id,
+            name="",
+            category="Clean Control",
+            level=0,
+        )
     category = _category_for(request)
     candidates = tuple(
         task
@@ -186,12 +203,62 @@ def _success_from_info(info: Mapping[str, Any]) -> bool:
     return success_from_info(info)
 
 
+def _validated_init_state_id(
+    request: PerturbationRequest, *, n_init_states: int, required: bool
+) -> int:
+    if request.init_state_id is None:
+        if required:
+            raise ValueError("scheduled collection requires init_state_id")
+        # Legacy protocols did not carry init provenance. Avoid a fixed production
+        # episode_index while preserving deterministic behavior.
+        init_state_id = int(request.index) % n_init_states
+    else:
+        init_state_id = int(request.init_state_id)
+    if init_state_id < 0 or init_state_id >= n_init_states:
+        raise ValueError(
+            f"init_state_id {init_state_id} out of range for {n_init_states} init states"
+        )
+    return init_state_id
+
+
+def _lerobot_env_kwargs(
+    *,
+    suite: Any,
+    task_index: int,
+    suite_name: str,
+    camera_name: Any,
+    init_state_id: int,
+    obs_type: str,
+    observation_height: int,
+    observation_width: int,
+    control_mode: str,
+) -> dict[str, Any]:
+    """Single source of truth for explicit schedule→LeRobot episode mapping."""
+    return {
+        "task_suite": suite,
+        "task_id": task_index,
+        "task_suite_name": suite_name,
+        "camera_name": camera_name,
+        "init_states": True,
+        "episode_index": init_state_id,
+        "n_envs": 1,
+        "obs_type": obs_type,
+        "observation_height": observation_height,
+        "observation_width": observation_width,
+        "control_mode": control_mode,
+    }
+
+
 class LeRobotLiberoPlusCollectionAdapter:
     """Runs one deterministic Plus episode and snapshots every N action chunks."""
 
     def __init__(self, config: Mapping[str, Any]):
         adapter = dict(config.get("adapter_config") or {})
         collection = dict(config["collection"])
+        self.require_init_state_id = (
+            dict(config.get("protocol") or {}).get("version")
+            == "W9B-clean-control/v1"
+        )
         ensure_libero_plus_paths(adapter.get("libero_plus_root"))
         _patch_lerobot_init_states()
 
@@ -223,7 +290,7 @@ class LeRobotLiberoPlusCollectionAdapter:
         import gymnasium as gym
         import torch
         from lerobot.envs.configs import LiberoEnv as LiberoEnvConfig
-        from lerobot.envs.libero import LiberoEnv
+        from lerobot.envs.libero import LiberoEnv, get_task_init_states
         from lerobot.envs.utils import preprocess_observation
         from lerobot.utils.constants import ACTION, OBS_STATE
         from lerobot.utils.random_utils import set_seed
@@ -233,10 +300,15 @@ class LeRobotLiberoPlusCollectionAdapter:
         suite_cls = benchmark.get_benchmark_dict()[selected.suite]
         suite = suite_cls()
         task_index = catalog_task_to_suite_index(selected.task_id)
-        if suite.tasks[task_index].name != selected.name:
+        if selected.name and suite.tasks[task_index].name != selected.name:
             raise ValueError(
                 f"catalog/suite mismatch at {selected.suite}:{selected.task_id}"
             )
+        init_state_id = _validated_init_state_id(
+            request,
+            n_init_states=len(get_task_init_states(suite, task_index)),
+            required=self.require_init_state_id,
+        )
 
         env_cfg = LiberoEnvConfig(
             task=selected.suite,
@@ -257,17 +329,17 @@ class LeRobotLiberoPlusCollectionAdapter:
         # Keep one environment in-process: ForkableEnv captures process-global NumPy RNG.
         def make_single() -> LiberoEnv:
             return LiberoEnv(
-                task_suite=suite,
-                task_id=task_index,
-                task_suite_name=selected.suite,
-                camera_name=env_cfg.camera_name,
-                init_states=True,
-                episode_index=0,
-                n_envs=1,
-                obs_type=env_cfg.obs_type,
-                observation_height=self.observation_height,
-                observation_width=self.observation_width,
-                control_mode=env_cfg.control_mode,
+                **_lerobot_env_kwargs(
+                    suite=suite,
+                    task_index=task_index,
+                    suite_name=selected.suite,
+                    camera_name=env_cfg.camera_name,
+                    init_state_id=init_state_id,
+                    obs_type=env_cfg.obs_type,
+                    observation_height=self.observation_height,
+                    observation_width=self.observation_width,
+                    control_mode=env_cfg.control_mode,
+                )
             )
 
         vector_env = gym.vector.SyncVectorEnv([make_single])
@@ -336,6 +408,8 @@ class LeRobotLiberoPlusCollectionAdapter:
             task_id=f"{selected.suite}_{selected.task_id:06d}",
             instruction=str(single.task_description),
             snapshots=tuple(snapshots),
+            suite=request.suite,
+            init_state_id=init_state_id,
         )
 
 

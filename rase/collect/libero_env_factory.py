@@ -50,9 +50,30 @@ def parse_pool_task_id(task_id: str) -> ParsedTaskId:
     )
 
 
+def _resolve_plus_task_index(suite: Any, catalog_task_id: int) -> int:
+    """Map pool catalog id → suite index; require LIBERO-Plus (not clean-10)."""
+    task_index = catalog_task_to_suite_index(catalog_task_id)
+    n_tasks = len(suite.tasks)
+    if task_index < 0 or task_index >= n_tasks:
+        hint = ""
+        if n_tasks <= 10 and catalog_task_id > n_tasks:
+            hint = (
+                " — installed `libero` looks like clean LIBERO (10 tasks/suite). "
+                "Reinstall LIBERO-Plus editable: "
+                "`pip install -e $LIBERO_PLUS_ROOT` and ensure site-packages "
+                "does not shadow it with a stale `libero/` copy."
+            )
+        raise ValueError(
+            f"{suite.name} task_id {catalog_task_id} is out of range "
+            f"(n_tasks={n_tasks}){hint}"
+        )
+    return task_index
+
+
 def make_libero_env_for_task(
     task_id: str,
     *,
+    init_state_id: int,
     seed: int = 0,
     observation_height: int = 360,
     observation_width: int = 360,
@@ -70,11 +91,13 @@ def make_libero_env_for_task(
     parsed = parse_pool_task_id(task_id)
     suite_cls = benchmark.get_benchmark_dict()[parsed.suite]
     suite = suite_cls()
-    task_index = catalog_task_to_suite_index(parsed.catalog_task_id)
-    if task_index < 0 or task_index >= len(suite.tasks):
+    task_index = _resolve_plus_task_index(suite, parsed.catalog_task_id)
+    from lerobot.envs.libero import get_task_init_states
+
+    n_init_states = len(get_task_init_states(suite, task_index))
+    if init_state_id < 0 or init_state_id >= n_init_states:
         raise ValueError(
-            f"{parsed.suite} task_id {parsed.catalog_task_id} is out of range "
-            f"(n_tasks={len(suite.tasks)})"
+            f"init_state_id {init_state_id} out of range for {n_init_states} init states"
         )
 
     def make_single() -> LiberoEnv:
@@ -84,7 +107,7 @@ def make_libero_env_for_task(
             task_suite_name=parsed.suite,
             camera_name="agentview_image,robot0_eye_in_hand_image",
             init_states=True,
-            episode_index=0,
+            episode_index=int(init_state_id),
             n_envs=1,
             obs_type="pixels_agent_pos",
             observation_height=observation_height,

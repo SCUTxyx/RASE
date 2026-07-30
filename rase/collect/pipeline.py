@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import importlib
 import json
+import subprocess
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
@@ -15,6 +16,13 @@ import numpy as np
 from .perturb_sampler import PerturbationRequest, sample_perturbations, summarize
 from .schema import StateMetadata
 from .state_pool import StatePool, retain_snapshot, snapshot_steps
+from .w9b_schedule import (
+    BATCH_SIZES,
+    MAX_EPISODES,
+    PROTOCOL_VERSION,
+    load_w9b_schedule,
+    requests_for_batch,
+)
 
 # Valid 1x1 RGB PNG. Dry-run writes real, independently decodable image files.
 _DRY_PNG = base64.b64decode(
@@ -39,6 +47,8 @@ class EpisodeResult:
     task_id: str
     instruction: str
     snapshots: tuple[EpisodeSnapshot, ...]
+    suite: str | None = None
+    init_state_id: int | None = None
 
 
 class DryRunAdapter:
@@ -68,9 +78,15 @@ class DryRunAdapter:
         )
         return EpisodeResult(
             outcome=outcome,
-            task_id=f"{request.suite.lower()}_{request.index:06d}",
+            task_id=(
+                _scheduled_task_id(request)
+                if request.task_id is not None
+                else f"{request.suite.lower()}_{request.index:06d}"
+            ),
             instruction=f"dry-run task {request.index}",
             snapshots=snapshots,
+            suite=request.suite,
+            init_state_id=request.init_state_id,
         )
 
 
@@ -80,9 +96,78 @@ def load_config(path: Path) -> dict[str, Any]:
     collection = config["collection"]
     if int(collection["snapshot_cadence_action_chunks"]) != 2:
         raise ValueError("NGC Step 1 snapshot cadence must be 2 action chunks")
-    if float(collection["successful_snapshot_retention"]) != 0.20:
-        raise ValueError("successful snapshot retention must be 0.20")
+    retention = float(collection["successful_snapshot_retention"])
+    if not 0.0 <= retention <= 1.0:
+        raise ValueError("successful snapshot retention must be within [0, 1]")
+    protocol = dict(config.get("protocol") or {})
+    if protocol.get("version") == PROTOCOL_VERSION:
+        _validate_w9b_config(config)
     return config
+
+
+def _scheduled_task_id(request: PerturbationRequest) -> str:
+    suite_names = {
+        "Spatial": "libero_spatial",
+        "Object": "libero_object",
+        "Goal": "libero_goal",
+        "Long": "libero_10",
+    }
+    if request.task_id is None:
+        raise ValueError("scheduled request is missing task_id")
+    return f"{suite_names[request.suite]}_{request.task_id:06d}"
+
+
+def _validate_w9b_config(config: Mapping[str, Any]) -> None:
+    collection = dict(config["collection"])
+    protocol = dict(config.get("protocol") or {})
+    output = Path(str(collection["output_dir"]))
+    output_text = output.as_posix()
+    smoke_mode = bool(collection.get("smoke_mode", False))
+    smoke_output = (
+        smoke_mode
+        and "/runs/ngc_w9b_" in f"/{output_text}"
+        and "smoke" in output.name
+    )
+    if output_text != "pool/ngc_w9b_clean_controls" and not smoke_output:
+        raise ValueError(
+            "W9B output_dir must be the formal W9B pool or an explicit "
+            "runs/ngc_w9b_*_smoke path"
+        )
+    if output_text == "pool/ngc_w9_clean_controls":
+        raise ValueError("W9B must never write into the legacy W9 pool")
+    if float(collection["successful_snapshot_retention"]) != 1.0:
+        raise ValueError("W9B successful_snapshot_retention must be exactly 1.0")
+    if int(protocol.get("maximum_episodes", -1)) != MAX_EPISODES:
+        raise ValueError("W9B maximum_episodes must be exactly 140")
+    if not protocol.get("schedule_path") or not protocol.get("schedule_sha256"):
+        raise ValueError("W9B requires schedule_path and schedule_sha256")
+
+
+def _git_commit() -> str:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], text=True, timeout=5
+        ).strip()
+    except (OSError, subprocess.SubprocessError):
+        return "unknown"
+
+
+def _scheduled_requests(
+    config: Mapping[str, Any],
+) -> tuple[list[PerturbationRequest], dict[str, Any]]:
+    protocol = dict(config.get("protocol") or {})
+    collection = dict(config["collection"])
+    payload = load_w9b_schedule(
+        Path(str(protocol["schedule_path"])),
+        expected_sha256=str(protocol["schedule_sha256"]),
+    )
+    batch_id = int(collection.get("schedule_batch_id", 1))
+    requests = requests_for_batch(payload, batch_id)
+    if len(requests) != BATCH_SIZES[batch_id - 1]:
+        raise ValueError("W9B schedule batch has the wrong number of rows")
+    if int(collection["episodes"]) != len(requests):
+        raise ValueError("W9B collection.episodes does not match schedule batch")
+    return requests, payload
 
 
 def _load_adapter(spec: str, config: Mapping[str, Any]) -> Any:
@@ -163,12 +248,19 @@ def collect(config: Mapping[str, Any], *, force_dry_run: bool = False) -> dict[s
     output_dir = Path(collection["output_dir"])
     pool = StatePool(output_dir)
     sampling = dict(config.get("sampling") or {})
-    requests = sample_perturbations(
-        episodes,
-        seed,
-        dimension_quotas=sampling.get("dimension_quotas"),
-        suite_quotas=sampling.get("suite_quotas"),
-    )
+    protocol = dict(config.get("protocol") or {})
+    schedule_payload: dict[str, Any] | None = None
+    if protocol.get("version") == PROTOCOL_VERSION:
+        _validate_w9b_config(config)
+        requests, schedule_payload = _scheduled_requests(config)
+    else:
+        requests = sample_perturbations(
+            episodes,
+            seed,
+            dimension_quotas=sampling.get("dimension_quotas"),
+            suite_quotas=sampling.get("suite_quotas"),
+            levels_by_dimension=sampling.get("levels_by_dimension"),
+        )
     skip_indices = load_skip_indices(output_dir, collection.get("skip_episode_indices"))
     already_done = existing_episode_ids(output_dir)
     adapter_spec = config.get("adapter")
@@ -197,7 +289,9 @@ def collect(config: Mapping[str, Any], *, force_dry_run: bool = False) -> dict[s
     episodes_skipped_crash = 0
     episodes_skipped_resume = 0
     for request in requests:
-        episode_id = f"ep-{seed:08x}-{request.index:08d}"
+        episode_id = request.episode_id or f"ep-{seed:08x}-{request.index:08d}"
+        if schedule_payload is not None and request.init_state_id is None:
+            raise ValueError("W9B schedule row is missing init_state_id")
         if request.index in skip_indices:
             episodes_skipped_crash += 1
             print(
@@ -222,6 +316,10 @@ def collect(config: Mapping[str, Any], *, force_dry_run: bool = False) -> dict[s
                     "index": request.index,
                     "episode_id": episode_id,
                     "suite": request.suite,
+                    "task_id": request.task_id,
+                    "init_state_id": request.init_state_id,
+                    "batch_id": request.batch_id,
+                    "global_episode_index": request.global_episode_index,
                     "dimension": request.dimension,
                     "level": request.level,
                 },
@@ -237,6 +335,18 @@ def collect(config: Mapping[str, Any], *, force_dry_run: bool = False) -> dict[s
             flush=True,
         )
         result = adapter.run_episode(request, episode_id, cadence)
+        if schedule_payload is not None:
+            expected_task = _scheduled_task_id(request)
+            if (
+                result.task_id != expected_task
+                or result.suite != request.suite
+                or result.init_state_id != request.init_state_id
+            ):
+                raise ValueError(
+                    "W9B schedule row differs from actual suite/task/init: "
+                    f"expected=({request.suite},{expected_task},{request.init_state_id}) "
+                    f"actual=({result.suite},{result.task_id},{result.init_state_id})"
+                )
         if result.outcome not in outcomes:
             raise ValueError(f"adapter returned invalid outcome {result.outcome!r}")
         outcomes[result.outcome] += 1
@@ -260,6 +370,7 @@ def collect(config: Mapping[str, Any], *, force_dry_run: bool = False) -> dict[s
                 level=request.level,
                 episode_outcome=result.outcome,
                 seed=request.seed,
+                init_state_id=request.init_state_id,
             )
             write = pool.write_state(
                 metadata,
@@ -278,7 +389,7 @@ def collect(config: Mapping[str, Any], *, force_dry_run: bool = False) -> dict[s
             flush=True,
         )
     clear_current_episode(output_dir)
-    return {
+    summary = {
         "adapter": adapter_name,
         "episodes": episodes,
         "outcomes": outcomes,
@@ -291,3 +402,25 @@ def collect(config: Mapping[str, Any], *, force_dry_run: bool = False) -> dict[s
         "quotas": summarize(requests),
         "manifest": str(pool.manifest_path),
     }
+    if schedule_payload is not None:
+        summary["provenance"] = {
+            "protocol_version": protocol["version"],
+            "schedule_sha256": protocol["schedule_sha256"],
+            "schedule_path": protocol["schedule_path"],
+            "schedule_batch_id": int(collection.get("schedule_batch_id", 1)),
+            "git_commit": _git_commit(),
+        }
+        summary["scheduled_episodes"] = [
+            {
+                "episode_id": request.episode_id,
+                "global_episode_index": request.global_episode_index,
+                "batch_id": request.batch_id,
+                "request_index": request.index,
+                "suite": request.suite,
+                "task_id": request.task_id,
+                "init_state_id": request.init_state_id,
+                "policy_seed": request.seed,
+            }
+            for request in requests
+        ]
+    return summary

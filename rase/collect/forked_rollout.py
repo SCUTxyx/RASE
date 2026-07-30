@@ -32,6 +32,18 @@ class ContinuationPolicy(Protocol):
     def act(self, observation: Mapping[str, Any], *, task: str) -> np.ndarray: ...
 
 
+class RolloutTraceCallback(Protocol):
+    """Optional observation sink used by video/QC tooling."""
+
+    def __call__(
+        self,
+        observation: Mapping[str, Any],
+        *,
+        phase: str,
+        timestep: int,
+    ) -> None: ...
+
+
 @dataclass(frozen=True)
 class RolloutConfig:
     n_action_steps: int = 10
@@ -95,6 +107,7 @@ def restore_pool_state(
     meta = loaded.metadata
     handle = make_libero_env_for_task(
         meta.task_id,
+        init_state_id=meta.init_state_id if meta.init_state_id is not None else 0,
         seed=int(meta.seed),
         observation_height=observation_height,
         observation_width=observation_width,
@@ -192,6 +205,7 @@ def evaluate_candidate(
     continuation: ContinuationPolicy,
     *,
     max_episode_steps: int | None = None,
+    trace_callback: RolloutTraceCallback | None = None,
 ) -> RolloutResult:
     """Execute env-space candidate then continuation until done/horizon."""
     t0 = time.perf_counter()
@@ -220,6 +234,12 @@ def evaluate_candidate(
     restore_s = time.perf_counter() - restore_t0
 
     observation = observation_from_libero_env(single)
+    if trace_callback is not None:
+        trace_callback(
+            observation,
+            phase="initial",
+            timestep=current_timestep(handle.control_env),
+        )
     candidate_steps = 0
     continuation_steps = 0
     success = False
@@ -238,6 +258,12 @@ def evaluate_candidate(
             break
         observation, _, term, trunc, info = vector_env.step(as_batched_action(action))
         candidate_steps += 1
+        if trace_callback is not None:
+            trace_callback(
+                observation,
+                phase="candidate",
+                timestep=current_timestep(handle.control_env),
+            )
         terminated = bool(np.asarray(term).reshape(-1)[0])
         truncated = bool(np.asarray(trunc).reshape(-1)[0])
         if terminated or truncated:
@@ -257,6 +283,12 @@ def evaluate_candidate(
             action = continuation.act(observation, task=task)
             observation, _, term, trunc, info = vector_env.step(as_batched_action(action))
             continuation_steps += 1
+            if trace_callback is not None:
+                trace_callback(
+                    observation,
+                    phase="continuation",
+                    timestep=current_timestep(handle.control_env),
+                )
             terminated = bool(np.asarray(term).reshape(-1)[0])
             truncated = bool(np.asarray(trunc).reshape(-1)[0])
             if terminated or truncated:
@@ -291,8 +323,14 @@ def run_one_forked_rollout(
     *,
     libero_plus_root: str | None = None,
     config: RolloutConfig | None = None,
+    trace_callback: RolloutTraceCallback | None = None,
 ) -> RolloutResult:
-    """Fresh env + restore + evaluate one candidate chunk."""
+    """Fresh env + restore + evaluate one candidate chunk, then always close it.
+
+    A restored environment must not be shared across candidates.  Successful or
+    terminal rollouts may mutate task/model state that participates in the
+    snapshot fingerprint, making a later restore into that environment unsafe.
+    """
     cfg = config or RolloutConfig()
     restored = restore_pool_state(
         pool,
@@ -303,7 +341,12 @@ def run_one_forked_rollout(
         strict_fingerprint=cfg.strict_fingerprint,
     )
     try:
-        return evaluate_candidate(restored, candidate_actions, continuation)
+        return evaluate_candidate(
+            restored,
+            candidate_actions,
+            continuation,
+            trace_callback=trace_callback,
+        )
     finally:
         restored.close()
 

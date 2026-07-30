@@ -406,6 +406,8 @@ class StatePool:
                 "step": metadata.step,
                 "outcome": metadata.episode_outcome,
             }
+            if metadata.init_state_id is not None:
+                entry["init_state_id"] = metadata.init_state_id
             previous = manifest["states"].get(key)
             if previous is not None and previous != entry:
                 same_payload = (
@@ -414,6 +416,7 @@ class StatePool:
                     and previous.get("episode_id") == entry["episode_id"]
                     and previous.get("step") == entry["step"]
                     and previous.get("outcome") == entry["outcome"]
+                    and previous.get("init_state_id") == entry.get("init_state_id")
                 )
                 if not same_payload:
                     raise FileExistsError(f"conflicting manifest entry for {key}")

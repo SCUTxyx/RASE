@@ -168,6 +168,7 @@ def generate_for_state(
     meta = loaded.metadata
     handle = make_libero_env_for_task(
         meta.task_id,
+        init_state_id=meta.init_state_id if meta.init_state_id is not None else 0,
         seed=int(meta.seed),
         observation_height=observation_height,
         observation_width=observation_width,

@@ -17,19 +17,46 @@ DIMENSION_QUOTAS = {
 SUITE_QUOTAS = {"Long": 40, "Goal": 25, "Spatial": 20, "Object": 15}
 
 _SUBDIMENSIONS = {
+    "clean": ("none",),
     "camera": ("viewpoint",),
     "robot": ("initial_state",),
     "combination": ("camera+robot",),
     "layout": ("confounder", "target_displacement"),
     "other": ("light", "background", "noise"),
 }
-_LEVELS = {
+DEFAULT_LEVELS_BY_DIMENSION = {
+    "clean": (0,),
     "camera": (3, 4, 5),
     "robot": (3, 4, 5),
     "combination": (3, 4, 5),
     "layout": (3, 4, 5),
     "other": (4, 5),
 }
+
+
+def validate_levels_by_dimension(
+    levels_by_dimension: Mapping[str, Sequence[int]] | None,
+) -> dict[str, tuple[int, ...]]:
+    """Validate level overrides and merge them with protocol defaults."""
+    levels = dict(DEFAULT_LEVELS_BY_DIMENSION)
+    if levels_by_dimension is None:
+        return levels
+    unknown = set(levels_by_dimension) - set(_SUBDIMENSIONS)
+    if unknown:
+        raise ValueError(f"unknown level dimensions: {', '.join(sorted(unknown))}")
+    for dimension, configured in levels_by_dimension.items():
+        values = tuple(int(level) for level in configured)
+        if not values:
+            raise ValueError(f"levels for {dimension} must not be empty")
+        allowed = {0} if dimension == "clean" else set(range(1, 6))
+        invalid = sorted(set(values) - allowed)
+        if invalid:
+            expected = "exactly L0" if dimension == "clean" else "within L1-L5"
+            raise ValueError(f"levels for {dimension} must be {expected}; got {invalid}")
+        if len(set(values)) != len(values):
+            raise ValueError(f"levels for {dimension} must not contain duplicates")
+        levels[dimension] = values
+    return levels
 
 
 @dataclass(frozen=True)
@@ -40,6 +67,11 @@ class PerturbationRequest:
     subdimension: str
     level: int
     seed: int
+    global_episode_index: int | None = None
+    batch_id: int | None = None
+    task_id: int | None = None
+    init_state_id: int | None = None
+    episode_id: str | None = None
 
 
 def _apportion(total: int, quotas: Mapping[str, int]) -> dict[str, int]:
@@ -77,6 +109,7 @@ def sample_perturbations(
     *,
     dimension_quotas: Mapping[str, int] | None = None,
     suite_quotas: Mapping[str, int] | None = None,
+    levels_by_dimension: Mapping[str, Sequence[int]] | None = None,
 ) -> list[PerturbationRequest]:
     """Return exactly ``total`` requests satisfying both quota marginals."""
     dimensions_config = dict(dimension_quotas or DIMENSION_QUOTAS)
@@ -89,6 +122,7 @@ def sample_perturbations(
     unknown_suites = set(suites_config) - set(SUITE_QUOTAS)
     if unknown_suites:
         raise ValueError(f"unknown suites: {', '.join(sorted(unknown_suites))}")
+    levels_config = validate_levels_by_dimension(levels_by_dimension)
 
     rng = random.Random(seed)
     dimensions = _expanded(total, dimensions_config, rng)
@@ -105,7 +139,7 @@ def sample_perturbations(
                 suite=suite,
                 dimension=dimension,
                 subdimension=local.choice(_SUBDIMENSIONS[dimension]),
-                level=local.choice(_LEVELS[dimension]),
+                level=local.choice(levels_config[dimension]),
                 seed=request_seed,
             )
         )
@@ -116,6 +150,6 @@ def summarize(requests: Sequence[PerturbationRequest]) -> dict[str, dict[str, in
     dimensions = {key: 0 for key in DIMENSION_QUOTAS}
     suites = {key: 0 for key in SUITE_QUOTAS}
     for request in requests:
-        dimensions[request.dimension] += 1
+        dimensions[request.dimension] = dimensions.get(request.dimension, 0) + 1
         suites[request.suite] += 1
     return {"dimensions": dimensions, "suites": suites}

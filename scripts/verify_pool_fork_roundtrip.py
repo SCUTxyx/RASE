@@ -155,6 +155,7 @@ def verify_one(
     )
     handle = make_libero_env_for_task(
         meta.task_id,
+        init_state_id=meta.init_state_id if meta.init_state_id is not None else 0,
         seed=int(meta.seed),
         libero_plus_root=libero_plus_root,
     )

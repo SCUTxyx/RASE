@@ -30,6 +30,11 @@ def test_pool_fork_roundtrip_sample():
     snapshot = bundle_to_env_snapshot(loaded)
     handle = make_libero_env_for_task(
         loaded.metadata.task_id,
+        init_state_id=(
+            loaded.metadata.init_state_id
+            if loaded.metadata.init_state_id is not None
+            else 0
+        ),
         seed=int(loaded.metadata.seed),
         libero_plus_root=os.environ.get("LIBERO_PLUS_ROOT"),
     )

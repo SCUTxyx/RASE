@@ -32,6 +32,7 @@ class StateMetadata:
     level: int
     episode_outcome: str
     seed: int
+    init_state_id: int | None = None
     snapshot_version: str = SCHEMA_VERSION
 
     def validate(self) -> None:
@@ -48,10 +49,15 @@ class StateMetadata:
             raise ValueError(f"metadata fields must be non-empty: {', '.join(empty)}")
         if self.step < 0:
             raise ValueError("step must be non-negative")
-        if self.level not in range(1, 6):
-            raise ValueError("level must be in [1, 5]")
+        if self.perturb_dim == "clean":
+            if self.level != 0 or self.perturb_sub != "none":
+                raise ValueError("clean controls require level=0 and perturb_sub='none'")
+        elif self.level not in range(1, 6):
+            raise ValueError("perturbed states require level in [1, 5]")
         if self.episode_outcome not in {"success", "failure"}:
             raise ValueError("episode_outcome must be 'success' or 'failure'")
+        if self.init_state_id is not None and self.init_state_id < 0:
+            raise ValueError("init_state_id must be non-negative when present")
         if self.snapshot_version != SCHEMA_VERSION:
             raise ValueError(
                 f"unsupported snapshot_version {self.snapshot_version!r}; "
