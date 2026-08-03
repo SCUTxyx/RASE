@@ -33,6 +33,9 @@ class StateMetadata:
     episode_outcome: str
     seed: int
     init_state_id: int | None = None
+    clean_task_name: str | None = None
+    bddl_stem: str | None = None
+    libero_flavor: str | None = None
     snapshot_version: str = SCHEMA_VERSION
 
     def validate(self) -> None:
@@ -52,12 +55,19 @@ class StateMetadata:
         if self.perturb_dim == "clean":
             if self.level != 0 or self.perturb_sub != "none":
                 raise ValueError("clean controls require level=0 and perturb_sub='none'")
+            if self.libero_flavor not in {None, "clean"}:
+                raise ValueError("clean controls require libero_flavor='clean' when set")
         elif self.level not in range(1, 6):
             raise ValueError("perturbed states require level in [1, 5]")
         if self.episode_outcome not in {"success", "failure"}:
             raise ValueError("episode_outcome must be 'success' or 'failure'")
         if self.init_state_id is not None and self.init_state_id < 0:
             raise ValueError("init_state_id must be non-negative when present")
+        if self.libero_flavor is not None and self.libero_flavor not in {
+            "clean",
+            "plus",
+        }:
+            raise ValueError("libero_flavor must be 'clean' or 'plus' when set")
         if self.snapshot_version != SCHEMA_VERSION:
             raise ValueError(
                 f"unsupported snapshot_version {self.snapshot_version!r}; "

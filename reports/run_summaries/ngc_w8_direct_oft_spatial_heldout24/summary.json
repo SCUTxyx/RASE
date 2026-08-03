@@ -1,0 +1,119 @@
+{
+  "direct_oft": {
+    "hits": 0,
+    "trials": 4
+  },
+  "elapsed_wall_s": 44.264,
+  "interpretation": "Direct OFT is a deployable escalation arm with no candidate or time-matched zero prefix.",
+  "n_states": 4,
+  "per_state": [
+    {
+      "dim": "camera",
+      "direct_oft_success": false,
+      "episode_id": "ep-01352777-00000025",
+      "level": 1,
+      "result": {
+        "arm_kind": "direct",
+        "arm_label": "direct_oft",
+        "candidate_index": null,
+        "candidate_s": 7e-06,
+        "candidate_steps": 0,
+        "continuation_s": 2.862845,
+        "continuation_steps": 70,
+        "elapsed_s": 2.869468,
+        "env_steps": 70,
+        "final_timestep": 280,
+        "oracle": "oft",
+        "restore_s": 0.004781,
+        "stop_reason": "horizon",
+        "success": false,
+        "terminated": false,
+        "truncated": true
+      },
+      "state_key": "sp1_680174bdf8c7058207595d61c599679d",
+      "suite": "Spatial"
+    },
+    {
+      "dim": "robot",
+      "direct_oft_success": false,
+      "episode_id": "ep-01352777-00000030",
+      "level": 1,
+      "result": {
+        "arm_kind": "direct",
+        "arm_label": "direct_oft",
+        "candidate_index": null,
+        "candidate_s": 7e-06,
+        "candidate_steps": 0,
+        "continuation_s": 8.538969,
+        "continuation_steps": 210,
+        "elapsed_s": 8.545603,
+        "env_steps": 210,
+        "final_timestep": 280,
+        "oracle": "oft",
+        "restore_s": 0.004917,
+        "stop_reason": "horizon",
+        "success": false,
+        "terminated": false,
+        "truncated": true
+      },
+      "state_key": "sp1_ea97a678ea5539f0554939f675e82774",
+      "suite": "Spatial"
+    },
+    {
+      "dim": "robot",
+      "direct_oft_success": false,
+      "episode_id": "ep-01352777-00000039",
+      "level": 2,
+      "result": {
+        "arm_kind": "direct",
+        "arm_label": "direct_oft",
+        "candidate_index": null,
+        "candidate_s": 7e-06,
+        "candidate_steps": 0,
+        "continuation_s": 7.187319,
+        "continuation_steps": 170,
+        "elapsed_s": 7.196253,
+        "env_steps": 170,
+        "final_timestep": 280,
+        "oracle": "oft",
+        "restore_s": 0.00724,
+        "stop_reason": "horizon",
+        "success": false,
+        "terminated": false,
+        "truncated": true
+      },
+      "state_key": "sp1_517461f8b81eef65f3455d7a4e3593b9",
+      "suite": "Spatial"
+    },
+    {
+      "dim": "robot",
+      "direct_oft_success": false,
+      "episode_id": "ep-01352777-00000024",
+      "level": 2,
+      "result": {
+        "arm_kind": "direct",
+        "arm_label": "direct_oft",
+        "candidate_index": null,
+        "candidate_s": 6e-06,
+        "candidate_steps": 0,
+        "continuation_s": 7.217691,
+        "continuation_steps": 170,
+        "elapsed_s": 7.22425,
+        "env_steps": 170,
+        "final_timestep": 280,
+        "oracle": "oft",
+        "restore_s": 0.004821,
+        "stop_reason": "horizon",
+        "success": false,
+        "terminated": false,
+        "truncated": true
+      },
+      "state_key": "sp1_25eb78d358f32dc395ffbbf7e08998a5",
+      "suite": "Spatial"
+    }
+  ],
+  "schema_version": "rase-oft-direct-escalation/v1",
+  "state_keys_sha256": "866ae9e7c6f95088dc7d761c63937a02d017b69280e6d9cc73ac883127158829",
+  "status": "complete",
+  "suite": "libero_spatial"
+}

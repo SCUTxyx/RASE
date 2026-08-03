@@ -1,0 +1,479 @@
+{
+  "elapsed_s": {
+    "mean": 3.92240484375,
+    "median": 4.3878935,
+    "n": 32,
+    "p90": 5.8812773
+  },
+  "elapsed_wall_s": 140.524,
+  "label_counts": {
+    "uncertain": 4
+  },
+  "max_retries_observed": 0,
+  "mean_trials_per_candidate": 1.0,
+  "mode": "oft-verify",
+  "n_states": 4,
+  "per_state": [
+    {
+      "candidates": [
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        }
+      ],
+      "confidently_good_count": 0,
+      "cross_oracle": {
+        "per_candidate": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "successes": 0,
+        "trials": 8
+      },
+      "max_r_hat": 0.0,
+      "max_upper": 0.8440398527298221,
+      "min_lower": 0.0,
+      "set_label": "uncertain",
+      "state_key": "sp1_a447bc78845baeaae86f6debfd66cf2c"
+    },
+    {
+      "candidates": [
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        }
+      ],
+      "confidently_good_count": 0,
+      "cross_oracle": {
+        "per_candidate": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "successes": 0,
+        "trials": 8
+      },
+      "max_r_hat": 0.0,
+      "max_upper": 0.8440398527298221,
+      "min_lower": 0.0,
+      "set_label": "uncertain",
+      "state_key": "sp1_89d87f57e2ec182743d0b07c77bc94ec"
+    },
+    {
+      "candidates": [
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        }
+      ],
+      "confidently_good_count": 0,
+      "cross_oracle": {
+        "per_candidate": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "successes": 0,
+        "trials": 8
+      },
+      "max_r_hat": 0.0,
+      "max_upper": 0.8440398527298221,
+      "min_lower": 0.0,
+      "set_label": "uncertain",
+      "state_key": "sp1_be1d03c1c976da4a83157f46f3af07c2"
+    },
+    {
+      "candidates": [
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        },
+        {
+          "alpha": 0.01,
+          "lower": 0.0,
+          "protocol_version": "wilson-onesided-alpha-spend-v1",
+          "rate": 0.0,
+          "sidedness": "one-sided",
+          "stopped_early": false,
+          "successes": 0,
+          "trials": 1,
+          "upper": 0.8440398527298221
+        }
+      ],
+      "confidently_good_count": 0,
+      "cross_oracle": {
+        "per_candidate": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "successes": 0,
+        "trials": 8
+      },
+      "max_r_hat": 0.0,
+      "max_upper": 0.8440398527298221,
+      "min_lower": 0.0,
+      "set_label": "uncertain",
+      "state_key": "sp1_ba9b5a6e45ed87057c8bd97960755beb"
+    }
+  ],
+  "protocol": {
+    "alpha_final": 0.04,
+    "alpha_first": 0.01,
+    "k": 8,
+    "n_first": 6,
+    "n_total": 20,
+    "set_a_min_good": 3,
+    "sidedness": "one-sided",
+    "threshold": 0.5,
+    "version": "wilson-onesided-alpha-spend-v1"
+  },
+  "rollouts_this_process": 32,
+  "total_rollouts_completed": 32
+}

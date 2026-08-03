@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Aggregate SmolVLA primary + suite-matched OFT verify into state-level yield.
-
-Emits Y_Smol / Y_OFT / C_div plus per-candidate recoverable_* flags for later
-fallback GT (does not implement fallback executors).
-"""
+"""Aggregate Wilson-triaged SmolVLA and deterministic one-shot OFT results."""
 
 from __future__ import annotations
 
@@ -17,39 +13,21 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from rase.collect.dual_oracle import aggregate_dual_oracle  # noqa: E402
+
 
 def _load(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _state_successes(state: dict[str, Any]) -> tuple[int, int]:
-    succ = sum(int(c.get("successes", 0)) for c in state.get("candidates") or [])
-    trials = sum(int(c.get("trials", 0)) for c in state.get("candidates") or [])
-    return succ, trials
-
-
-def _per_candidate_flags(
-    state: dict[str, Any], *, oracle: str
-) -> list[dict[str, Any]]:
-    out = []
-    for idx, cand in enumerate(state.get("candidates") or []):
-        succ = int(cand.get("successes", 0))
-        trials = int(cand.get("trials", 0))
-        row = {
-            "state_key": state["state_key"],
-            "candidate_id": idx,
-            "oracle": oracle,
-            "successes": succ,
-            "trials": trials,
-            "recoverable_smolvla": None,
-            "recoverable_oft": None,
-        }
-        if oracle == "smolvla":
-            row["recoverable_smolvla"] = succ > 0
-        elif oracle == "oft":
-            row["recoverable_oft"] = succ > 0
-        out.append(row)
-    return out
+def _pool_metadata(pool_root: Path) -> dict[str, dict[str, Any]]:
+    manifest = _load(pool_root / "manifest.json")
+    metadata: dict[str, dict[str, Any]] = {}
+    for key, entry in (manifest.get("states") or {}).items():
+        meta_path = pool_root / entry["path"] / "meta.json"
+        if meta_path.is_file():
+            metadata[str(key)] = _load(meta_path)
+    return metadata
 
 
 def main() -> int:
@@ -64,140 +42,97 @@ def main() -> int:
     )
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--markdown", type=Path, default=None)
+    parser.add_argument(
+        "--pool",
+        type=Path,
+        default=None,
+        help="State pool root for causal yield table meta join",
+    )
+    parser.add_argument(
+        "--causal-out",
+        type=Path,
+        default=None,
+        help="Write perturbation→NGC yield JSON (requires --pool)",
+    )
+    parser.add_argument(
+        "--causal-markdown",
+        type=Path,
+        default=None,
+        help="Optional markdown render of the causal yield table",
+    )
+    parser.add_argument(
+        "--ngc-oracle",
+        choices=("smolvla", "oft", "both"),
+        default="smolvla",
+        help="Causal outcome(s): SmolVLA NGC and/or OFT portfolio-unrecovered",
+    )
     args = parser.parse_args()
 
     smol = _load(args.smolvla_summary.resolve())
-    smol_by_key = {s["state_key"]: s for s in smol.get("per_state") or []}
-
-    oft_by_key: dict[str, dict[str, Any]] = {}
-    oft_suite_of: dict[str, str] = {}
-    suite_raw: dict[str, dict[str, int]] = {}
+    oft_payloads: list[tuple[str, dict[str, Any]]] = []
     for item in args.oft_summary:
         if "=" not in item:
             raise SystemExit(f"expected SUITE=PATH, got {item!r}")
         suite, path_s = item.split("=", 1)
         payload = _load(Path(path_s).resolve())
-        succ_tot = trials_tot = 0
-        for st in payload.get("per_state") or []:
-            key = st["state_key"]
-            oft_by_key[key] = st
-            oft_suite_of[key] = suite
-            s, t = _state_successes(st)
-            succ_tot += s
-            trials_tot += t
-        suite_raw[suite] = {
-            "successes": succ_tot,
-            "trials": trials_tot,
-            "n_states": len(payload.get("per_state") or []),
-            "rollouts_this_process": int(payload.get("rollouts_this_process") or 0),
-        }
+        oft_payloads.append((suite, payload))
 
-    all_keys = sorted(set(smol_by_key) | set(oft_by_key))
-    per_state: list[dict[str, Any]] = []
-    cand_rows: list[dict[str, Any]] = []
-    n_smol_rec = n_oft_rec = n_div = 0
-
-    for key in all_keys:
-        sm = smol_by_key.get(key)
-        ot = oft_by_key.get(key)
-        sm_s = sm_t = 0
-        ot_s = ot_t = 0
-        if sm is not None:
-            sm_s, sm_t = _state_successes(sm)
-            cand_rows.extend(_per_candidate_flags(sm, oracle="smolvla"))
-        if ot is not None:
-            ot_s, ot_t = _state_successes(ot)
-            cand_rows.extend(_per_candidate_flags(ot, oracle="oft"))
-        rec_smol = sm_s > 0
-        rec_oft = ot_s > 0
-        divergent = rec_oft and not rec_smol
-        if rec_smol:
-            n_smol_rec += 1
-        if rec_oft:
-            n_oft_rec += 1
-        if divergent:
-            n_div += 1
-        # Merge candidate-level GT when both oracles present for same cand id.
-        if sm is not None and ot is not None:
-            for idx, (sc, oc) in enumerate(
-                zip(sm.get("candidates") or [], ot.get("candidates") or [])
-            ):
-                cand_rows.append(
-                    {
-                        "state_key": key,
-                        "candidate_id": idx,
-                        "oracle": "merged",
-                        "successes_smolvla": int(sc.get("successes", 0)),
-                        "trials_smolvla": int(sc.get("trials", 0)),
-                        "successes_oft": int(oc.get("successes", 0)),
-                        "trials_oft": int(oc.get("trials", 0)),
-                        "recoverable_smolvla": int(sc.get("successes", 0)) > 0,
-                        "recoverable_oft": int(oc.get("successes", 0)) > 0,
-                    }
-                )
-        per_state.append(
-            {
-                "state_key": key,
-                "suite": oft_suite_of.get(key),
-                "set_label_smolvla": (sm or {}).get("set_label"),
-                "smolvla_successes": sm_s,
-                "smolvla_trials": sm_t,
-                "oft_successes": ot_s,
-                "oft_trials": ot_t,
-                "recoverable_smolvla": rec_smol,
-                "recoverable_oft": rec_oft,
-                "divergent_oft_only": divergent,
-            }
-        )
-
-    n = len(all_keys)
-    out = {
-        "n_states": n,
-        "Y_Smol": (n_smol_rec / n) if n else 0.0,
-        "Y_OFT": (n_oft_rec / n) if n else 0.0,
-        "C_div": (n_div / n) if n else 0.0,
-        "n_recoverable_smolvla": n_smol_rec,
-        "n_recoverable_oft": n_oft_rec,
-        "n_divergent_oft_only": n_div,
-        "smolvla_raw": {
-            "successes": sum(r["smolvla_successes"] for r in per_state),
-            "trials": sum(r["smolvla_trials"] for r in per_state),
-            "label_counts": smol.get("label_counts"),
-            "rollouts_this_process": smol.get("rollouts_this_process"),
-        },
-        "oft_raw_by_suite": suite_raw,
-        "per_state": per_state,
-        "per_candidate_gt": [r for r in cand_rows if r.get("oracle") == "merged"],
-        "sources": {
-            "smolvla_summary": str(args.smolvla_summary.resolve()),
-            "oft_summaries": list(args.oft_summary),
-        },
+    pool_meta = _pool_metadata(args.pool.resolve()) if args.pool is not None else None
+    out = aggregate_dual_oracle(smol, oft_payloads, pool_meta=pool_meta)
+    out["sources"] = {
+        "smolvla_summary": str(args.smolvla_summary.resolve()),
+        "oft_summaries": list(args.oft_summary),
+        "pool": str(args.pool.resolve()) if args.pool is not None else None,
     }
+    n = out["n_states"]
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(out, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps({k: out[k] for k in (
-        "n_states", "Y_Smol", "Y_OFT", "C_div",
-        "n_recoverable_smolvla", "n_recoverable_oft", "n_divergent_oft_only",
+        "n_states", "deterministic_candidate_hits", "candidate_hit_rate",
+        "portfolio_recovered_states", "portfolio_coverage",
     )}, indent=2), flush=True)
     print(f"WROTE {args.output}", flush=True)
 
     if args.markdown is not None:
+        candidate_hits = (
+            f"{out['deterministic_candidate_hits']}/"
+            f"{out['deterministic_candidate_trials']}"
+        )
+        portfolio_fraction = (
+            f"{out['portfolio_recovered_states']}/"
+            f"{out['portfolio_evaluable_states']}"
+        )
+        coverage_ci = out["portfolio_coverage_wilson_95"]
         lines = [
             "# Dual-oracle yield",
             "",
-            f"| metric | value |",
-            f"|---|---|",
+            "| metric | value |",
+            "|---|---|",
             f"| n_states | {n} |",
-            f"| Y_Smol | {out['Y_Smol']:.4f} ({n_smol_rec}/{n}) |",
-            f"| Y_OFT | {out['Y_OFT']:.4f} ({n_oft_rec}/{n}) |",
-            f"| C_div | {out['C_div']:.4f} ({n_div}/{n}) |",
+            f"| deterministic candidate hits | {candidate_hits} |",
+            f"| candidate hit rate | {out['candidate_hit_rate']} |",
+            f"| portfolio coverage | {out['portfolio_coverage']} ({portfolio_fraction}) |",
+            f"| state-level Wilson 95% CI | "
+            f"[{coverage_ci['lower']}, {coverage_ci['upper']}] |",
+            "",
+            "OFT is deterministic one-shot verification. Candidate hit rate is not a "
+            "success-probability estimate and cannot certify Wilson Set A/B.",
+            "",
+            "## Cross labels",
+            "",
+            "| label | states |",
+            "|---|---:|",
+            *[
+                f"| {label} | {count} |"
+                for label, count in out["cross_label_counts"].items()
+            ],
             "",
             "## Per suite OFT raw",
             "",
             "| suite | successes/trials | states |",
             "|---|---|---|",
         ]
-        for suite, info in sorted(suite_raw.items()):
+        for suite, info in sorted(out["oft_raw_by_suite"].items()):
             lines.append(
                 f"| {suite} | {info['successes']}/{info['trials']} | {info['n_states']} |"
             )
@@ -205,6 +140,56 @@ def main() -> int:
         args.markdown.parent.mkdir(parents=True, exist_ok=True)
         args.markdown.write_text("\n".join(lines) + "\n", encoding="utf-8")
         print(f"WROTE {args.markdown}", flush=True)
+
+    if args.causal_out is not None or args.causal_markdown is not None:
+        if args.pool is None:
+            raise SystemExit("--causal-out/--causal-markdown require --pool")
+        from rase.collect.causal_analysis import (
+            build_dual_yield_tables,
+            build_yield_table,
+            write_yield_table,
+            yield_table_markdown,
+        )
+        from rase.collect.state_pool import StatePool
+
+        pool_root = args.pool.resolve()
+        pool = StatePool(pool_root)
+        if args.ngc_oracle == "both":
+            table = build_dual_yield_tables(out, pool)
+            out["causal_yield"] = table
+        else:
+            table = build_yield_table(out, pool, ngc_oracle=args.ngc_oracle)
+            out["causal_yield"] = {
+                key: table[key]
+                for key in (
+                    "ngc_oracle",
+                    "outcome",
+                    "n_states",
+                    "n_ngc",
+                    "yield",
+                    "wilson_lower",
+                    "wilson_upper",
+                    "warnings",
+                )
+            }
+        # Refresh dual-oracle summary with causal headline.
+        args.output.write_text(
+            json.dumps(out, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+        if args.causal_out is not None:
+            write_yield_table(table, args.causal_out.resolve())
+            print(f"WROTE {args.causal_out}", flush=True)
+        if args.causal_markdown is not None:
+            md_path = args.causal_markdown.resolve()
+            md_path.parent.mkdir(parents=True, exist_ok=True)
+            if args.ngc_oracle == "both":
+                markdown = "\n".join(
+                    yield_table_markdown(item) for item in table.values()
+                )
+            else:
+                markdown = yield_table_markdown(table)
+            md_path.write_text(markdown, encoding="utf-8")
+            print(f"WROTE {md_path}", flush=True)
     return 0
 
 

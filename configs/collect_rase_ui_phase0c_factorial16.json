@@ -1,0 +1,59 @@
+{
+  "run_name": "rase-ui-phase0c-factorial16",
+  "pool": "runs/rase_ui_phase0c_factorial16_pool",
+  "adapter": "rase.collect.lerobot_libero_plus_adapter:make_adapter",
+  "adapter_config": {
+    "policy_path": "ckpts/smolvla_libero",
+    "tokenizer_path": "ckpts/SmolVLM2-500M-Instruct",
+    "libero_plus_root": "/root/autodl-tmp/src/LIBERO-plus",
+    "libero_clean_root": "/root/autodl-tmp/src/LIBERO",
+    "device": "cuda",
+    "num_steps": 10,
+    "n_action_steps": 10,
+    "continuation_temperature": 0.5,
+    "observation_height": 360,
+    "observation_width": 360,
+    "capture_decision_context_v2": true,
+    "snapshot_offset_steps": 5,
+    "public_history_steps": 4
+  },
+  "sampling": {
+    "suite_quotas": {
+      "Spatial": 1,
+      "Object": 1,
+      "Goal": 1,
+      "Long": 1
+    },
+    "factorial_cells": [
+      {"dimension": "clean", "level": 0, "weight": 2},
+      {"dimension": "camera", "level": 1, "weight": 1},
+      {"dimension": "robot", "level": 1, "weight": 1}
+    ]
+  },
+  "collection": {
+    "output_dir": "runs/rase_ui_phase0c_factorial16_pool",
+    "episodes": 16,
+    "seed": 2026080103,
+    "action_chunks_per_episode": 8,
+    "max_action_chunks": 8,
+    "snapshot_cadence_action_chunks": 2,
+    "successful_snapshot_retention": 1.0,
+    "dry_run": false,
+    "smoke_mode": false
+  },
+  "oracle": {
+    "endpoint": "tcp://127.0.0.1:5555",
+    "timeout": 120000
+  },
+  "scheduler": {
+    "max_attempts": 3,
+    "lease_seconds": 3600
+  },
+  "protocol": {
+    "purpose": "calibration-only balanced factorial boundary screen; never confirmation",
+    "design": "4 suites x (2 clean L0 + 1 camera L1 + 1 robot L1)",
+    "expected_episodes": 16,
+    "maximum_expected_states": 64,
+    "continuation_seeds": 1
+  }
+}

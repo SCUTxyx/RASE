@@ -85,3 +85,34 @@ def test_parse_pool_task_id():
     parsed = parse_pool_task_id("libero_10_000758")
     assert parsed.suite == "libero_10"
     assert parsed.catalog_task_id == 758
+
+
+def test_clean_control_metadata_uses_explicit_l0_semantics():
+    metadata = StateMetadata(
+        task_id="libero_goal_000001",
+        instruction="test",
+        suite="Goal",
+        episode_id="ep-clean",
+        step=0,
+        perturb_dim="clean",
+        perturb_sub="none",
+        level=0,
+        episode_outcome="success",
+        seed=7,
+    )
+    metadata.validate()
+
+
+def test_resolve_plus_task_index_hints_clean_libero():
+    from types import SimpleNamespace
+
+    import pytest
+
+    from rase.collect.libero_env_factory import _resolve_plus_task_index
+
+    suite = SimpleNamespace(name="libero_spatial", tasks=[object()] * 10)
+    with pytest.raises(ValueError, match="LIBERO-Plus"):
+        _resolve_plus_task_index(suite, 649)
+    assert _resolve_plus_task_index(
+        SimpleNamespace(name="libero_spatial", tasks=[object()] * 2402), 649
+    ) == 648

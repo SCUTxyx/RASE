@@ -1,0 +1,63 @@
+version: 1
+run_name: ngc_w9c_clean_controls
+mode: direct-policy-controls
+
+pool: pool/ngc_w9c_clean_controls
+output_dir: runs/ngc_w9c_clean_controls
+
+sample:
+  strategy: stratified
+  per_cell: 4
+  sample_seed: 20260731
+  selection: random
+  strata: [suite, t0_bin]
+  t0_bins:
+    early: [0, 10]
+    mid: [10, 40]
+  dims: [clean]
+  suites: [Spatial, Object, Goal, Long]
+  levels: [0]
+  episode_outcomes: [success]
+  distinct_episodes: true
+
+protocol:
+  version: W9C-clean-control/v1
+  phase: clean_success_control
+  cohort: clean_control
+  expected_n_states: 32
+  inferential_unit: episode_group
+  schedule_path: configs/w9c_clean_control_schedule.json
+  schedule_sha256: f4c944975385e2088f2e9a2dd10423231b6b10e819cc53e32f6c5907cbe99fd1
+  note: >-
+    Four early and four mid snapshots per suite, each from a distinct successful
+    clean episode with an explicitly scheduled init_state_id. Tasks resolve via
+    frozen official clean-10 names (not Plus suite indices 0-9).
+
+candidates:
+  k: 1
+  chunk_length: 0
+  action_dim: 7
+  temperature: 0.7
+  policy_hash: 71d9563c8295284acba8fc2d5c19de000d6fe9ba58a406832af7ef3d221ed52f
+
+adapter:
+  policy_path: ckpts/smolvla_libero
+  tokenizer_path: ckpts/SmolVLM2-500M-Instruct
+  device: cuda
+  num_steps: 10
+  n_action_steps: 10
+  observation_height: 360
+  observation_width: 360
+  continuation_temperature: 0.5
+  libero_clean_root: /root/autodl-tmp/src/LIBERO
+
+scheduler:
+  max_attempts: 3
+  lease_seconds: 3600
+  worker: w9c-clean-controls
+
+oracle:
+  protocol: rase-oracle
+  protocol_version: 1
+  endpoint: tcp://127.0.0.1:5555
+  request_timeout_ms: 60000

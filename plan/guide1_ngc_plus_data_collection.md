@@ -2,6 +2,20 @@
 
 配套文档：RASE-Lite 设计报告 v3.1 §3。本指南覆盖从环境搭建到 benchmark 发布物打包的每一步，含目录结构、命令、代码骨架、数据 schema、QC 流程与排期。
 
+> **2026-07-27 协议更新：** 当前采集目标不再是预设 2,000 Set B + 2,000
+> Set C，也不再假设单一 oracle 给出状态的固有 recoverability。执行前先阅读
+> [`RASE_top_conference_execution_v4.md`](RASE_top_conference_execution_v4.md)。
+> 发布版新数据最终必须覆盖 success/failure、L1–L5 与 early/mid/late `t0`，并按
+> `(task_id, episode_id)` 分组切分。标签按 proposal-policy × continuation-policy ×
+> action-arm 保存；当前优先矩阵为 Smol→Smol、Smol→OFT、OFT→OFT。下文固定
+> 4,000 状态、单一主 oracle 和旧 split 的描述仅作历史容量估算。
+
+> **当前施工入口：** `docs/runbooks/w6_l1_l2_policy_matrix.md`。W5 L3–L5
+> temperature sweep 已以 `0/576` 关闭。W6 首轮冻结为 failure-conditioned
+> `camera/robot × L1/L2` 四 cell、每 cell 两个不同 episode，共 8 states；其用途
+> 仅为 paired recovery challenge。clean-success control 必须单列采集与报告，禁止
+> 将两个 cohort 合并后声称无条件 NGC rate。
+
 > 实施事实（2026-07-17）：仓库使用 `RASE/`、Python 3.12、LeRobot 0.5.1
 > 与 LIBERO-Plus `4976dc3`。下文 Python 3.10、`ngcplus`、RTX 4090 和
 > batch size 8 仅是早期示例；执行时以 `env.lock.md` 与 `configs/` 为准。
@@ -12,7 +26,8 @@
 
 **最终产出物（NGC-Plus 发布包）**：
 
-1. `states/`：约 4,000 个扰动状态（Set B ≈ 2,000 + Set C ≈ 2,000），每个含 MuJoCo 快照 + 观测帧 + 扰动元数据。
+1. `states/`：按 coverage gate 与 label balance 自适应扩展的扰动状态；每个含
+   MuJoCo 快照、观测帧、扰动元数据与 episode grouping identity。
 2. `annotations/`：per-state、per-candidate 的可恢复性标注 \(\hat{r}(s,a_i)\)、Wilson 置信区间、Set A/B/C 判定、物理可逆性标签 \(\rho(s)\)、cross-oracle 判定与 \(\kappa\) 统计。
 3. `candidates/`：每状态 \(K=8\) 个候选 action chunk（主 oracle 用 SmolVLA 生成，副本用 OFT）。
 4. `protocol/`：FEB 评测脚本 + 报告模板（FEB、broken-success、net-success、clean-regret）。

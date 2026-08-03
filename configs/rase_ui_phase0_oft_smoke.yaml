@@ -1,0 +1,22 @@
+pool: runs/rase_ui_phase0_smoke_parity_pool
+
+adapter:
+  policy_path: ckpts/smolvla_libero
+  libero_plus_root: null
+  observation_height: 360
+  observation_width: 360
+
+oracle:
+  endpoint: tcp://127.0.0.1:5555
+  request_timeout_ms: 120000
+
+scheduler:
+  worker: rase-ui-phase0-oft
+  max_attempts: 3
+  lease_seconds: 3600
+
+protocol:
+  version: rase-ui-phase0-oft-smoke/v1
+  note: >-
+    Diagnostic direct-OFT arm on the frozen eight-state decision-context parity
+    smoke. This is not the formal ten-task opportunity benchmark.

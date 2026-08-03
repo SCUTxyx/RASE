@@ -1,0 +1,67 @@
+{
+  "direct_oft": {
+    "hits": 0,
+    "trials": 2
+  },
+  "elapsed_wall_s": 24.907,
+  "interpretation": "Direct OFT is a deployable escalation arm with no candidate or time-matched zero prefix.",
+  "n_states": 2,
+  "per_state": [
+    {
+      "dim": "camera",
+      "direct_oft_success": false,
+      "episode_id": "ep-01352777-00000033",
+      "level": 1,
+      "result": {
+        "arm_kind": "direct",
+        "arm_label": "direct_oft",
+        "candidate_index": null,
+        "candidate_s": 6e-06,
+        "candidate_steps": 0,
+        "continuation_s": 6.92712,
+        "continuation_steps": 190,
+        "elapsed_s": 6.931351,
+        "env_steps": 190,
+        "final_timestep": 280,
+        "oracle": "oft",
+        "restore_s": 0.002823,
+        "stop_reason": "horizon",
+        "success": false,
+        "terminated": false,
+        "truncated": true
+      },
+      "state_key": "sp1_e7e51d754f53cd915e0273ecd3e26065",
+      "suite": "Object"
+    },
+    {
+      "dim": "robot",
+      "direct_oft_success": false,
+      "episode_id": "ep-01352777-00000015",
+      "level": 1,
+      "result": {
+        "arm_kind": "direct",
+        "arm_label": "direct_oft",
+        "candidate_index": null,
+        "candidate_s": 6e-06,
+        "candidate_steps": 0,
+        "continuation_s": 8.314042,
+        "continuation_steps": 230,
+        "elapsed_s": 8.318094,
+        "env_steps": 230,
+        "final_timestep": 280,
+        "oracle": "oft",
+        "restore_s": 0.002798,
+        "stop_reason": "horizon",
+        "success": false,
+        "terminated": false,
+        "truncated": true
+      },
+      "state_key": "sp1_a9d59ee21647d4e35054938037b0df16",
+      "suite": "Object"
+    }
+  ],
+  "schema_version": "rase-oft-direct-escalation/v1",
+  "state_keys_sha256": "866ae9e7c6f95088dc7d761c63937a02d017b69280e6d9cc73ac883127158829",
+  "status": "complete",
+  "suite": "libero_object"
+}

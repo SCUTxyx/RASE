@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from collections.abc import Mapping
 from typing import Any
 
@@ -34,6 +35,7 @@ class OracleClient:
         self._owned_context = context is None
         self._context = context or zmq.Context()
         self._socket = None
+        self._metrics: dict[str, dict[str, float | int]] = {}
         self._connect()
 
     def _connect(self) -> None:
@@ -70,21 +72,44 @@ class OracleClient:
     ) -> tuple[dict[str, Any], dict[str, np.ndarray]]:
         if self._socket is None:
             raise RuntimeError("client is closed")
-        outgoing = request(operation, payload=payload)
+        started = time.perf_counter()
+        succeeded = False
         try:
-            self._socket.send_multipart(encode_message(outgoing, arrays))
-            incoming = decode_message(self._socket.recv_multipart())
-        except self._zmq.Again as exc:
-            # REQ sockets enter an invalid state after timeout; rebuild.
-            self._connect()
-            raise TimeoutError(f"oracle {operation} timed out") from exc
-        if incoming.header["request_id"] != outgoing["request_id"]:
-            raise ProtocolError("response request_id does not match request")
-        if incoming.header["operation"] != operation:
-            raise ProtocolError("response operation does not match request")
-        if not incoming.header["ok"]:
-            raise OracleRemoteError(incoming.header.get("error", "oracle request failed"))
-        return incoming.header["payload"], incoming.arrays
+            outgoing = request(operation, payload=payload)
+            try:
+                self._socket.send_multipart(encode_message(outgoing, arrays))
+                incoming = decode_message(self._socket.recv_multipart())
+            except self._zmq.Again as exc:
+                # REQ sockets enter an invalid state after timeout; rebuild.
+                self._connect()
+                raise TimeoutError(f"oracle {operation} timed out") from exc
+            if incoming.header["request_id"] != outgoing["request_id"]:
+                raise ProtocolError("response request_id does not match request")
+            if incoming.header["operation"] != operation:
+                raise ProtocolError("response operation does not match request")
+            if not incoming.header["ok"]:
+                raise OracleRemoteError(
+                    incoming.header.get("error", "oracle request failed")
+                )
+            succeeded = True
+            return incoming.header["payload"], incoming.arrays
+        finally:
+            # End-to-end RPC time includes transfer and server inference but not
+            # environment stepping, making it separable from rollout duration.
+            metric = self._metrics.setdefault(
+                operation, {"calls": 0, "failures": 0, "elapsed_s": 0.0}
+            )
+            metric["calls"] += 1
+            metric["failures"] += int(not succeeded)
+            metric["elapsed_s"] += time.perf_counter() - started
+
+    def metrics(self, operation: str) -> dict[str, float | int]:
+        value = self._metrics.get(operation, {})
+        return {
+            "calls": int(value.get("calls", 0)),
+            "failures": int(value.get("failures", 0)),
+            "elapsed_s": float(value.get("elapsed_s", 0.0)),
+        }
 
     def health(self) -> dict[str, Any]:
         payload, _ = self._call("health")

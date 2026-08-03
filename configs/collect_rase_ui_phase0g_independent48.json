@@ -1,0 +1,68 @@
+{
+  "run_name": "rase-ui-phase0g-independent48",
+  "pool": "runs/rase_ui_phase0g_independent48_pool",
+  "adapter": "rase.collect.lerobot_libero_plus_adapter:make_adapter",
+  "adapter_config": {
+    "policy_path": "ckpts/smolvla_libero",
+    "tokenizer_path": "ckpts/SmolVLM2-500M-Instruct",
+    "libero_plus_root": "/root/autodl-tmp/src/LIBERO-plus",
+    "libero_clean_root": "/root/autodl-tmp/src/LIBERO",
+    "device": "cuda",
+    "num_steps": 10,
+    "n_action_steps": 10,
+    "continuation_temperature": 0.5,
+    "observation_height": 360,
+    "observation_width": 360,
+    "capture_decision_context_v2": true,
+    "snapshot_offset_steps": 5,
+    "public_history_steps": 4
+  },
+  "sampling": {
+    "suite_quotas": {
+      "Spatial": 1,
+      "Object": 1,
+      "Goal": 1,
+      "Long": 1
+    },
+    "factorial_cells": [
+      {"dimension": "clean", "level": 0, "weight": 1},
+      {"dimension": "camera", "level": 1, "weight": 1},
+      {"dimension": "robot", "level": 1, "weight": 1}
+    ]
+  },
+  "collection": {
+    "output_dir": "runs/rase_ui_phase0g_independent48_pool",
+    "episodes": 48,
+    "seed": 2026081807,
+    "action_chunks_per_episode": 8,
+    "max_action_chunks": 8,
+    "snapshot_cadence_action_chunks": 2,
+    "successful_snapshot_retention": 1.0,
+    "dry_run": false,
+    "smoke_mode": false
+  },
+  "oracle": {
+    "endpoint": "tcp://127.0.0.1:5555",
+    "timeout": 120000
+  },
+  "scheduler": {
+    "max_attempts": 3,
+    "lease_seconds": 3600
+  },
+  "protocol": {
+    "purpose": "task-and-episode-disjoint timing-opportunity screen; never confirmation",
+    "design": "4 suites x 3 cells x 4 states",
+    "expected_episodes": 48,
+    "expected_states": 48,
+    "decision_step": 2,
+    "expected_suffix_steps": 5,
+    "require_unique_tasks": true,
+    "exclude_keys": "runs/rase_ui_phase0d_timing16_keys.json",
+    "continuation_seeds": 1,
+    "operator_profiles": [
+      "continue_smol_active_chunk",
+      "direct_oft",
+      "decision_suffix_oft"
+    ]
+  }
+}

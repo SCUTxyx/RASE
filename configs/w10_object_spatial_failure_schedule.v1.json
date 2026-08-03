@@ -1,0 +1,44 @@
+{
+  "schema_version": "rase-w10-object-spatial-schedule/v1",
+  "protocol_version": "W10-object-spatial-failure-benchmark/v1",
+  "status": "blocked_pending_inventory_and_identity",
+  "selection": {
+    "pool": "pool/ngc_w5_l1_l2_camera_robot",
+    "sample_seed": 20260801,
+    "selection": "random",
+    "strata": ["suite"],
+    "suites": ["Spatial", "Object"],
+    "dims": ["camera", "robot"],
+    "levels": [1, 2],
+    "episode_outcomes": ["failure"],
+    "distinct_episodes": true,
+    "min_remaining_steps": 100,
+    "per_cell": 8,
+    "expected_n_states": 16
+  },
+  "prior_state_key_artifacts": [
+    "runs/ngc_w3_adequate_state_keys.json",
+    "runs/ngc_w4_adequate_state_keys.json",
+    "runs/ngc_w5_failure_frontier_state_keys.json",
+    "runs/ngc_w5_oft_recovered_state_keys.json",
+    "runs/ngc_w6_l1_l2_state_keys.json",
+    "runs/ngc_w7_heldout24_state_keys.json",
+    "runs/ngc_w7_oft_only_state_keys.json",
+    "runs/ngc_w7_heldout24_oft_only_state_keys.json"
+  ],
+  "prior_pool_roots": [
+    "pool/ngc_step1_pilot",
+    "pool/ngc_step1_preflight",
+    "pool/ngc_step1_scale200",
+    "pool/ngc_w5_l1_l2_camera_robot",
+    "pool/ngc_w9_clean_controls",
+    "pool/ngc_w9b_clean_controls",
+    "pool/ngc_w9c_clean_controls"
+  ],
+  "identity_fields": ["libero_flavor", "task_id", "init_state_id"],
+  "selected_state_keys_path": "runs/ngc_w10_object_spatial_failure16_state_keys.json",
+  "selected_state_keys_sha256": null,
+  "freeze_rule": "Set selected_state_keys_sha256 once, before any benchmark rollout, only after inventory and support gates PASS; changing it creates v2.",
+  "outcome_adaptive_selection": false,
+  "selector_training": false
+}

@@ -1,0 +1,190 @@
+{
+  "gate_set_c_fp_le_0.05": true,
+  "grid": [
+    {
+      "early_stop_rate": 1.0,
+      "mean_trials": 6.0,
+      "p": 0.0,
+      "set_a_rate": 0.0,
+      "set_c_rate": 1.0,
+      "uncertain_rate": 0.0
+    },
+    {
+      "early_stop_rate": 0.734735,
+      "mean_trials": 9.71371,
+      "p": 0.05,
+      "set_a_rate": 0.0,
+      "set_c_rate": 0.99979,
+      "uncertain_rate": 0.00021
+    },
+    {
+      "early_stop_rate": 0.53244875,
+      "mean_trials": 12.5457175,
+      "p": 0.1,
+      "set_a_rate": 0.0,
+      "set_c_rate": 0.98194,
+      "uncertain_rate": 0.01805
+    },
+    {
+      "early_stop_rate": 0.377175,
+      "mean_trials": 14.71955,
+      "p": 0.15,
+      "set_a_rate": 0.0,
+      "set_c_rate": 0.84261,
+      "uncertain_rate": 0.15724
+    },
+    {
+      "early_stop_rate": 0.26164375,
+      "mean_trials": 16.3369875,
+      "p": 0.2,
+      "set_a_rate": 0.0,
+      "set_c_rate": 0.49743,
+      "uncertain_rate": 0.50216
+    },
+    {
+      "early_stop_rate": 0.1782475,
+      "mean_trials": 17.504535,
+      "p": 0.25,
+      "set_a_rate": 0.0,
+      "set_c_rate": 0.15703,
+      "uncertain_rate": 0.84091
+    },
+    {
+      "early_stop_rate": 0.11842125,
+      "mean_trials": 18.3421025,
+      "p": 0.3,
+      "set_a_rate": 0.0,
+      "set_c_rate": 0.02178,
+      "uncertain_rate": 0.97044
+    },
+    {
+      "early_stop_rate": 0.07679125,
+      "mean_trials": 18.9249225,
+      "p": 0.35,
+      "set_a_rate": 0.0,
+      "set_c_rate": 0.00122,
+      "uncertain_rate": 0.97299
+    },
+    {
+      "early_stop_rate": 0.050865,
+      "mean_trials": 19.28789,
+      "p": 0.4,
+      "set_a_rate": 9e-05,
+      "set_c_rate": 3e-05,
+      "uncertain_rate": 0.9226
+    },
+    {
+      "early_stop_rate": 0.03584125,
+      "mean_trials": 19.4982225,
+      "p": 0.45,
+      "set_a_rate": 0.00107,
+      "set_c_rate": 0.0,
+      "uncertain_rate": 0.79885
+    },
+    {
+      "early_stop_rate": 0.03127375,
+      "mean_trials": 19.5621675,
+      "p": 0.5,
+      "set_a_rate": 0.01307,
+      "set_c_rate": 0.0,
+      "uncertain_rate": 0.573
+    },
+    {
+      "early_stop_rate": 0.0361025,
+      "mean_trials": 19.494565,
+      "p": 0.55,
+      "set_a_rate": 0.09304,
+      "set_c_rate": 0.0,
+      "uncertain_rate": 0.29266
+    },
+    {
+      "early_stop_rate": 0.05122875,
+      "mean_trials": 19.2827975,
+      "p": 0.6,
+      "set_a_rate": 0.35682,
+      "set_c_rate": 0.0,
+      "uncertain_rate": 0.08467
+    },
+    {
+      "early_stop_rate": 0.07748125,
+      "mean_trials": 18.9152625,
+      "p": 0.65,
+      "set_a_rate": 0.74485,
+      "set_c_rate": 0.0,
+      "uncertain_rate": 0.01129
+    },
+    {
+      "early_stop_rate": 0.11790375,
+      "mean_trials": 18.3493475,
+      "p": 0.7,
+      "set_a_rate": 0.96121,
+      "set_c_rate": 0.0,
+      "uncertain_rate": 0.00041
+    },
+    {
+      "early_stop_rate": 0.17765625,
+      "mean_trials": 17.5128125,
+      "p": 0.75,
+      "set_a_rate": 0.99857,
+      "set_c_rate": 0.0,
+      "uncertain_rate": 0.0
+    },
+    {
+      "early_stop_rate": 0.2616925,
+      "mean_trials": 16.336305,
+      "p": 0.8,
+      "set_a_rate": 0.99997,
+      "set_c_rate": 0.0,
+      "uncertain_rate": 0.0
+    },
+    {
+      "early_stop_rate": 0.37696625,
+      "mean_trials": 14.7224725,
+      "p": 0.85,
+      "set_a_rate": 1.0,
+      "set_c_rate": 0.0,
+      "uncertain_rate": 0.0
+    },
+    {
+      "early_stop_rate": 0.5312925,
+      "mean_trials": 12.561905,
+      "p": 0.9,
+      "set_a_rate": 1.0,
+      "set_c_rate": 0.0,
+      "uncertain_rate": 0.0
+    },
+    {
+      "early_stop_rate": 0.735345,
+      "mean_trials": 9.70517,
+      "p": 0.95,
+      "set_a_rate": 1.0,
+      "set_c_rate": 0.0,
+      "uncertain_rate": 0.0
+    },
+    {
+      "early_stop_rate": 1.0,
+      "mean_trials": 6.0,
+      "p": 1.0,
+      "set_a_rate": 1.0,
+      "set_c_rate": 0.0,
+      "uncertain_rate": 0.0
+    }
+  ],
+  "max_set_c_false_positive": 0.0,
+  "protocol": {
+    "alpha_final": 0.04,
+    "alpha_first": 0.01,
+    "k": 8,
+    "n_first": 6,
+    "n_total": 20,
+    "set_a_min_good": 3,
+    "sidedness": "one-sided",
+    "threshold": 0.5
+  },
+  "replications": 100000,
+  "seed": 0,
+  "set_c_power": {
+    "0.05": 0.99979,
+    "0.15": 0.84261
+  }
+}

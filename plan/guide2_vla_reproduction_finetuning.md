@@ -2,6 +2,18 @@
 
 配套文档：RASE-Lite 设计报告 v3.1 §2、§8-E3。覆盖三条轨道：主线 SmolVLA-0.45B 复现与自测、副线 OpenVLA-OFT / OFT+ 推理部署、以及 E3 所需的 SmolVLA LoRA policy-RL 基线微调。
 
+> **2026-07-27 优先级更新：** baseline/OFT 部署与版本锁定部分继续有效；LoRA
+> policy-RL 暂停。当前先构建 Smol→Smol、Smol→OFT、OFT→OFT 的 paired
+> recoverability matrix，并用 frozen policy 完成三臂 selector gate。只有简单
+> selector 在 task-held-out 上优于 matched random-trigger 后，LoRA 才作为
+> matched-budget training-side baseline 恢复优先级。当前计划见
+> [`RASE_top_conference_execution_v4.md`](RASE_top_conference_execution_v4.md)。
+
+> **W5 后决策：** SmolVLA proposal temperature `0.3/0.7/1.0` 在冻结 cohort
+> 上合计 `0/576`，且候选差异/多样性核查通过。不得继续扩大温度或在 L3–L5
+> 重复同类 rollout。当前 VLA 侧唯一新增实验是 L1–L2 paired policy matrix：
+> 先固定 SmolVLA proposal，再分别用 SmolVLA 与 suite-matched OFT continuation。
+
 > 实施事实（2026-07-17）：仓库使用 `RASE/`、Python 3.12、LeRobot 0.5.1，
 > SmolVLA 主评测固定 `num_steps=10`、`n_action_steps=10`、`batch_size=2`，
 > LIBERO-Plus 固定 `4976dc3`。下文旧路径、Python 3.10、RTX 4090 与

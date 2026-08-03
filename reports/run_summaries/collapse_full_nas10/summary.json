@@ -1,0 +1,149 @@
+{
+  "by_dimension": {
+    "camera": {
+      "mean_pc_success": 0.0,
+      "n": 1597,
+      "n_success_tasks": 0
+    },
+    "robot": {
+      "mean_pc_success": 0.7766990291262136,
+      "n": 1545,
+      "n_success_tasks": 12
+    }
+  },
+  "by_dimension_level": {
+    "camera:L1": {
+      "mean_pc_success": 0.0,
+      "n": 198,
+      "n_success_tasks": 0
+    },
+    "camera:L2": {
+      "mean_pc_success": 0.0,
+      "n": 360,
+      "n_success_tasks": 0
+    },
+    "camera:L3": {
+      "mean_pc_success": 0.0,
+      "n": 325,
+      "n_success_tasks": 0
+    },
+    "camera:L4": {
+      "mean_pc_success": 0.0,
+      "n": 228,
+      "n_success_tasks": 0
+    },
+    "camera:L5": {
+      "mean_pc_success": 0.0,
+      "n": 486,
+      "n_success_tasks": 0
+    },
+    "robot:L1": {
+      "mean_pc_success": 1.2096774193548387,
+      "n": 248,
+      "n_success_tasks": 3
+    },
+    "robot:L2": {
+      "mean_pc_success": 0.6920415224913494,
+      "n": 289,
+      "n_success_tasks": 2
+    },
+    "robot:L3": {
+      "mean_pc_success": 0.8021390374331551,
+      "n": 374,
+      "n_success_tasks": 3
+    },
+    "robot:L4": {
+      "mean_pc_success": 0.7017543859649122,
+      "n": 285,
+      "n_success_tasks": 2
+    },
+    "robot:L5": {
+      "mean_pc_success": 0.5730659025787965,
+      "n": 349,
+      "n_success_tasks": 2
+    }
+  },
+  "by_level": {
+    "L1": {
+      "mean_pc_success": 0.672645739910314,
+      "n": 446,
+      "n_success_tasks": 3
+    },
+    "L2": {
+      "mean_pc_success": 0.3081664098613251,
+      "n": 649,
+      "n_success_tasks": 2
+    },
+    "L3": {
+      "mean_pc_success": 0.4291845493562232,
+      "n": 699,
+      "n_success_tasks": 3
+    },
+    "L4": {
+      "mean_pc_success": 0.3898635477582846,
+      "n": 513,
+      "n_success_tasks": 2
+    },
+    "L5": {
+      "mean_pc_success": 0.23952095808383234,
+      "n": 835,
+      "n_success_tasks": 2
+    }
+  },
+  "by_suite": {
+    "libero_10": {
+      "mean_pc_success": 0.0,
+      "n": 811,
+      "n_success_tasks": 0
+    },
+    "libero_goal": {
+      "mean_pc_success": 1.3480392156862746,
+      "n": 816,
+      "n_success_tasks": 11
+    },
+    "libero_object": {
+      "mean_pc_success": 0.0,
+      "n": 794,
+      "n_success_tasks": 0
+    },
+    "libero_spatial": {
+      "mean_pc_success": 0.13869625520110956,
+      "n": 721,
+      "n_success_tasks": 1
+    }
+  },
+  "counts": {
+    "completed": 3142,
+    "other": 0,
+    "skipped": 7,
+    "total": 3149
+  },
+  "overall": {
+    "mean_pc_success": 0.3819223424570337,
+    "n": 3142,
+    "n_success_tasks": 12
+  },
+  "skipped_keys": [
+    "libero_10:1047:camera:L5",
+    "libero_goal:508:robot:L5",
+    "libero_spatial:356:robot:L2",
+    "libero_spatial:402:robot:L5",
+    "libero_spatial:406:robot:L2",
+    "libero_spatial:466:robot:L2",
+    "libero_spatial:610:camera:L1"
+  ],
+  "success_keys": [
+    "libero_goal:615:robot:L2",
+    "libero_goal:621:robot:L4",
+    "libero_goal:622:robot:L1",
+    "libero_goal:625:robot:L1",
+    "libero_goal:628:robot:L2",
+    "libero_goal:634:robot:L1",
+    "libero_goal:638:robot:L5",
+    "libero_goal:641:robot:L3",
+    "libero_goal:643:robot:L4",
+    "libero_goal:650:robot:L3",
+    "libero_goal:651:robot:L5",
+    "libero_spatial:280:robot:L3"
+  ]
+}

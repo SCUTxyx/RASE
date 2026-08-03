@@ -9,9 +9,11 @@ import pytest
 
 from rase.collect.forked_rollout import (
     FixedActionContinuation,
+    InProcessSmolVLAContinuation,
     RolloutResult,
     evaluate_candidate,
     rollout_seed,
+    run_one_forked_rollout,
 )
 from rase.collect.policy_step import as_batched_action, success_from_info
 from rase.envs.snapshot import EnvSnapshot
@@ -76,6 +78,19 @@ def test_rollout_seed_stable_and_in_range():
     assert 0 <= a <= 2**32 - 1
 
 
+def test_inprocess_continuation_resets_action_selection_metrics():
+    policy = SimpleNamespace(reset=lambda: None)
+    continuation = InProcessSmolVLAContinuation(
+        {"policy": policy}, temperature=0.5, seed=None
+    )
+    continuation._action_select_calls = 7
+    continuation._action_select_elapsed_s = 1.25
+    continuation.reset()
+    assert continuation.metrics()["action_select_calls"] == 0
+    assert continuation.metrics()["action_select_elapsed_s"] == 0.0
+    assert "excludes environment stepping" in continuation.metrics()["measurement_scope"]
+
+
 def test_as_batched_action_and_success_helpers():
     assert as_batched_action(np.zeros(7)).shape == (1, 7)
     assert success_from_info({"final_info": {"is_success": np.array([True])}})
@@ -127,6 +142,59 @@ def test_evaluate_candidate_runs_continuation(monkeypatch):
     assert result.continuation_steps == 5
 
 
+def test_evaluate_candidate_supports_direct_continuation_control(monkeypatch):
+    from rase.collect import forked_rollout as mod
+
+    vector = _FakeVectorEnv(succeed_at=2, horizon=50)
+    restored = _FakeRestored(vector, _FakeForkable())
+    monkeypatch.setattr(
+        mod,
+        "observation_from_libero_env",
+        lambda _env: {"pixels": {"image": np.zeros((1, 8, 8, 3), dtype=np.uint8)}},
+    )
+    monkeypatch.setattr(mod, "current_timestep", lambda _env: vector.steps)
+
+    result = evaluate_candidate(
+        restored,
+        np.empty((0, 7), dtype=np.float32),
+        FixedActionContinuation(np.zeros((5, 7), dtype=np.float32)),
+    )
+    assert result.success is True
+    assert result.candidate_steps == 0
+    assert result.continuation_steps == 2
+
+
+def test_evaluate_candidate_emits_trace_phases(monkeypatch):
+    from rase.collect import forked_rollout as mod
+
+    vector = _FakeVectorEnv(succeed_at=3, horizon=50)
+    restored = _FakeRestored(vector, _FakeForkable())
+    monkeypatch.setattr(
+        mod,
+        "observation_from_libero_env",
+        lambda _env: {"pixels": {"image": np.zeros((1, 8, 8, 3), dtype=np.uint8)}},
+    )
+    monkeypatch.setattr(mod, "current_timestep", lambda _env: vector.steps)
+    seen = []
+
+    def capture(_observation, *, phase, timestep):
+        seen.append((phase, timestep))
+
+    result = evaluate_candidate(
+        restored,
+        np.ones((10, 7), dtype=np.float32),
+        FixedActionContinuation(np.zeros((20, 7), dtype=np.float32)),
+        trace_callback=capture,
+    )
+    assert result.success is True
+    assert seen == [
+        ("initial", 0),
+        ("candidate", 1),
+        ("candidate", 2),
+        ("candidate", 3),
+    ]
+
+
 def test_rejects_double_normalized_shapes():
     restored = _FakeRestored(_FakeVectorEnv(), _FakeForkable())
     with pytest.raises(ValueError, match="\\[T, 7\\]"):
@@ -135,3 +203,47 @@ def test_rejects_double_normalized_shapes():
             np.ones((10, 1, 7), dtype=np.float32),
             FixedActionContinuation(np.zeros((1, 7))),
         )
+
+
+def test_run_one_forked_rollout_uses_fresh_env_and_always_closes(monkeypatch):
+    from rase.collect import forked_rollout as mod
+
+    restored_states = []
+    trace_callback = object()
+    expected = object()
+
+    class FakeRestored:
+        def __init__(self):
+            self.closed = False
+
+        def close(self):
+            self.closed = True
+
+    def fake_restore(*_args, **_kwargs):
+        restored = FakeRestored()
+        restored_states.append(restored)
+        return restored
+
+    def fake_evaluate(restored, actions, continuation, *, trace_callback=None):
+        assert restored is restored_states[-1]
+        assert actions.shape == (2, 7)
+        assert continuation == "continuation"
+        assert trace_callback is expected_trace
+        return expected
+
+    expected_trace = trace_callback
+    monkeypatch.setattr(mod, "restore_pool_state", fake_restore)
+    monkeypatch.setattr(mod, "evaluate_candidate", fake_evaluate)
+
+    for _ in range(2):
+        result = run_one_forked_rollout(
+            object(),
+            "state-key",
+            np.zeros((2, 7), dtype=np.float32),
+            "continuation",
+            trace_callback=trace_callback,
+        )
+        assert result is expected
+
+    assert len(restored_states) == 2
+    assert all(restored.closed for restored in restored_states)

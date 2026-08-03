@@ -1,0 +1,29 @@
+{
+  "run_name": "ngc-w10-object-spatial-failure-pilot",
+  "adapter": "rase.collect.lerobot_libero_plus_adapter:make_adapter",
+  "adapter_config": {
+    "policy_path": "ckpts/smolvla_libero",
+    "tokenizer_path": "ckpts/SmolVLM2-500M-Instruct",
+    "libero_plus_root": "/root/autodl-tmp/src/LIBERO-plus",
+    "device": "cuda",
+    "num_steps": 10,
+    "n_action_steps": 10,
+    "observation_height": 360,
+    "observation_width": 360
+  },
+  "sampling": {
+    "dimension_quotas": {"camera": 50, "robot": 50},
+    "suite_quotas": {"Object": 50, "Spatial": 50},
+    "levels_by_dimension": {"camera": [1, 2], "robot": [1, 2]}
+  },
+  "collection": {
+    "output_dir": "pool/ngc_w10_object_spatial_failures",
+    "episodes": 80,
+    "seed": 20260731,
+    "action_chunks_per_episode": 52,
+    "max_action_chunks": null,
+    "snapshot_cadence_action_chunks": 2,
+    "successful_snapshot_retention": 0.0,
+    "dry_run": false
+  }
+}

@@ -10,7 +10,10 @@ from rase.backends.libero_plus_paths import (
     ensure_libero_plus_paths,
     resolve_libero_plus_root,
 )
-from rase.backends.lerobot_libero_plus import catalog_task_to_suite_index
+from rase.backends.lerobot_libero_plus import (
+    _resolve_local_vlm_path,
+    catalog_task_to_suite_index,
+)
 from rase.eval.collapse import CollapseError, require_lerobot_backend
 
 
@@ -22,9 +25,9 @@ class LiberoPlusPathsTest(unittest.TestCase):
             for name in ("bddl_files", "init_files", "assets"):
                 (package / name).mkdir(parents=True)
             paths = build_libero_plus_path_dict(root)
-            self.assertEqual(paths["bddl_files"], str(package / "bddl_files"))
-            self.assertEqual(paths["init_states"], str(package / "init_files"))
-            self.assertEqual(paths["assets"], str(package / "assets"))
+            self.assertEqual(paths["bddl_files"], str((package / "bddl_files").resolve()))
+            self.assertEqual(paths["init_states"], str((package / "init_files").resolve()))
+            self.assertEqual(paths["assets"], str((package / "assets").resolve()))
 
     def test_ensure_writes_dedicated_config(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -65,6 +68,16 @@ class BackendHelpersTest(unittest.TestCase):
         from rase.backends.lerobot_libero_plus import evaluate
 
         self.assertIs(backend, evaluate)
+
+    def test_resolve_local_vlm_path_requires_config(self):
+        self.assertIsNone(_resolve_local_vlm_path(None))
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            with self.assertRaises(CollapseError):
+                _resolve_local_vlm_path(root)
+            (root / "config.json").write_text("{}", encoding="utf-8")
+            resolved = _resolve_local_vlm_path(root)
+            self.assertEqual(resolved, str(root.resolve()))
 
 
 if __name__ == "__main__":

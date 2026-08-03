@@ -1,0 +1,62 @@
+{
+  "run_name": "rase-ui-phase0b-opportunity12",
+  "pool": "runs/rase_ui_phase0b_opportunity12_pool",
+  "adapter": "rase.collect.lerobot_libero_plus_adapter:make_adapter",
+  "adapter_config": {
+    "policy_path": "ckpts/smolvla_libero",
+    "tokenizer_path": "ckpts/SmolVLM2-500M-Instruct",
+    "libero_plus_root": "/root/autodl-tmp/src/LIBERO-plus",
+    "libero_clean_root": "/root/autodl-tmp/src/LIBERO",
+    "device": "cuda",
+    "num_steps": 10,
+    "n_action_steps": 10,
+    "continuation_temperature": 0.5,
+    "observation_height": 360,
+    "observation_width": 360,
+    "capture_decision_context_v2": true,
+    "snapshot_offset_steps": 5,
+    "public_history_steps": 4
+  },
+  "sampling": {
+    "dimension_quotas": {
+      "clean": 1,
+      "camera": 1,
+      "robot": 1
+    },
+    "suite_quotas": {
+      "Spatial": 1,
+      "Object": 1,
+      "Goal": 1,
+      "Long": 1
+    },
+    "levels_by_dimension": {
+      "clean": [0],
+      "camera": [1, 2],
+      "robot": [1, 2]
+    }
+  },
+  "collection": {
+    "output_dir": "runs/rase_ui_phase0b_opportunity12_pool",
+    "episodes": 12,
+    "seed": 2026080102,
+    "action_chunks_per_episode": 8,
+    "max_action_chunks": 8,
+    "snapshot_cadence_action_chunks": 2,
+    "successful_snapshot_retention": 1.0,
+    "dry_run": false,
+    "smoke_mode": false
+  },
+  "oracle": {
+    "endpoint": "tcp://127.0.0.1:5555",
+    "timeout": 120000
+  },
+  "scheduler": {
+    "max_attempts": 3,
+    "lease_seconds": 3600
+  },
+  "protocol": {
+    "purpose": "diagnostic opportunity screen; not a paper test split",
+    "expected_states": 48,
+    "continuation_seeds": 1
+  }
+}

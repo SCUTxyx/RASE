@@ -1,0 +1,126 @@
+{
+  "base_seed": 17072026,
+  "chunk_length": 10,
+  "diversity": {
+    "max_endpoint_l2": 5.051115585997147,
+    "mean_chunk_l2": 1.7831534311017807,
+    "mean_endpoint_l2": 1.7568073199057603,
+    "min_endpoint_l2": 0.3356518543268393,
+    "n": 8,
+    "per_state": [
+      {
+        "mean_pairwise_chunk_l2": 3.456272817422139,
+        "mean_pairwise_endpoint_l2": 1.4575828386344774,
+        "min_pairwise_endpoint_l2": 0.3996545735850837,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 2.9088467810147756,
+        "mean_pairwise_endpoint_l2": 1.2770651147678131,
+        "min_pairwise_endpoint_l2": 0.5222915834448235,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.9044365679448679,
+        "mean_pairwise_endpoint_l2": 1.8689408382084942,
+        "min_pairwise_endpoint_l2": 0.46574796777112776,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.653806550704295,
+        "mean_pairwise_endpoint_l2": 1.6059428984842483,
+        "min_pairwise_endpoint_l2": 0.5791026883683299,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.9524721560313693,
+        "mean_pairwise_endpoint_l2": 2.183227367290205,
+        "min_pairwise_endpoint_l2": 0.36762976159768385,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 1.5637296065628872,
+        "mean_pairwise_endpoint_l2": 1.5471634939839187,
+        "min_pairwise_endpoint_l2": 0.3356518543268393,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 3.1178075625854857,
+        "mean_pairwise_endpoint_l2": 2.627091616130097,
+        "min_pairwise_endpoint_l2": 0.3717274417035695,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.7078554065484272,
+        "mean_pairwise_endpoint_l2": 1.4874443917468287,
+        "min_pairwise_endpoint_l2": 0.48069585244952395,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      }
+    ]
+  },
+  "elapsed_s": 60.303,
+  "n_skipped": 0,
+  "n_written": 8,
+  "output_dir": "/root/autodl-tmp/RASE/runs/ngc_w6_l1_l2_candidates_t07",
+  "policy_hash": "71d9563c8295284acba8fc2d5c19de000d6fe9ba58a406832af7ef3d221ed52f",
+  "policy_path": "/root/autodl-tmp/RASE/ckpts/smolvla_libero",
+  "pool": "/root/autodl-tmp/RASE/pool/ngc_w5_l1_l2_camera_robot",
+  "state_keys": [
+    "sp1_9224df57d14685d1a38858b3fa311f17",
+    "sp1_a6dc61be1fd190442d8f8ba6899df001",
+    "sp1_ad7f90f3853982faf71078d8cc2520f8",
+    "sp1_2aa51295fafa15432bed92eae158a4dc",
+    "sp1_187e45731f93b7cc2cbe029d522ab6cd",
+    "sp1_37bb5130da22463294cfd274b5381a28",
+    "sp1_f0c5d3a950eb6035ce142f78aca29ddd",
+    "sp1_12336a3ebc3338ff089441033879767f"
+  ],
+  "state_keys_provenance": {
+    "artifact_sha256": "fc25df06ae28e237400a607c6bbb940e93f6afa69a12be06d0a7455bb2f40cb5",
+    "n_states": 8,
+    "source": "/root/autodl-tmp/RASE/runs/ngc_w6_l1_l2_state_keys.json",
+    "state_keys_sha256": "6cc29a7d5613d05a57bfb2570afbf7ea5059e3c80ea84246efdc6d4c1ef8a085"
+  },
+  "state_keys_sha256": "6cc29a7d5613d05a57bfb2570afbf7ea5059e3c80ea84246efdc6d4c1ef8a085",
+  "temperature": 0.7
+}

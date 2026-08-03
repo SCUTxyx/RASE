@@ -31,6 +31,15 @@ results/
 *.tmp
 *.swp
 
+# macOS / archive junk
+.DS_Store
+._*
+**/._*
+
 # Experiment provenance is intentionally tracked.
 !progress/
 !progress/**
+
+# Compact mirrors of run summaries are tracked under reports/.
+!reports/
+!reports/**

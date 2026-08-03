@@ -1,0 +1,1786 @@
+{
+  "all_operator_success_rate": 0.1875,
+  "best_fixed_operator": "switch_oft",
+  "best_fixed_success_rate": 0.625,
+  "diagnostic_only": true,
+  "interpretation": "Eight-state/two-task smoke; use to test arm semantics and locate complementarity, not for paper-level significance.",
+  "n_all_operator_success": 9,
+  "n_complete_snapshots": 48,
+  "n_no_operator_support": 18,
+  "n_snapshots": 48,
+  "no_operator_support_rate": 0.375,
+  "oracle_minus_best_fixed": 0.0,
+  "pairwise_vs_continue": {
+    "replan_smol": {
+      "higher_success_states": 4,
+      "lower_success_states": 0,
+      "tied_success_states": 44
+    },
+    "switch_oft": {
+      "higher_success_states": 21,
+      "lower_success_states": 0,
+      "tied_success_states": 27
+    }
+  },
+  "per_operator_mean_costs": {
+    "continue_smol_active_chunk": {
+      "compute_seconds": 11.9108225625,
+      "env_steps": 262.75,
+      "latency_seconds": 11.9108225625
+    },
+    "replan_smol": {
+      "compute_seconds": 11.823781124999998,
+      "env_steps": 251.58333333333334,
+      "latency_seconds": 11.823781124999998
+    },
+    "switch_oft": {
+      "compute_seconds": 6.537722249999999,
+      "env_steps": 202.14583333333334,
+      "latency_seconds": 6.537722249999999
+    }
+  },
+  "per_operator_success_rate": {
+    "continue_smol_active_chunk": 0.1875,
+    "replan_smol": 0.2708333333333333,
+    "switch_oft": 0.625
+  },
+  "per_state": [
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 8.213016,
+          "env_steps": 167.0,
+          "latency_seconds": 8.213016
+        },
+        "replan_smol": {
+          "compute_seconds": 7.692211,
+          "env_steps": 166.0,
+          "latency_seconds": 7.692211
+        },
+        "switch_oft": {
+          "compute_seconds": 6.795131,
+          "env_steps": 226.0,
+          "latency_seconds": 6.795131
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 1.0,
+        "replan_smol": 1.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_98e9b7c5298b745624ce912f5dcb8655",
+      "step": 0,
+      "success_then_env_steps_winners": [
+        "replan_smol"
+      ],
+      "task_id": "libero_10_000006",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 7.745262,
+          "env_steps": 168.0,
+          "latency_seconds": 7.745262
+        },
+        "replan_smol": {
+          "compute_seconds": 10.329925,
+          "env_steps": 231.0,
+          "latency_seconds": 10.329925
+        },
+        "switch_oft": {
+          "compute_seconds": 7.247279,
+          "env_steps": 241.0,
+          "latency_seconds": 7.247279
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 1.0,
+        "replan_smol": 1.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_6ce283e75882f738903bc247057936ea",
+      "step": 2,
+      "success_then_env_steps_winners": [
+        "continue_smol_active_chunk"
+      ],
+      "task_id": "libero_10_000006",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 18.300918,
+          "env_steps": 465.0,
+          "latency_seconds": 18.300918
+        },
+        "replan_smol": {
+          "compute_seconds": 12.691523,
+          "env_steps": 281.0,
+          "latency_seconds": 12.691523
+        },
+        "switch_oft": {
+          "compute_seconds": 9.386617,
+          "env_steps": 334.0,
+          "latency_seconds": 9.386617
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 1.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_70a7b03499cf4c9f09375b78a1fef752",
+      "step": 4,
+      "success_then_env_steps_winners": [
+        "replan_smol"
+      ],
+      "task_id": "libero_10_000006",
+      "unique_winner": null,
+      "winners": [
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 17.301063,
+          "env_steps": 445.0,
+          "latency_seconds": 17.301063
+        },
+        "replan_smol": {
+          "compute_seconds": 17.977921,
+          "env_steps": 445.0,
+          "latency_seconds": 17.977921
+        },
+        "switch_oft": {
+          "compute_seconds": 4.698,
+          "env_steps": 150.0,
+          "latency_seconds": 4.698
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_3d76f45831b08a1363409a02646a8b92",
+      "step": 6,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_10_000006",
+      "unique_winner": "switch_oft",
+      "winners": [
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 23.012157,
+          "env_steps": 505.0,
+          "latency_seconds": 23.012157
+        },
+        "replan_smol": {
+          "compute_seconds": 22.501022,
+          "env_steps": 505.0,
+          "latency_seconds": 22.501022
+        },
+        "switch_oft": {
+          "compute_seconds": 8.001469,
+          "env_steps": 209.0,
+          "latency_seconds": 8.001469
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_2bb37f98366e91c1df041f7b3b230998",
+      "step": 0,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_10_000711",
+      "unique_winner": "switch_oft",
+      "winners": [
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 21.49787,
+          "env_steps": 485.0,
+          "latency_seconds": 21.49787
+        },
+        "replan_smol": {
+          "compute_seconds": 21.838231,
+          "env_steps": 485.0,
+          "latency_seconds": 21.838231
+        },
+        "switch_oft": {
+          "compute_seconds": 14.856499,
+          "env_steps": 485.0,
+          "latency_seconds": 14.856499
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 0.0
+      },
+      "snapshot_id": "sp1_a0e66f62cc275718a300d04be7b27d72",
+      "step": 2,
+      "success_then_env_steps_winners": [],
+      "task_id": "libero_10_000711",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 20.951859,
+          "env_steps": 465.0,
+          "latency_seconds": 20.951859
+        },
+        "replan_smol": {
+          "compute_seconds": 20.854534,
+          "env_steps": 465.0,
+          "latency_seconds": 20.854534
+        },
+        "switch_oft": {
+          "compute_seconds": 13.916799,
+          "env_steps": 465.0,
+          "latency_seconds": 13.916799
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 0.0
+      },
+      "snapshot_id": "sp1_c4be4f4c72ab491a3bf3045e820e89da",
+      "step": 4,
+      "success_then_env_steps_winners": [],
+      "task_id": "libero_10_000711",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 20.075983,
+          "env_steps": 445.0,
+          "latency_seconds": 20.075983
+        },
+        "replan_smol": {
+          "compute_seconds": 20.723493,
+          "env_steps": 445.0,
+          "latency_seconds": 20.723493
+        },
+        "switch_oft": {
+          "compute_seconds": 13.16713,
+          "env_steps": 445.0,
+          "latency_seconds": 13.16713
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 0.0
+      },
+      "snapshot_id": "sp1_781bb1c779180f44c70a35ffdde7c09e",
+      "step": 6,
+      "success_then_env_steps_winners": [],
+      "task_id": "libero_10_000711",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 21.779576,
+          "env_steps": 505.0,
+          "latency_seconds": 21.779576
+        },
+        "replan_smol": {
+          "compute_seconds": 21.889585,
+          "env_steps": 505.0,
+          "latency_seconds": 21.889585
+        },
+        "switch_oft": {
+          "compute_seconds": 8.816837,
+          "env_steps": 262.0,
+          "latency_seconds": 8.816837
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_522c41927875fb95a9cb5780cbc3c6f9",
+      "step": 0,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_10_000938",
+      "unique_winner": "switch_oft",
+      "winners": [
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 19.957606,
+          "env_steps": 485.0,
+          "latency_seconds": 19.957606
+        },
+        "replan_smol": {
+          "compute_seconds": 20.977083,
+          "env_steps": 485.0,
+          "latency_seconds": 20.977083
+        },
+        "switch_oft": {
+          "compute_seconds": 13.249646,
+          "env_steps": 485.0,
+          "latency_seconds": 13.249646
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 0.0
+      },
+      "snapshot_id": "sp1_256af7c95bf3c9860dcde85614c9e732",
+      "step": 2,
+      "success_then_env_steps_winners": [],
+      "task_id": "libero_10_000938",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 19.480921,
+          "env_steps": 465.0,
+          "latency_seconds": 19.480921
+        },
+        "replan_smol": {
+          "compute_seconds": 20.157932,
+          "env_steps": 465.0,
+          "latency_seconds": 20.157932
+        },
+        "switch_oft": {
+          "compute_seconds": 12.445007,
+          "env_steps": 465.0,
+          "latency_seconds": 12.445007
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 0.0
+      },
+      "snapshot_id": "sp1_424ed8b6c1519f0d51d1711d52e32a19",
+      "step": 4,
+      "success_then_env_steps_winners": [],
+      "task_id": "libero_10_000938",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 18.52195,
+          "env_steps": 445.0,
+          "latency_seconds": 18.52195
+        },
+        "replan_smol": {
+          "compute_seconds": 19.075552,
+          "env_steps": 445.0,
+          "latency_seconds": 19.075552
+        },
+        "switch_oft": {
+          "compute_seconds": 11.777857,
+          "env_steps": 445.0,
+          "latency_seconds": 11.777857
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 0.0
+      },
+      "snapshot_id": "sp1_3b2fbdf0cbb490c125d7a36cd3636d33",
+      "step": 6,
+      "success_then_env_steps_winners": [],
+      "task_id": "libero_10_000938",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 5.512484,
+          "env_steps": 85.0,
+          "latency_seconds": 5.512484
+        },
+        "replan_smol": {
+          "compute_seconds": 5.664431,
+          "env_steps": 87.0,
+          "latency_seconds": 5.664431
+        },
+        "switch_oft": {
+          "compute_seconds": 3.550355,
+          "env_steps": 82.0,
+          "latency_seconds": 3.550355
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 1.0,
+        "replan_smol": 1.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_3678495696e05b67add6989a26c7f2dd",
+      "step": 0,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_goal_000007",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 4.514621,
+          "env_steps": 65.0,
+          "latency_seconds": 4.514621
+        },
+        "replan_smol": {
+          "compute_seconds": 5.245893,
+          "env_steps": 72.0,
+          "latency_seconds": 5.245893
+        },
+        "switch_oft": {
+          "compute_seconds": 2.731088,
+          "env_steps": 63.0,
+          "latency_seconds": 2.731088
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 1.0,
+        "replan_smol": 1.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_d05e6f4f82a41fa8f044749eef389b9f",
+      "step": 2,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_goal_000007",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 3.883586,
+          "env_steps": 47.0,
+          "latency_seconds": 3.883586
+        },
+        "replan_smol": {
+          "compute_seconds": 3.845749,
+          "env_steps": 49.0,
+          "latency_seconds": 3.845749
+        },
+        "switch_oft": {
+          "compute_seconds": 2.502349,
+          "env_steps": 49.0,
+          "latency_seconds": 2.502349
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 1.0,
+        "replan_smol": 1.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_62f3268f41ef58dc9fc9a00ec25df91f",
+      "step": 4,
+      "success_then_env_steps_winners": [
+        "continue_smol_active_chunk"
+      ],
+      "task_id": "libero_goal_000007",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 9.591029,
+          "env_steps": 225.0,
+          "latency_seconds": 9.591029
+        },
+        "replan_smol": {
+          "compute_seconds": 10.07047,
+          "env_steps": 225.0,
+          "latency_seconds": 10.07047
+        },
+        "switch_oft": {
+          "compute_seconds": 6.190874,
+          "env_steps": 225.0,
+          "latency_seconds": 6.190874
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 0.0
+      },
+      "snapshot_id": "sp1_1e9e5818f090c7763d3f7fae6b97340b",
+      "step": 6,
+      "success_then_env_steps_winners": [],
+      "task_id": "libero_goal_000007",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 12.617426,
+          "env_steps": 285.0,
+          "latency_seconds": 12.617426
+        },
+        "replan_smol": {
+          "compute_seconds": 12.751477,
+          "env_steps": 285.0,
+          "latency_seconds": 12.751477
+        },
+        "switch_oft": {
+          "compute_seconds": 8.040016,
+          "env_steps": 285.0,
+          "latency_seconds": 8.040016
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 0.0
+      },
+      "snapshot_id": "sp1_634f6edb365f2b2540cee3730c2bb799",
+      "step": 0,
+      "success_then_env_steps_winners": [],
+      "task_id": "libero_goal_000414",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 11.756965,
+          "env_steps": 265.0,
+          "latency_seconds": 11.756965
+        },
+        "replan_smol": {
+          "compute_seconds": 11.753216,
+          "env_steps": 265.0,
+          "latency_seconds": 11.753216
+        },
+        "switch_oft": {
+          "compute_seconds": 7.831625,
+          "env_steps": 265.0,
+          "latency_seconds": 7.831625
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 0.0
+      },
+      "snapshot_id": "sp1_d40b9fbf84339836173225fe34aba1a9",
+      "step": 2,
+      "success_then_env_steps_winners": [],
+      "task_id": "libero_goal_000414",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 11.279992,
+          "env_steps": 245.0,
+          "latency_seconds": 11.279992
+        },
+        "replan_smol": {
+          "compute_seconds": 12.156799,
+          "env_steps": 245.0,
+          "latency_seconds": 12.156799
+        },
+        "switch_oft": {
+          "compute_seconds": 7.373497,
+          "env_steps": 245.0,
+          "latency_seconds": 7.373497
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 0.0
+      },
+      "snapshot_id": "sp1_b7044c3c1bac8d117163ee4f88c278a4",
+      "step": 4,
+      "success_then_env_steps_winners": [],
+      "task_id": "libero_goal_000414",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 10.9721,
+          "env_steps": 225.0,
+          "latency_seconds": 10.9721
+        },
+        "replan_smol": {
+          "compute_seconds": 11.147881,
+          "env_steps": 225.0,
+          "latency_seconds": 11.147881
+        },
+        "switch_oft": {
+          "compute_seconds": 6.814643,
+          "env_steps": 225.0,
+          "latency_seconds": 6.814643
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 0.0
+      },
+      "snapshot_id": "sp1_bdc9be2544a6d082a2ea9803b149c7c5",
+      "step": 6,
+      "success_then_env_steps_winners": [],
+      "task_id": "libero_goal_000414",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 12.223595,
+          "env_steps": 285.0,
+          "latency_seconds": 12.223595
+        },
+        "replan_smol": {
+          "compute_seconds": 12.47683,
+          "env_steps": 285.0,
+          "latency_seconds": 12.47683
+        },
+        "switch_oft": {
+          "compute_seconds": 8.486334,
+          "env_steps": 285.0,
+          "latency_seconds": 8.486334
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 0.0
+      },
+      "snapshot_id": "sp1_77af7b773748de53649d6bd7a7939951",
+      "step": 0,
+      "success_then_env_steps_winners": [],
+      "task_id": "libero_goal_000580",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 11.455885,
+          "env_steps": 265.0,
+          "latency_seconds": 11.455885
+        },
+        "replan_smol": {
+          "compute_seconds": 11.619586,
+          "env_steps": 265.0,
+          "latency_seconds": 11.619586
+        },
+        "switch_oft": {
+          "compute_seconds": 7.215774,
+          "env_steps": 218.0,
+          "latency_seconds": 7.215774
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_54df4ffcf5a0b81f58f545d037984fa3",
+      "step": 2,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_goal_000580",
+      "unique_winner": "switch_oft",
+      "winners": [
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 10.841002,
+          "env_steps": 245.0,
+          "latency_seconds": 10.841002
+        },
+        "replan_smol": {
+          "compute_seconds": 10.906665,
+          "env_steps": 245.0,
+          "latency_seconds": 10.906665
+        },
+        "switch_oft": {
+          "compute_seconds": 6.639792,
+          "env_steps": 195.0,
+          "latency_seconds": 6.639792
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_213ab08f84c820224788a114d6c7c17f",
+      "step": 4,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_goal_000580",
+      "unique_winner": "switch_oft",
+      "winners": [
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 9.505742,
+          "env_steps": 225.0,
+          "latency_seconds": 9.505742
+        },
+        "replan_smol": {
+          "compute_seconds": 9.968305,
+          "env_steps": 225.0,
+          "latency_seconds": 9.968305
+        },
+        "switch_oft": {
+          "compute_seconds": 6.135296,
+          "env_steps": 171.0,
+          "latency_seconds": 6.135296
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_978385884e1a54ee7cb7ecfea02d1638",
+      "step": 6,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_goal_000580",
+      "unique_winner": "switch_oft",
+      "winners": [
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 7.625859,
+          "env_steps": 143.0,
+          "latency_seconds": 7.625859
+        },
+        "replan_smol": {
+          "compute_seconds": 7.731859,
+          "env_steps": 138.0,
+          "latency_seconds": 7.731859
+        },
+        "switch_oft": {
+          "compute_seconds": 4.753024,
+          "env_steps": 137.0,
+          "latency_seconds": 4.753024
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 1.0,
+        "replan_smol": 1.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_04748267889c532211e3e60dd4ca23b0",
+      "step": 0,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_object_000009",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 6.909844,
+          "env_steps": 124.0,
+          "latency_seconds": 6.909844
+        },
+        "replan_smol": {
+          "compute_seconds": 7.194806,
+          "env_steps": 123.0,
+          "latency_seconds": 7.194806
+        },
+        "switch_oft": {
+          "compute_seconds": 4.016683,
+          "env_steps": 115.0,
+          "latency_seconds": 4.016683
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 1.0,
+        "replan_smol": 1.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_e44c0c59cbc5af44451d9e544567d166",
+      "step": 2,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_object_000009",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 6.1341,
+          "env_steps": 101.0,
+          "latency_seconds": 6.1341
+        },
+        "replan_smol": {
+          "compute_seconds": 6.010877,
+          "env_steps": 98.0,
+          "latency_seconds": 6.010877
+        },
+        "switch_oft": {
+          "compute_seconds": 4.946426,
+          "env_steps": 144.0,
+          "latency_seconds": 4.946426
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 1.0,
+        "replan_smol": 1.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_20cc832e20f10de0214679c7f2728e0f",
+      "step": 4,
+      "success_then_env_steps_winners": [
+        "replan_smol"
+      ],
+      "task_id": "libero_object_000009",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 8.847975,
+          "env_steps": 205.0,
+          "latency_seconds": 8.847975
+        },
+        "replan_smol": {
+          "compute_seconds": 7.379569,
+          "env_steps": 126.0,
+          "latency_seconds": 7.379569
+        },
+        "switch_oft": {
+          "compute_seconds": 5.211671,
+          "env_steps": 153.0,
+          "latency_seconds": 5.211671
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 1.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_7446963bcd9c32817ce94e42bea598f2",
+      "step": 6,
+      "success_then_env_steps_winners": [
+        "replan_smol"
+      ],
+      "task_id": "libero_object_000009",
+      "unique_winner": null,
+      "winners": [
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 11.275769,
+          "env_steps": 265.0,
+          "latency_seconds": 11.275769
+        },
+        "replan_smol": {
+          "compute_seconds": 11.778122,
+          "env_steps": 265.0,
+          "latency_seconds": 11.778122
+        },
+        "switch_oft": {
+          "compute_seconds": 4.00461,
+          "env_steps": 103.0,
+          "latency_seconds": 4.00461
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_6a1e3d6b95f3625a7e119325b55615e7",
+      "step": 0,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_object_000379",
+      "unique_winner": "switch_oft",
+      "winners": [
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 10.710745,
+          "env_steps": 245.0,
+          "latency_seconds": 10.710745
+        },
+        "replan_smol": {
+          "compute_seconds": 10.847364,
+          "env_steps": 245.0,
+          "latency_seconds": 10.847364
+        },
+        "switch_oft": {
+          "compute_seconds": 3.714931,
+          "env_steps": 95.0,
+          "latency_seconds": 3.714931
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_8d7c9b3bc3fa82f051695ab1902072a8",
+      "step": 2,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_object_000379",
+      "unique_winner": "switch_oft",
+      "winners": [
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 9.971387,
+          "env_steps": 225.0,
+          "latency_seconds": 9.971387
+        },
+        "replan_smol": {
+          "compute_seconds": 10.25729,
+          "env_steps": 225.0,
+          "latency_seconds": 10.25729
+        },
+        "switch_oft": {
+          "compute_seconds": 4.308483,
+          "env_steps": 120.0,
+          "latency_seconds": 4.308483
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_9e486934999758f05a1f06614b3150f0",
+      "step": 4,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_object_000379",
+      "unique_winner": "switch_oft",
+      "winners": [
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 8.89303,
+          "env_steps": 205.0,
+          "latency_seconds": 8.89303
+        },
+        "replan_smol": {
+          "compute_seconds": 9.199839,
+          "env_steps": 205.0,
+          "latency_seconds": 9.199839
+        },
+        "switch_oft": {
+          "compute_seconds": 5.09276,
+          "env_steps": 152.0,
+          "latency_seconds": 5.09276
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_08f435a590b5eec5b6e0a1476cb01d9c",
+      "step": 6,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_object_000379",
+      "unique_winner": "switch_oft",
+      "winners": [
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 11.202262,
+          "env_steps": 265.0,
+          "latency_seconds": 11.202262
+        },
+        "replan_smol": {
+          "compute_seconds": 11.653748,
+          "env_steps": 265.0,
+          "latency_seconds": 11.653748
+        },
+        "switch_oft": {
+          "compute_seconds": 4.916824,
+          "env_steps": 140.0,
+          "latency_seconds": 4.916824
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_5bd4b35410fd0d11ee45a6eb949a5924",
+      "step": 0,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_object_000712",
+      "unique_winner": "switch_oft",
+      "winners": [
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 10.71988,
+          "env_steps": 245.0,
+          "latency_seconds": 10.71988
+        },
+        "replan_smol": {
+          "compute_seconds": 11.176023,
+          "env_steps": 245.0,
+          "latency_seconds": 11.176023
+        },
+        "switch_oft": {
+          "compute_seconds": 6.88546,
+          "env_steps": 245.0,
+          "latency_seconds": 6.88546
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 0.0
+      },
+      "snapshot_id": "sp1_8dc2dcbc4bc3f24e769ca1f33bd4aa51",
+      "step": 2,
+      "success_then_env_steps_winners": [],
+      "task_id": "libero_object_000712",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 9.986122,
+          "env_steps": 225.0,
+          "latency_seconds": 9.986122
+        },
+        "replan_smol": {
+          "compute_seconds": 10.281384,
+          "env_steps": 225.0,
+          "latency_seconds": 10.281384
+        },
+        "switch_oft": {
+          "compute_seconds": 6.210021,
+          "env_steps": 225.0,
+          "latency_seconds": 6.210021
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 0.0
+      },
+      "snapshot_id": "sp1_956b988e3f37acfd737284796f944550",
+      "step": 4,
+      "success_then_env_steps_winners": [],
+      "task_id": "libero_object_000712",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 9.355575,
+          "env_steps": 205.0,
+          "latency_seconds": 9.355575
+        },
+        "replan_smol": {
+          "compute_seconds": 9.745243,
+          "env_steps": 205.0,
+          "latency_seconds": 9.745243
+        },
+        "switch_oft": {
+          "compute_seconds": 5.665578,
+          "env_steps": 205.0,
+          "latency_seconds": 5.665578
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 0.0
+      },
+      "snapshot_id": "sp1_f3fcd0f81af7a968f951c7c0043135bd",
+      "step": 6,
+      "success_then_env_steps_winners": [],
+      "task_id": "libero_object_000712",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 7.153294,
+          "env_steps": 97.0,
+          "latency_seconds": 7.153294
+        },
+        "replan_smol": {
+          "compute_seconds": 7.212245,
+          "env_steps": 96.0,
+          "latency_seconds": 7.212245
+        },
+        "switch_oft": {
+          "compute_seconds": 4.109374,
+          "env_steps": 94.0,
+          "latency_seconds": 4.109374
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 1.0,
+        "replan_smol": 1.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_5db8c1ec2ea45be82962697e896ae026",
+      "step": 0,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_spatial_000007",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 12.226267,
+          "env_steps": 245.0,
+          "latency_seconds": 12.226267
+        },
+        "replan_smol": {
+          "compute_seconds": 6.085094,
+          "env_steps": 74.0,
+          "latency_seconds": 6.085094
+        },
+        "switch_oft": {
+          "compute_seconds": 3.317356,
+          "env_steps": 68.0,
+          "latency_seconds": 3.317356
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 1.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_9acc4acaf31c1387935196dde6cec806",
+      "step": 2,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_spatial_000007",
+      "unique_winner": null,
+      "winners": [
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 10.848275,
+          "env_steps": 225.0,
+          "latency_seconds": 10.848275
+        },
+        "replan_smol": {
+          "compute_seconds": 5.668704,
+          "env_steps": 60.0,
+          "latency_seconds": 5.668704
+        },
+        "switch_oft": {
+          "compute_seconds": 2.884257,
+          "env_steps": 52.0,
+          "latency_seconds": 2.884257
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 1.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_a59046e6f6d23e5fceb4b6dfdc2ffee7",
+      "step": 4,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_spatial_000007",
+      "unique_winner": null,
+      "winners": [
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 9.536665,
+          "env_steps": 205.0,
+          "latency_seconds": 9.536665
+        },
+        "replan_smol": {
+          "compute_seconds": 9.834433,
+          "env_steps": 205.0,
+          "latency_seconds": 9.834433
+        },
+        "switch_oft": {
+          "compute_seconds": 3.779223,
+          "env_steps": 77.0,
+          "latency_seconds": 3.779223
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_dc648bb188351d34434c7d80557190ec",
+      "step": 6,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_spatial_000007",
+      "unique_winner": "switch_oft",
+      "winners": [
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 13.173479,
+          "env_steps": 265.0,
+          "latency_seconds": 13.173479
+        },
+        "replan_smol": {
+          "compute_seconds": 13.081889,
+          "env_steps": 265.0,
+          "latency_seconds": 13.081889
+        },
+        "switch_oft": {
+          "compute_seconds": 9.136219,
+          "env_steps": 265.0,
+          "latency_seconds": 9.136219
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 0.0
+      },
+      "snapshot_id": "sp1_47544075f421070e2169666ea260c551",
+      "step": 0,
+      "success_then_env_steps_winners": [],
+      "task_id": "libero_spatial_000371",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 11.793295,
+          "env_steps": 245.0,
+          "latency_seconds": 11.793295
+        },
+        "replan_smol": {
+          "compute_seconds": 12.098634,
+          "env_steps": 245.0,
+          "latency_seconds": 12.098634
+        },
+        "switch_oft": {
+          "compute_seconds": 2.974785,
+          "env_steps": 56.0,
+          "latency_seconds": 2.974785
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_50e8ea6f061b9950f62eebef12380523",
+      "step": 2,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_spatial_000371",
+      "unique_winner": "switch_oft",
+      "winners": [
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 10.735288,
+          "env_steps": 225.0,
+          "latency_seconds": 10.735288
+        },
+        "replan_smol": {
+          "compute_seconds": 11.126007,
+          "env_steps": 225.0,
+          "latency_seconds": 11.126007
+        },
+        "switch_oft": {
+          "compute_seconds": 7.688078,
+          "env_steps": 225.0,
+          "latency_seconds": 7.688078
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 0.0
+      },
+      "snapshot_id": "sp1_058d31bf5cac89023d211d35d50fa442",
+      "step": 4,
+      "success_then_env_steps_winners": [],
+      "task_id": "libero_spatial_000371",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 9.941252,
+          "env_steps": 205.0,
+          "latency_seconds": 9.941252
+        },
+        "replan_smol": {
+          "compute_seconds": 10.038421,
+          "env_steps": 205.0,
+          "latency_seconds": 10.038421
+        },
+        "switch_oft": {
+          "compute_seconds": 3.580015,
+          "env_steps": 68.0,
+          "latency_seconds": 3.580015
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_67665c15af7429297b16ee7fb4ac975f",
+      "step": 6,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_spatial_000371",
+      "unique_winner": "switch_oft",
+      "winners": [
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 12.218877,
+          "env_steps": 265.0,
+          "latency_seconds": 12.218877
+        },
+        "replan_smol": {
+          "compute_seconds": 12.399238,
+          "env_steps": 265.0,
+          "latency_seconds": 12.399238
+        },
+        "switch_oft": {
+          "compute_seconds": 4.310065,
+          "env_steps": 94.0,
+          "latency_seconds": 4.310065
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_cab4633fb228ab951aa2c9b53f9b194a",
+      "step": 0,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_spatial_000856",
+      "unique_winner": "switch_oft",
+      "winners": [
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 11.27071,
+          "env_steps": 245.0,
+          "latency_seconds": 11.27071
+        },
+        "replan_smol": {
+          "compute_seconds": 11.70559,
+          "env_steps": 245.0,
+          "latency_seconds": 11.70559
+        },
+        "switch_oft": {
+          "compute_seconds": 3.934887,
+          "env_steps": 76.0,
+          "latency_seconds": 3.934887
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_d7cb0d9d28114c7e1622f9782434a796",
+      "step": 2,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_spatial_000856",
+      "unique_winner": "switch_oft",
+      "winners": [
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 10.648292,
+          "env_steps": 225.0,
+          "latency_seconds": 10.648292
+        },
+        "replan_smol": {
+          "compute_seconds": 10.783635,
+          "env_steps": 225.0,
+          "latency_seconds": 10.783635
+        },
+        "switch_oft": {
+          "compute_seconds": 3.704164,
+          "env_steps": 69.0,
+          "latency_seconds": 3.704164
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_8bfb8ec88b9dcd3b2fcbb8f0cab43b93",
+      "step": 4,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_spatial_000856",
+      "unique_winner": "switch_oft",
+      "winners": [
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 9.548633,
+          "env_steps": 205.0,
+          "latency_seconds": 9.548633
+        },
+        "replan_smol": {
+          "compute_seconds": 9.935166,
+          "env_steps": 205.0,
+          "latency_seconds": 9.935166
+        },
+        "switch_oft": {
+          "compute_seconds": 6.79586,
+          "env_steps": 205.0,
+          "latency_seconds": 6.79586
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 0.0
+      },
+      "snapshot_id": "sp1_644503fd217897af4bd0b594d5ec7278",
+      "step": 6,
+      "success_then_env_steps_winners": [],
+      "task_id": "libero_spatial_000856",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    }
+  ],
+  "same_state_oracle_success_rate": 0.625,
+  "schema_version": "rase-intervention-matrix-summary/v1",
+  "source_oft_summaries": [
+    "/root/autodl-tmp/RASE/runs/rase_ui_phase0b_opportunity12_oft_spatial_screen_v1/summary.json",
+    "/root/autodl-tmp/RASE/runs/rase_ui_phase0b_opportunity12_oft_object_screen_v1/summary.json",
+    "/root/autodl-tmp/RASE/runs/rase_ui_phase0b_opportunity12_oft_goal_screen_v1/summary.json",
+    "/root/autodl-tmp/RASE/runs/rase_ui_phase0b_opportunity12_oft_10_screen_v1/summary.json"
+  ],
+  "source_smol_run": "/root/autodl-tmp/RASE/runs/rase_ui_phase0b_opportunity12_smol_screen_v1",
+  "status": "complete",
+  "success_pattern_counts": {
+    "000": 18,
+    "001": 17,
+    "011": 4,
+    "111": 9
+  },
+  "success_then_env_steps": {
+    "best_fixed_mean_env_steps_on_supported_states": 133.76666666666668,
+    "best_fixed_operator": "switch_oft",
+    "n_oracle_supported_states": 30,
+    "oracle_steps_saved_vs_best_fixed_on_supported_states": 8.700000000000017,
+    "same_state_oracle_mean_env_steps_on_supported_states": 125.06666666666666,
+    "semantics": "On states where at least one arm succeeds, lexicographically maximize terminal success, then minimize env_steps.",
+    "winner_mass_on_supported_states": {
+      "continue_smol_active_chunk": 2.0,
+      "replan_smol": 4.0,
+      "switch_oft": 24.0
+    }
+  },
+  "unique_winner_counts": {
+    "switch_oft": 17
+  },
+  "unique_winner_task_counts": {
+    "switch_oft": 9
+  }
+}

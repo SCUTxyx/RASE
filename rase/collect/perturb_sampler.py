@@ -110,6 +110,7 @@ def sample_perturbations(
     dimension_quotas: Mapping[str, int] | None = None,
     suite_quotas: Mapping[str, int] | None = None,
     levels_by_dimension: Mapping[str, Sequence[int]] | None = None,
+    factorial_cells: Sequence[Mapping[str, object]] | None = None,
 ) -> list[PerturbationRequest]:
     """Return exactly ``total`` requests satisfying both quota marginals."""
     dimensions_config = dict(dimension_quotas or DIMENSION_QUOTAS)
@@ -122,6 +123,18 @@ def sample_perturbations(
     unknown_suites = set(suites_config) - set(SUITE_QUOTAS)
     if unknown_suites:
         raise ValueError(f"unknown suites: {', '.join(sorted(unknown_suites))}")
+    if factorial_cells is not None:
+        if dimension_quotas is not None or levels_by_dimension is not None:
+            raise ValueError(
+                "factorial_cells cannot be combined with dimension_quotas or "
+                "levels_by_dimension"
+            )
+        return _sample_factorial(
+            total,
+            seed=seed,
+            suite_weights=suites_config,
+            raw_cells=factorial_cells,
+        )
     levels_config = validate_levels_by_dimension(levels_by_dimension)
 
     rng = random.Random(seed)
@@ -140,6 +153,81 @@ def sample_perturbations(
                 dimension=dimension,
                 subdimension=local.choice(_SUBDIMENSIONS[dimension]),
                 level=local.choice(levels_config[dimension]),
+                seed=request_seed,
+            )
+        )
+    return requests
+
+
+def _sample_factorial(
+    total: int,
+    *,
+    seed: int,
+    suite_weights: Mapping[str, int],
+    raw_cells: Sequence[Mapping[str, object]],
+) -> list[PerturbationRequest]:
+    if not raw_cells:
+        raise ValueError("factorial_cells must not be empty")
+    if any(
+        int(weight) != weight or int(weight) <= 0
+        for weight in suite_weights.values()
+    ):
+        raise ValueError("factorial suite weights must be positive integers")
+
+    cells: list[tuple[str, str, int, int]] = []
+    for raw in raw_cells:
+        dimension = str(raw.get("dimension") or "")
+        if dimension not in _SUBDIMENSIONS:
+            raise ValueError(f"unknown factorial dimension: {dimension!r}")
+        try:
+            level = int(raw["level"])
+        except (KeyError, TypeError, ValueError) as error:
+            raise ValueError("factorial cell requires an integer level") from error
+        validate_levels_by_dimension({dimension: [level]})
+        subdimension = str(raw.get("subdimension") or _SUBDIMENSIONS[dimension][0])
+        if subdimension not in _SUBDIMENSIONS[dimension]:
+            raise ValueError(
+                f"invalid subdimension {subdimension!r} for {dimension!r}"
+            )
+        try:
+            weight = int(raw.get("weight", 1))
+        except (TypeError, ValueError) as error:
+            raise ValueError("factorial cell weight must be a positive integer") from error
+        if weight <= 0 or weight != raw.get("weight", 1):
+            raise ValueError("factorial cell weight must be a positive integer")
+        cells.append((dimension, subdimension, level, weight))
+    identities = [
+        (dimension, subdimension, level)
+        for dimension, subdimension, level, _ in cells
+    ]
+    if len(set(identities)) != len(identities):
+        raise ValueError("factorial_cells must not contain duplicates")
+
+    design = [
+        (suite, (dimension, subdimension, level))
+        for suite, weight in suite_weights.items()
+        for _ in range(int(weight))
+        for dimension, subdimension, level, cell_weight in cells
+        for _ in range(cell_weight)
+    ]
+    if total < 0 or total % len(design):
+        raise ValueError(
+            f"factorial total {total} must be divisible by design size {len(design)}"
+        )
+    assignments = design * (total // len(design))
+    random.Random(seed).shuffle(assignments)
+    requests = []
+    for index, (suite, (dimension, subdimension, level)) in enumerate(assignments):
+        request_seed = int.from_bytes(
+            hashlib.sha256(f"{seed}:{index}".encode()).digest()[:8], "big"
+        ) & 0x7FFFFFFF
+        requests.append(
+            PerturbationRequest(
+                index=index,
+                suite=suite,
+                dimension=dimension,
+                subdimension=subdimension,
+                level=level,
                 seed=request_seed,
             )
         )

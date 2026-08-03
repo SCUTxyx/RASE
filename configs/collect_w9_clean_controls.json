@@ -1,0 +1,38 @@
+{
+  "run_name": "ngc-w9-clean-success-controls",
+  "adapter": "rase.collect.lerobot_libero_plus_adapter:make_adapter",
+  "adapter_config": {
+    "policy_path": "ckpts/smolvla_libero",
+    "tokenizer_path": "ckpts/SmolVLM2-500M-Instruct",
+    "libero_plus_root": null,
+    "device": "cuda",
+    "num_steps": 10,
+    "n_action_steps": 10,
+    "observation_height": 360,
+    "observation_width": 360
+  },
+  "sampling": {
+    "dimension_quotas": {
+      "clean": 100
+    },
+    "suite_quotas": {
+      "Long": 25,
+      "Goal": 25,
+      "Spatial": 25,
+      "Object": 25
+    },
+    "levels_by_dimension": {
+      "clean": [0]
+    }
+  },
+  "collection": {
+    "output_dir": "pool/ngc_w9_clean_controls",
+    "episodes": 60,
+    "seed": 20260730,
+    "action_chunks_per_episode": 52,
+    "max_action_chunks": null,
+    "snapshot_cadence_action_chunks": 2,
+    "successful_snapshot_retention": 0.20,
+    "dry_run": false
+  }
+}

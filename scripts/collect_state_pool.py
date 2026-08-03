@@ -31,12 +31,18 @@ def _apply_collection_overrides(
             raise ValueError("--seed must be non-negative")
         collection["seed"] = int(seed)
     if schedule_batch is not None:
-        from rase.collect.w9b_schedule import BATCH_SIZES, PROTOCOL_VERSION
+        from rase.collect.pipeline import CLEAN_CONTROL_PROTOCOLS
+        from rase.collect.w9b_schedule import BATCH_SIZES
 
-        if dict(result.get("protocol") or {}).get("version") != PROTOCOL_VERSION:
-            raise ValueError("--schedule-batch is only valid for W9B")
+        version = dict(result.get("protocol") or {}).get("version")
+        if version not in CLEAN_CONTROL_PROTOCOLS:
+            raise ValueError(
+                "--schedule-batch is only valid for W9B/W9C clean-control protocols"
+            )
         if episodes is not None or seed is not None:
-            raise ValueError("W9B schedule batches forbid --episodes/--seed overrides")
+            raise ValueError(
+                "clean-control schedule batches forbid --episodes/--seed overrides"
+            )
         if schedule_batch not in range(1, len(BATCH_SIZES) + 1):
             raise ValueError("--schedule-batch must be 1, 2, or 3")
         collection["schedule_batch_id"] = schedule_batch
@@ -69,7 +75,7 @@ def main() -> None:
         type=int,
         choices=(1, 2, 3),
         default=None,
-        help="select one frozen W9B schedule batch; forbids seed/count overrides",
+        help="select one frozen W9B/W9C schedule batch; forbids seed/count overrides",
     )
     parser.add_argument(
         "--summary-output",

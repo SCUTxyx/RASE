@@ -2,6 +2,19 @@
 
 版本：v3.1　日期：2026-07-10　前置文档：v3.0（2026-07-08）
 
+> **状态更新（2026-07-27）：Historical design，禁止按原时间线直接执行。**
+> 当前主线见 [`RASE_top_conference_execution_v4.md`](RASE_top_conference_execution_v4.md)
+> 与 [`README.md`](README.md)。W3–W5 已推翻本版的关键工作假设：SmolVLA
+> continuation 在多个 ADEQUATE / frontier cohort 上持续零恢复，而 W4 的同状态、
+> 同候选 OFT portfolio 恢复 17/32 状态。因而 recoverability 必须写成
+> `R(state; proposal_policy, continuation_policy, action_arm)`，不能再视作状态的
+> oracle-independent 固有属性。本版的文献图谱、FEB 定义和统计纪律仍可引用；原 C3
+> novelty、五 fallback 全空间与直接 BC+CQL→DQN 路线已被 v4 取代。
+> **追加证据（2026-07-27 晚）：** W5 在冻结 24-state frontier 上完成
+> proposal temperature `0.3/0.7/1.0`，三档合计 `0/576`；候选多样性随温度单调
+> 增加，已排除温度未生效与候选复用。故本报告中继续通过 proposal temperature
+> 搜索 SmolVLA 自恢复正例的路线正式终止。
+
 > 实施事实（2026-07-17）：当前仓库根目录为 `RASE/`；SmolVLA 使用
 > Python 3.12、LeRobot 0.5.1，主评测固定 `num_steps=10`、
 > `n_action_steps=10`、`batch_size=2`；LIBERO-Plus 固定 commit `4976dc3`。

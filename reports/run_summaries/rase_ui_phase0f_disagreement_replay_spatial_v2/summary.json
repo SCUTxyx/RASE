@@ -1,0 +1,88 @@
+{
+  "classification_counts": {
+    "both": 0,
+    "deferred_only": 1,
+    "direct_only": 0,
+    "neither": 0
+  },
+  "decision_suffix_oft": {
+    "hits": 1,
+    "trials": 1
+  },
+  "direct_oft": {
+    "hits": 0,
+    "trials": 1
+  },
+  "elapsed_wall_s": 19.742,
+  "interpretation": "Immediate and active-suffix-preserving OFT switches from the same snapshot; calibration only, not independent confirmation.",
+  "n_states": 1,
+  "per_state": [
+    {
+      "arms": [
+        {
+          "arm_kind": "direct",
+          "arm_label": "direct_oft",
+          "candidate_index": null,
+          "candidate_s": 5e-06,
+          "candidate_steps": 0,
+          "continuation_s": 7.671112,
+          "continuation_steps": 245,
+          "elapsed_s": 7.673417,
+          "env_steps": 245,
+          "final_timestep": 280,
+          "oracle": "oft",
+          "oracle_predict_calls": 31,
+          "oracle_predict_elapsed_s": 3.419382,
+          "prefix_completed": true,
+          "prefix_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "prefix_source": "direct",
+          "prefix_steps": 0,
+          "restore_s": 0.000838,
+          "stop_reason": "horizon",
+          "success": false,
+          "terminal_during_prefix": false,
+          "terminated": false,
+          "truncated": true
+        },
+        {
+          "arm_kind": "decision_suffix",
+          "arm_label": "decision_suffix_oft",
+          "candidate_index": null,
+          "candidate_s": 0.081022,
+          "candidate_steps": 5,
+          "continuation_s": 2.902786,
+          "continuation_steps": 51,
+          "elapsed_s": 2.985945,
+          "env_steps": 56,
+          "final_timestep": 10,
+          "oracle": "oft",
+          "oracle_predict_calls": 7,
+          "oracle_predict_elapsed_s": 0.74304,
+          "prefix_completed": true,
+          "prefix_sha256": "55c1ca0f07742fd5b6d6d2ee17d8e04ef3b6a7a22fac21e46f35084b3c168fb0",
+          "prefix_source": "decision_context.active_action_suffix",
+          "prefix_steps": 5,
+          "restore_s": 0.000833,
+          "stop_reason": "success",
+          "success": true,
+          "terminal_during_prefix": false,
+          "terminated": true,
+          "truncated": false
+        }
+      ],
+      "classification": "deferred_only",
+      "decision_suffix_oft_success": true,
+      "dim": "clean",
+      "direct_oft_success": false,
+      "episode_id": "ep-78c38767-00000000",
+      "level": 0,
+      "state_key": "sp1_5aef1d3106026cf0633a9429f1aba2b4",
+      "suite": "Spatial"
+    }
+  ],
+  "prefix_source": "decision_context.active_action_suffix",
+  "schema_version": "rase-oft-decision-suffix/v1",
+  "state_keys_sha256": "3edc9e8d1494b5d94b6ebc954d7eb7816853dcb4ad0a8c4d6a71bdc1eb952d8c",
+  "status": "complete",
+  "suite": "libero_spatial"
+}

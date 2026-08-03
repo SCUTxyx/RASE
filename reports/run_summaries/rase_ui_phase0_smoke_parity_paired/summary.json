@@ -1,0 +1,80 @@
+{
+  "continue": {
+    "hits": 6,
+    "rate": 0.75
+  },
+  "elapsed_wall_s": 162.205,
+  "n_paired_trials": 8,
+  "n_states": 8,
+  "paired": {
+    "both_failure": 2,
+    "both_success": 5,
+    "continue_only": 1,
+    "mcnemar_exact_p": 1.0,
+    "replan_only": 0
+  },
+  "per_pair": [
+    {
+      "continuation_seed": 2424212355,
+      "continue_smol_active_chunk": true,
+      "repeat": 0,
+      "replan_smol": true,
+      "state_key": "sp1_3c088ffffda6d34f44c6d03973ebfb1d"
+    },
+    {
+      "continuation_seed": 3958508478,
+      "continue_smol_active_chunk": true,
+      "repeat": 0,
+      "replan_smol": true,
+      "state_key": "sp1_2cbb80e34eefb04e95ff2eb18110441c"
+    },
+    {
+      "continuation_seed": 3446200095,
+      "continue_smol_active_chunk": true,
+      "repeat": 0,
+      "replan_smol": true,
+      "state_key": "sp1_3879af491da3547078a0cda0f313c4b5"
+    },
+    {
+      "continuation_seed": 3326362644,
+      "continue_smol_active_chunk": true,
+      "repeat": 0,
+      "replan_smol": true,
+      "state_key": "sp1_014e9360d6f9da3d1106c01b51f6e351"
+    },
+    {
+      "continuation_seed": 3786631004,
+      "continue_smol_active_chunk": true,
+      "repeat": 0,
+      "replan_smol": true,
+      "state_key": "sp1_fa9be7b3d0acd8ccb58d4508bd20390d"
+    },
+    {
+      "continuation_seed": 1941111435,
+      "continue_smol_active_chunk": true,
+      "repeat": 0,
+      "replan_smol": false,
+      "state_key": "sp1_7d71b4cc40a489c2ff7ab733f6e015e6"
+    },
+    {
+      "continuation_seed": 4035847972,
+      "continue_smol_active_chunk": false,
+      "repeat": 0,
+      "replan_smol": false,
+      "state_key": "sp1_56ebca60a26406ce105218c254d77c95"
+    },
+    {
+      "continuation_seed": 4184151778,
+      "continue_smol_active_chunk": false,
+      "repeat": 0,
+      "replan_smol": false,
+      "state_key": "sp1_8a3c10fc8031e35330ae0f4c6d4c5c5c"
+    }
+  ],
+  "replan": {
+    "hits": 5,
+    "rate": 0.625
+  },
+  "schema_version": "rase-smol-intervention-summary/v1",
+  "status": "complete"
+}

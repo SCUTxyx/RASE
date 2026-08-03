@@ -1,0 +1,8 @@
+# Copy to ~/.libero/config.yaml, ~/.libero_plus_rase/config.yaml,
+# and ~/.libero_clean_rase/config.yaml. Rewrite ROOT to the absolute
+# path of your LIBERO-plus checkout (…/src/LIBERO-plus).
+assets: ROOT/libero/libero/assets
+bddl_files: ROOT/libero/libero/bddl_files
+benchmark_root: ROOT/libero/libero
+datasets: ROOT/libero/datasets
+init_states: ROOT/libero/libero/init_files

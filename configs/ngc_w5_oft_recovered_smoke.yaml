@@ -1,0 +1,59 @@
+version: 1
+run_name: ngc_w5_oft_recovered_smoke
+mode: smolvla-screen
+
+# Pipeline smoke for the current scale200 pool, which retains 0 success
+# snapshots. Keys must be frozen from W4 dual-oracle splits.oft_only
+# (OFT portfolio-recovered failure states). This is NOT a retained-success
+# positive control and must not be reported as SmolVLA A/B evidence.
+pool: pool/ngc_step1_scale200
+candidates_dir: runs/ngc_w5_oft_recovered_candidates_t07
+output_dir: runs/ngc_w5_oft_recovered_screen_t07
+
+sample:
+  strategy: explicit
+  state_keys: []
+
+protocol:
+  phase: screen
+  formal_set_labels: false
+  report: candidate_hits_only
+  candidate_rollouts: 1
+  note: >-
+    Freeze keys with:
+    python scripts/export_dual_oracle_split_keys.py
+    --dual-oracle runs/ngc_w4_adequate_dual_oracle_summary.json
+    --split oft_only
+    --output runs/ngc_w5_oft_recovered_state_keys.json
+
+candidates:
+  k: 8
+  chunk_length: 10
+  action_dim: 7
+  temperature: 0.7
+  policy_hash: 71d9563c8295284acba8fc2d5c19de000d6fe9ba58a406832af7ef3d221ed52f
+
+adapter:
+  policy_path: ckpts/smolvla_libero
+  tokenizer_path: ckpts/SmolVLM2-500M-Instruct
+  device: cuda
+  num_steps: 10
+  n_action_steps: 10
+  observation_height: 360
+  observation_width: 360
+  continuation_temperature: 0.5
+
+adaptive:
+  first_stage_rollouts: 1
+  total_rollouts: 1
+
+scheduler:
+  max_attempts: 3
+  lease_seconds: 3600
+  worker: w5-oft-recovered-smoke
+
+oracle:
+  protocol: rase-oracle
+  protocol_version: 1
+  endpoint: tcp://127.0.0.1:5555
+  request_timeout_ms: 60000

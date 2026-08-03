@@ -3,6 +3,17 @@
 配套文档：RASE-Lite 设计报告 v3.1、施工指南一/二/三。
 本文回答一个问题：**哪些代码用现成的（base code），哪些必须自己写，整个 repo 怎么组织。**
 
+> **2026-07-27 执行覆盖：** 本文保留为组件复用参考，当前实现优先级以
+> [`RASE_top_conference_execution_v4.md`](RASE_top_conference_execution_v4.md) 为准。
+> 暂不立即实现五 fallback 与完整 DQN。先完成 episode-disjoint benchmark、
+> cross-policy outcome matrix，以及 `EXECUTE / ESCALATE / ABSTAIN` 三臂的
+> cost-sensitive linear/MLP selector。只有 task-held-out 结果优于 matched
+> random-trigger，才扩展 HELM-like/B2FF-like arm 或进入 offline/online RL。
+> W5 三温 sweep 已于 2026-07-27 以 `0/576` 结束；不得新增 temperature-grid
+> runner。当前工程资源集中到 outcome-stratified、episode-distinct sampler，L1–L2
+> coverage audit，以及复用同一 Smol candidate artifact 的 Smol→Smol/Smol→OFT
+> paired evaluation。
+
 > 实施事实（2026-07-17）：实际仓库根目录是 `RASE/`，Python 使用 3.12，
 > SmolVLA 主评测为 `num_steps=10`、`n_action_steps=10`、`batch_size=2`，
 > LIBERO-Plus 固定 `4976dc3`。旧目录名与示例环境参数由根目录
@@ -16,7 +27,8 @@
 
 1. **所有底座模型与环境（SmolVLA/lerobot、OpenVLA-OFT、LIBERO-Plus、V-JEPA 2、DINOv2）一律用官方代码 + 官方 checkpoint，pin 版本，以"依赖"方式引入，绝不 fork 魔改源码。**
 2. **所有项目核心逻辑（ForkableEnv、自适应采样、fallback 执行器、selector、FEB 评测协议、记账系统）100% 自研**——这些正是论文的贡献所在，没有任何现成实现，且必须可被审稿人审计。
-3. **RL 训练框架不引入 stable-baselines3 / tianshou 等大框架，自写 cleanrl 风格的单模块 DQN**（理由见 §2.5）。
+3. **当前先不实现 DQN。** 第一阶段使用依赖最小的 linear/MLP selector；若通过
+   selector gate，再决定是否自写 cleanrl 风格 DQN（理由见 §2.5）。
 
 一句话判据：**"是不是论文贡献/是不是发布物的一部分"决定自研，"是不是被评测对象/被冻结组件"决定复用。**
 

@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 
+from rase.collect.pipeline import collect
 from rase.collect.schema import StateMetadata
 from rase.collect.state_pool import StatePool, retain_snapshot, snapshot_steps
-from rase.collect.pipeline import collect
 
 
 def test_dry_run_resume_is_byte_stable(tmp_path):
@@ -29,6 +29,31 @@ def test_dry_run_resume_is_byte_stable(tmp_path):
     assert second["episodes_skipped_already_in_pool"] == 10
     assert second["states_idempotently_skipped"] == 0
     assert manifest_path.read_bytes() == manifest_before
+
+
+def test_collect_passes_configured_levels_to_sampler(tmp_path):
+    config = {
+        "adapter": None,
+        "collection": {
+            "output_dir": str(tmp_path / "pool"),
+            "episodes": 5,
+            "seed": 7,
+            "action_chunks_per_episode": 2,
+            "snapshot_cadence_action_chunks": 2,
+            "successful_snapshot_retention": 0.20,
+            "dry_run": True,
+        },
+        "sampling": {
+            "dimension_quotas": {"camera": 1},
+            "levels_by_dimension": {"camera": [1, 2]},
+        },
+    }
+    collect(config)
+    pool = StatePool(tmp_path / "pool")
+    manifest = pool.manifest()
+    levels = {pool.read_state(key).metadata.level for key in manifest["states"]}
+    assert levels
+    assert levels <= {1, 2}
 
 
 def test_failure_retention_and_cadence_are_complete():

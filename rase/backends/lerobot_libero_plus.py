@@ -99,6 +99,27 @@ def _evaluation_settings(config: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _resolve_local_vlm_path(tokenizer_path: Path | None) -> str | None:
+    """Return an absolute local VLM/tokenizer dir, or None if unset.
+
+    SmolVLA's config defaults ``vlm_model_name`` to a HuggingFace hub id. In
+    offline / mirror-flaky environments that triggers a network fetch even when
+    ``ckpts/SmolVLM2-500M-Instruct`` is already on disk. Pointing both the VLM
+    backbone and the preprocessor tokenizer at the local directory avoids hub
+    access.
+    """
+    if tokenizer_path is None:
+        return None
+    resolved = Path(tokenizer_path).expanduser().resolve()
+    if not resolved.is_dir():
+        raise CollapseError(f"tokenizer/VLM path does not exist: {resolved}")
+    if not (resolved / "config.json").is_file():
+        raise CollapseError(
+            f"tokenizer/VLM path missing config.json (not a HF model dir): {resolved}"
+        )
+    return str(resolved)
+
+
 def _get_or_load_policy(
     policy_path: Path,
     *,
@@ -108,9 +129,7 @@ def _get_or_load_policy(
     env_cfg: Any,
     tokenizer_path: Path | None = None,
 ) -> dict[str, Any]:
-    resolved_tokenizer = (
-        str(tokenizer_path.expanduser().resolve()) if tokenizer_path is not None else None
-    )
+    resolved_tokenizer = _resolve_local_vlm_path(tokenizer_path)
     key = (str(policy_path.resolve()), device, num_steps, n_action_steps, resolved_tokenizer)
     with _LOCK:
         cached = _POLICY_CACHE.get(key)
@@ -128,6 +147,9 @@ def _get_or_load_policy(
             policy_cfg.n_action_steps = n_action_steps
         if hasattr(policy_cfg, "num_steps"):
             policy_cfg.num_steps = num_steps
+        # Must rewrite before make_policy: VLM weights load from vlm_model_name.
+        if resolved_tokenizer is not None and hasattr(policy_cfg, "vlm_model_name"):
+            policy_cfg.vlm_model_name = resolved_tokenizer
 
         policy = make_policy(cfg=policy_cfg, env_cfg=env_cfg)
         policy.eval()

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sys
@@ -31,19 +32,100 @@ def _expand(value: object | None, env_name: str | None = None) -> str | None:
     return str(Path(os.path.expandvars(str(value))).expanduser())
 
 
-def _resolve_state_keys(cfg: dict[str, Any], pool, args) -> list[str]:
+def _state_keys_checksum(keys: list[str]) -> str:
+    payload = json.dumps(
+        keys, ensure_ascii=False, separators=(",", ":")
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _load_state_keys_json(path: Path) -> tuple[list[str], dict[str, Any]]:
+    resolved = path.expanduser().resolve()
+    raw = resolved.read_bytes()
+    payload = json.loads(raw)
+    if isinstance(payload, list):
+        keys = [str(item) for item in payload]
+        declared_checksum = None
+    elif isinstance(payload, dict):
+        keys = [str(item) for item in (payload.get("state_keys") or [])]
+        declared_checksum = payload.get("state_keys_sha256")
+    else:
+        raise ValueError(f"{resolved} must contain a list or object")
+    if not keys:
+        raise ValueError(f"no state_keys in {resolved}")
+    if len(set(keys)) != len(keys):
+        raise ValueError(f"duplicate state_keys in {resolved}")
+    checksum = _state_keys_checksum(keys)
+    if declared_checksum is not None and str(declared_checksum) != checksum:
+        raise ValueError(
+            f"state_keys_sha256 mismatch in {resolved}: "
+            f"declared={declared_checksum} computed={checksum}"
+        )
+    return keys, {
+        "source": str(resolved),
+        "artifact_sha256": hashlib.sha256(raw).hexdigest(),
+        "state_keys_sha256": checksum,
+        "n_states": len(keys),
+    }
+
+
+def _resolve_state_keys(
+    cfg: dict[str, Any], pool, args
+) -> tuple[list[str], dict[str, Any]]:
     if args.state_key:
-        return list(args.state_key)
+        keys = list(args.state_key)
+        return keys, {
+            "source": "cli:--state-key",
+            "artifact_sha256": None,
+            "state_keys_sha256": _state_keys_checksum(keys),
+            "n_states": len(keys),
+        }
+    if args.state_keys_json is not None:
+        return _load_state_keys_json(args.state_keys_json)
     sample = dict(cfg.get("sample") or {})
     explicit = list(sample.get("state_keys") or [])
     if explicit:
-        return explicit
+        return explicit, {
+            "source": "config:sample.state_keys",
+            "artifact_sha256": None,
+            "state_keys_sha256": _state_keys_checksum(explicit),
+            "n_states": len(explicit),
+        }
     strategy = str(sample.get("strategy", "explicit_or_w2"))
     if strategy == "stratified":
         from rase.collect.stratified_sample import sample_stratified_keys
 
         suite_horizons = sample.get("suite_horizons")
-        return sample_stratified_keys(
+        outcomes = sample.get("episode_outcomes", sample.get("episode_outcome"))
+        if isinstance(outcomes, str):
+            outcomes = [outcomes]
+        excluded_keys = {str(key) for key in sample.get("excluded_keys") or []}
+        excluded_paths = sample.get("excluded_keys_json") or []
+        if isinstance(excluded_paths, (str, Path)):
+            excluded_paths = [excluded_paths]
+        for raw_path in excluded_paths:
+            path = Path(raw_path)
+            if not path.is_absolute():
+                path = ROOT / path
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            values = payload if isinstance(payload, list) else payload.get("state_keys") or []
+            excluded_keys.update(str(key) for key in values)
+        excluded_episode_keys = {
+            str(key) for key in sample.get("excluded_episode_keys") or []
+        }
+        excluded_episode_paths = sample.get("excluded_episode_keys_json") or []
+        if isinstance(excluded_episode_paths, (str, Path)):
+            excluded_episode_paths = [excluded_episode_paths]
+        for raw_path in excluded_episode_paths:
+            path = Path(raw_path)
+            if not path.is_absolute():
+                path = ROOT / path
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            values = (
+                payload if isinstance(payload, list) else payload.get("state_keys") or []
+            )
+            excluded_episode_keys.update(str(key) for key in values)
+        keys = sample_stratified_keys(
             pool,
             per_cell=int(sample.get("per_cell", 2)),
             seed=int(sample.get("sample_seed", 0)),
@@ -63,17 +145,43 @@ def _resolve_state_keys(cfg: dict[str, Any], pool, args) -> list[str]:
                 if suite_horizons
                 else None
             ),
+            strata=tuple(sample.get("strata") or ("suite", "dim")),
+            t0_bins=sample.get("t0_bins"),
+            selection=str(sample.get("selection", "earliest")),
+            episode_outcomes=(
+                tuple(str(value) for value in outcomes) if outcomes is not None else None
+            ),
+            excluded_keys=excluded_keys,
+            excluded_episode_keys=excluded_episode_keys,
+            distinct_episodes=bool(sample.get("distinct_episodes", False)),
         )
+        return keys, {
+            "source": "config:sample.stratified",
+            "artifact_sha256": None,
+            "state_keys_sha256": _state_keys_checksum(keys),
+            "n_states": len(keys),
+        }
     # Default: reuse W2 pilot keys if summary exists.
     w2_summary = ROOT / "runs/ngc_w2_candidates_pilot/summary.json"
     if w2_summary.is_file():
         payload = json.loads(w2_summary.read_text(encoding="utf-8"))
         keys = list(payload.get("state_keys") or [])
         if keys:
-            return keys
+            return keys, {
+                "source": str(w2_summary.resolve()),
+                "artifact_sha256": hashlib.sha256(w2_summary.read_bytes()).hexdigest(),
+                "state_keys_sha256": _state_keys_checksum(keys),
+                "n_states": len(keys),
+            }
     from rase.collect.pool_candidates import sample_pool_keys
 
-    return sample_pool_keys(pool, 2, int(sample.get("sample_seed", 0)))
+    keys = sample_pool_keys(pool, 2, int(sample.get("sample_seed", 0)))
+    return keys, {
+        "source": "config:sample.fallback",
+        "artifact_sha256": None,
+        "state_keys_sha256": _state_keys_checksum(keys),
+        "n_states": len(keys),
+    }
 
 
 def _suite_from_task_id(task_id: str) -> str:
@@ -88,42 +196,131 @@ def _suite_from_task_id(task_id: str) -> str:
     raise ValueError(f"cannot map task_id to suite: {task_id}")
 
 
+def apply_screen_semantics(summary: dict[str, Any]) -> None:
+    """Remove formal labels and expose only one-shot screen hit counts."""
+    summary["formal_set_labels"] = False
+    summary["screen_semantics"] = "one_rollout_per_candidate_hit_screen"
+    summary["screen_warning"] = (
+        "Screen outcomes locate non-zero candidate hits only. They are not "
+        "Wilson A/B/C ground truth; freeze hits and run smolvla-primary confirm."
+    )
+    summary["diagnostic_label_counts"] = summary.pop("label_counts", {})
+    state_hits = 0
+    candidate_hits = 0
+    for state in summary.get("per_state") or []:
+        state["diagnostic_set_label"] = state.get("set_label")
+        state["set_label"] = None
+        hits = sum(
+            int(candidate.get("successes", 0)) > 0
+            for candidate in state.get("candidates") or []
+        )
+        state["screen_candidate_hits"] = hits
+        candidate_hits += hits
+        state_hits += hits > 0
+    summary["screen_candidate_hits"] = candidate_hits
+    summary["screen_state_hits"] = state_hits
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument(
         "--mode",
-        choices=("smoke", "smolvla-primary", "oft-verify"),
+        choices=("smoke", "smolvla-screen", "smolvla-primary", "oft-verify"),
         default=None,
     )
     parser.add_argument("--state-key", action="append", default=[])
+    parser.add_argument(
+        "--state-keys-json",
+        type=Path,
+        default=None,
+        help="Frozen JSON key artifact; preferred for formal runs",
+    )
     parser.add_argument("--suite", default=None, help="Filter states for oft-verify")
     parser.add_argument("--endpoint", default=None)
     parser.add_argument("--max-rollouts", type=int, default=None)
     parser.add_argument("--output-dir", type=Path, default=None)
+    parser.add_argument(
+        "--candidates-dir",
+        type=Path,
+        default=None,
+        help="Override config candidates_dir",
+    )
     parser.add_argument("--worker", default=None)
-    parser.add_argument("--force-new-run", action="store_true")
+    run_mode = parser.add_mutually_exclusive_group()
+    run_mode.add_argument(
+        "--fresh-run",
+        action="store_true",
+        help="Require that output-dir does not exist; default is safe resume",
+    )
+    run_mode.add_argument(
+        "--resume",
+        action="store_true",
+        help="Resume the durable scheduler (the default)",
+    )
+    parser.add_argument(
+        "--force-new-run",
+        action="store_true",
+        help=argparse.SUPPRESS,
+    )
     parser.add_argument(
         "--continuation-temperature",
         type=float,
         default=None,
         help="Override adapter.continuation_temperature for SmolVLA continuation",
     )
+    parser.add_argument("--trace-dir", type=Path, default=None)
+    parser.add_argument("--trace-state-key", action="append", default=[])
+    parser.add_argument(
+        "--trace-all",
+        action="store_true",
+        help="Trace every selected state (otherwise repeat --trace-state-key)",
+    )
+    parser.add_argument(
+        "--trace-outcomes",
+        choices=("all", "success", "failure"),
+        default="success",
+    )
+    parser.add_argument(
+        "--trace-format",
+        choices=("archive", "mp4", "both"),
+        default="archive",
+    )
+    parser.add_argument("--trace-stride", type=int, default=5)
+    parser.add_argument("--trace-max-frames", type=int, default=256)
+    parser.add_argument("--trace-fps", type=float, default=10.0)
     args = parser.parse_args()
+    if args.trace_dir is not None and not (args.trace_all or args.trace_state_key):
+        parser.error("--trace-dir requires --trace-all or at least one --trace-state-key")
+    if args.state_key and args.state_keys_json is not None:
+        parser.error("--state-key and --state-keys-json are mutually exclusive")
+    if args.force_new_run and (args.fresh_run or args.resume):
+        parser.error("--force-new-run cannot be combined with --fresh-run/--resume")
 
     cfg = _load_config(args.config.resolve())
     mode = args.mode or str(cfg.get("mode", "smolvla-primary"))
     pool_root = Path(_expand(cfg.get("pool"), "RASE_POOL_ROOT") or "pool/ngc_step1_scale200")
     if not pool_root.is_absolute():
         pool_root = (ROOT / pool_root).resolve()
-    candidates_dir = Path(cfg.get("candidates_dir") or "runs/ngc_w2_candidates_pilot/candidates")
+    candidates_dir = Path(
+        args.candidates_dir
+        or cfg.get("candidates_dir")
+        or "runs/ngc_w2_candidates_pilot/candidates"
+    )
     if not candidates_dir.is_absolute():
         candidates_dir = (ROOT / candidates_dir).resolve()
+    if not candidates_dir.is_dir():
+        raise SystemExit(
+            f"candidates_dir does not exist: {candidates_dir}\n"
+            "Run scripts/generate_pool_candidates.py first (it must write to "
+            "config candidates_dir, not the W2 default)."
+        )
     output_dir = Path(args.output_dir or cfg.get("output_dir") or f"runs/ngc_w3_{mode}")
     if not output_dir.is_absolute():
         output_dir = (ROOT / output_dir).resolve()
-    if args.force_new_run and output_dir.exists():
-        raise SystemExit(f"refusing --force-new-run on existing {output_dir}")
+    fresh_run = bool(args.fresh_run or args.force_new_run)
+    if fresh_run and output_dir.exists():
+        raise SystemExit(f"fresh run requires a new output directory: {output_dir}")
 
     adaptive = dict(cfg.get("adaptive") or {})
     adapter = dict(cfg.get("adapter") or {})
@@ -152,8 +349,8 @@ def main() -> int:
     )
     adapter["continuation_temperature"] = continuation_temperature
 
-    from rase.backends.libero_plus_paths import ensure_libero_plus_paths
     from rase.backends.lerobot_libero_plus import _patch_lerobot_init_states
+    from rase.backends.libero_plus_paths import ensure_libero_plus_paths
     from rase.collect.candidates import load_artifact
     from rase.collect.forked_rollout import (
         InProcessSmolVLAContinuation,
@@ -162,6 +359,7 @@ def main() -> int:
         load_smolvla_policy_bundle,
         restore_pool_state,
         rollout_seed,
+        run_one_forked_rollout,
     )
     from rase.collect.resumable_sampling import adaptive_sample_resumable
     from rase.collect.run_manifest import build_run_manifest, write_run_manifest
@@ -175,7 +373,7 @@ def main() -> int:
     _patch_lerobot_init_states()
 
     pool = StatePool(pool_root)
-    state_keys = _resolve_state_keys(cfg, pool, args)
+    state_keys, state_keys_provenance = _resolve_state_keys(cfg, pool, args)
     if args.suite:
         filtered = []
         for key in state_keys:
@@ -185,6 +383,7 @@ def main() -> int:
         state_keys = filtered
         if not state_keys:
             raise SystemExit(f"no states match suite {args.suite}")
+    selected_keys_checksum = _state_keys_checksum(state_keys)
 
     policy_path = Path(
         _expand(adapter.get("policy_path"), "RASE_POLICY_PATH") or "ckpts/smolvla_libero"
@@ -262,12 +461,14 @@ def main() -> int:
     print(
         f"ROLLOUT_START mode={mode} n_states={len(state_keys)} "
         f"k={k} n_first={n_first} n_total={n_total} "
-        f"cont_temp={continuation_temperature} out={output_dir}",
+        f"cont_temp={continuation_temperature} out={output_dir} "
+        f"run_behavior={'fresh' if fresh_run else 'resume'} "
+        f"keys_sha256={selected_keys_checksum}",
         flush=True,
     )
 
     policy_bundle = None
-    if mode in {"smoke", "smolvla-primary"}:
+    if mode in {"smoke", "smolvla-screen", "smolvla-primary"}:
         policy_bundle = load_smolvla_policy_bundle(
             policy_path,
             device=str(adapter.get("device", "cuda")),
@@ -289,6 +490,48 @@ def main() -> int:
     completed_budget = 0
     t0 = time.perf_counter()
     cross_oracle: dict[str, dict[str, Any]] = {}
+    trace_dir = args.trace_dir.resolve() if args.trace_dir is not None else None
+    trace_state_keys = set(args.trace_state_key)
+
+    def new_trace(state_key: str):
+        if trace_dir is None:
+            return None
+        if not args.trace_all and state_key not in trace_state_keys:
+            return None
+        from rase.collect.rollout_trace import RolloutTraceRecorder
+
+        return RolloutTraceRecorder(
+            stride=args.trace_stride,
+            max_frames=args.trace_max_frames,
+        )
+
+    def persist_trace(
+        recorder,
+        result,
+        *,
+        state_key: str,
+        candidate: int,
+        rollout: int,
+        oracle: str,
+    ) -> None:
+        if recorder is None or trace_dir is None:
+            return
+        if args.trace_outcomes == "success" and not result.success:
+            return
+        if args.trace_outcomes == "failure" and result.success:
+            return
+        target = trace_dir / state_key / f"c{candidate}" / f"r{rollout}"
+        metadata = {
+            "state_key": state_key,
+            "candidate_id": candidate,
+            "rollout_index": rollout,
+            "oracle": oracle,
+            **result.to_dict(),
+        }
+        if args.trace_format in {"archive", "both"}:
+            recorder.write_frame_archive(target, metadata=metadata)
+        if args.trace_format in {"mp4", "both"}:
+            recorder.write_mp4(target / "rollout.mp4", fps=args.trace_fps)
 
     for state_key in state_keys:
         artifact_path = candidates_dir / f"{state_key}.npz"
@@ -308,60 +551,65 @@ def main() -> int:
             from rase.collect.oracle_continuation import OracleChunkContinuation
 
             assert oracle_client is not None
-            restored = restore_pool_state(
-                pool,
-                state_key,
-                libero_plus_root=libero_plus_root,
-                observation_height=rollout_cfg.observation_height,
-                observation_width=rollout_cfg.observation_width,
-            )
-            try:
-                outcomes = []
-                for candidate in range(k):
-                    key = RolloutKey(state_key, candidate, 0)
+            outcomes = []
+            for candidate in range(k):
+                key = RolloutKey(state_key, candidate, 0)
+                existing = scheduler.result(key)
+                if existing is not None:
+                    outcomes.append(bool(existing["result"]["success"]))
+                    continue
+                claim = scheduler.claim(key, worker)
+                if claim is None:
                     existing = scheduler.result(key)
-                    if existing is not None:
-                        outcomes.append(bool(existing["result"]["success"]))
-                        continue
-                    claim = scheduler.claim(key, worker)
-                    if claim is None:
-                        existing = scheduler.result(key)
-                        if existing is None:
-                            raise RuntimeError(f"cannot claim {key}")
-                        outcomes.append(bool(existing["result"]["success"]))
-                        continue
-                    try:
-                        continuation = OracleChunkContinuation(
-                            oracle_client, instruction=meta.instruction
-                        )
-                        result = evaluate_candidate(
-                            restored,
-                            artifact.actions[candidate],
-                            continuation,
-                        )
-                        payload = {
-                            **result.to_dict(),
-                            "oracle": "oft",
-                            "model_info": oracle_info,
-                        }
-                        scheduler.complete(key, payload, worker=worker)
-                        outcomes.append(bool(result.success))
-                        completed_budget += 1
-                        print(
-                            f"OFT_VERIFY c={candidate} success={result.success} "
-                            f"steps={result.env_steps}",
-                            flush=True,
-                        )
-                    except Exception as exc:
-                        scheduler.fail(key, repr(exc), worker=worker)
-                        raise
-                cross_oracle[state_key] = {
-                    "successes": sum(outcomes),
-                    "trials": len(outcomes),
-                    "per_candidate": outcomes,
-                }
-            finally:
-                restored.close()
+                    if existing is None:
+                        raise RuntimeError(f"cannot claim {key}")
+                    outcomes.append(bool(existing["result"]["success"]))
+                    continue
+                try:
+                    continuation = OracleChunkContinuation(
+                        oracle_client, instruction=meta.instruction
+                    )
+                    recorder = new_trace(state_key)
+                    # Each candidate gets a fresh environment. A terminal
+                    # rollout can mutate model state used by task fingerprinting.
+                    result = run_one_forked_rollout(
+                        pool,
+                        state_key,
+                        artifact.actions[candidate],
+                        continuation,
+                        libero_plus_root=libero_plus_root,
+                        config=rollout_cfg,
+                        trace_callback=recorder,
+                    )
+                    persist_trace(
+                        recorder,
+                        result,
+                        state_key=state_key,
+                        candidate=candidate,
+                        rollout=0,
+                        oracle="oft",
+                    )
+                    payload = {
+                        **result.to_dict(),
+                        "oracle": "oft",
+                        "model_info": oracle_info,
+                    }
+                    scheduler.complete(key, payload, worker=worker)
+                    outcomes.append(bool(result.success))
+                    completed_budget += 1
+                    print(
+                        f"OFT_VERIFY c={candidate} success={result.success} "
+                        f"steps={result.env_steps}",
+                        flush=True,
+                    )
+                except Exception as exc:
+                    scheduler.fail(key, repr(exc), worker=worker)
+                    raise
+            cross_oracle[state_key] = {
+                "successes": sum(outcomes),
+                "trials": len(outcomes),
+                "per_candidate": outcomes,
+            }
             continue
 
         # SmolVLA primary / smoke
@@ -383,10 +631,20 @@ def main() -> int:
                 observation_width=rollout_cfg.observation_width,
             )
             try:
+                recorder = new_trace(state_key)
                 result = evaluate_candidate(
                     restored,
                     artifact.actions[cand_index],
                     continuation,
+                    trace_callback=recorder,
+                )
+                persist_trace(
+                    recorder,
+                    result,
+                    state_key=state_key,
+                    candidate=cand_index,
+                    rollout=rollout_index,
+                    oracle="smolvla",
                 )
             finally:
                 restored.close()
@@ -403,6 +661,22 @@ def main() -> int:
                 "rollout_seed": seed,
                 "continuation_temperature": rollout_cfg.continuation_temperature,
             }
+
+        if mode == "smolvla-screen":
+            for candidate in range(k):
+                key = RolloutKey(state_key, candidate, 0)
+                if scheduler.is_complete(key):
+                    continue
+                claim = scheduler.claim(key, worker)
+                if claim is None:
+                    continue
+                try:
+                    payload = run_one(candidate, 0)
+                    scheduler.complete(key, payload, worker=worker)
+                except Exception as exc:
+                    scheduler.fail(key, repr(exc), worker=worker)
+                    raise
+            continue
 
         if mode == "smoke":
             # Timing gate: execute up to max_rollouts durable units, no full triage claim.
@@ -474,6 +748,21 @@ def main() -> int:
         cross_oracle=cross_oracle or None,
     )
     summary["mode"] = mode
+    summary["run_behavior"] = "fresh" if fresh_run else "resume"
+    summary["state_keys_provenance"] = {
+        **state_keys_provenance,
+        "selected_state_keys_sha256": selected_keys_checksum,
+        "selected_n_states": len(state_keys),
+        "suite_filter": args.suite,
+    }
+    if mode == "oft-verify":
+        summary["verification_semantics"] = "deterministic_one_shot"
+        summary["verification_warning"] = (
+            "One deterministic trial per candidate; Wilson Set A/B/C labels "
+            "do not apply. Use cross_oracle candidate hits and portfolio coverage."
+        )
+    elif mode == "smolvla-screen":
+        apply_screen_semantics(summary)
     summary["elapsed_wall_s"] = round(time.perf_counter() - t0, 3)
     summary["rollouts_this_process"] = completed_budget
     summary_path = output_dir / "summary.json"

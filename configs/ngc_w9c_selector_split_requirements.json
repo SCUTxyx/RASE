@@ -1,0 +1,45 @@
+{
+  "min_arm_observed_per_split": {
+    "test": {
+      "abstain": 1,
+      "continue_smol": 1,
+      "escalate_oft": 1
+    },
+    "train": {
+      "abstain": 1,
+      "continue_smol": 1,
+      "escalate_oft": 1
+    },
+    "val": {
+      "abstain": 1,
+      "continue_smol": 1,
+      "escalate_oft": 1
+    }
+  },
+  "min_episode_groups_per_split": {
+    "test": 4,
+    "train": 20,
+    "val": 4
+  },
+  "min_optimal_actions_per_split": 2,
+  "min_states_per_cohort": 1,
+  "required_cohorts": {
+    "test": [
+      "clean_control",
+      "failure_challenge"
+    ],
+    "train": [
+      "clean_control",
+      "failure_challenge"
+    ],
+    "val": [
+      "clean_control",
+      "failure_challenge"
+    ]
+  },
+  "required_splits": [
+    "train",
+    "val",
+    "test"
+  ]
+}

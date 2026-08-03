@@ -1,0 +1,65 @@
+version: 1
+run_name: ngc_w4_adequate_scale
+mode: smolvla-primary
+
+# W4 ADEQUATE-only scale: per_cell=4 → 32 states (4 suites × camera/robot).
+# Protocol frozen vs W3 ADEQUATE pilot. Do not hard-code state_keys; sample with
+# sample_seed=2 (or scripts/sample_adequate_keys.py) then freeze the JSON artifact.
+# Candidates live at candidates_dir root (no nested candidates/ subdir).
+
+pool: pool/ngc_step1_scale200
+candidates_dir: runs/ngc_w4_adequate_candidates
+output_dir: runs/ngc_w4_pilot_adequate
+
+sample:
+  strategy: stratified
+  per_cell: 4
+  sample_seed: 2
+  dims: [camera, robot]
+  suites: [Spatial, Object, Goal, Long]
+  levels: [3, 4, 5]
+  min_remaining_steps: 100
+  suite_horizons:
+    Spatial: 280
+    Object: 280
+    Goal: 300
+    Long: 520
+
+candidates:
+  k: 8
+  chunk_length: 10
+  action_dim: 7
+  temperature: 0.7
+  policy_hash: 71d9563c8295284acba8fc2d5c19de000d6fe9ba58a406832af7ef3d221ed52f
+
+adapter:
+  policy_path: ckpts/smolvla_libero
+  tokenizer_path: ckpts/SmolVLM2-500M-Instruct
+  device: cuda
+  num_steps: 10
+  n_action_steps: 10
+  observation_height: 360
+  observation_width: 360
+  continuation_temperature: 0.5
+
+adaptive:
+  protocol_version: wilson-onesided-alpha-spend-v1
+  sidedness: one-sided
+  confidence: 0.95
+  threshold: 0.5
+  first_stage_rollouts: 6
+  total_rollouts: 20
+  alpha_first: 0.01
+  alpha_final: 0.04
+  set_a_min_good_candidates: 3
+
+scheduler:
+  max_attempts: 3
+  lease_seconds: 3600
+  worker: w4-adequate-scale-worker
+
+oracle:
+  protocol: rase-oracle
+  protocol_version: 1
+  endpoint: tcp://127.0.0.1:5555
+  request_timeout_ms: 60000

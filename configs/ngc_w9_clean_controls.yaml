@@ -1,0 +1,59 @@
+version: 1
+run_name: ngc_w9_clean_controls
+mode: direct-policy-controls
+
+pool: pool/ngc_w9_clean_controls
+output_dir: runs/ngc_w9_clean_controls
+
+sample:
+  strategy: stratified
+  per_cell: 4
+  sample_seed: 20260730
+  selection: random
+  strata: [suite, t0_bin]
+  t0_bins:
+    early: [0, 10]
+    mid: [10, 40]
+  dims: [clean]
+  suites: [Spatial, Object, Goal, Long]
+  levels: [0]
+  episode_outcomes: [success]
+  distinct_episodes: true
+
+protocol:
+  phase: clean_success_control
+  cohort: clean_control
+  expected_n_states: 32
+  inferential_unit: episode_group
+  note: >-
+    Four early and four mid snapshots per suite, each from a distinct successful
+    clean episode. Perturbation metadata is reporting-only and forbidden as a
+    selector input.
+
+candidates:
+  k: 1
+  chunk_length: 0
+  action_dim: 7
+  temperature: 0.7
+  policy_hash: 71d9563c8295284acba8fc2d5c19de000d6fe9ba58a406832af7ef3d221ed52f
+
+adapter:
+  policy_path: ckpts/smolvla_libero
+  tokenizer_path: ckpts/SmolVLM2-500M-Instruct
+  device: cuda
+  num_steps: 10
+  n_action_steps: 10
+  observation_height: 360
+  observation_width: 360
+  continuation_temperature: 0.5
+
+scheduler:
+  max_attempts: 3
+  lease_seconds: 3600
+  worker: w9-clean-controls
+
+oracle:
+  protocol: rase-oracle
+  protocol_version: 1
+  endpoint: tcp://127.0.0.1:5555
+  request_timeout_ms: 60000

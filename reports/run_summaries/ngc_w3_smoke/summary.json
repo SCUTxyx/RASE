@@ -1,0 +1,41 @@
+{
+  "elapsed_s": {
+    "mean": 0.0764211,
+    "median": 0.074852,
+    "n": 20,
+    "p90": 0.0752856
+  },
+  "elapsed_wall_s": 37.822,
+  "label_counts": {
+    "incomplete": 2
+  },
+  "max_retries_observed": 0,
+  "mean_trials_per_candidate": 6.0,
+  "mode": "smoke",
+  "n_states": 2,
+  "per_state": [
+    {
+      "n_candidates_ready": 1,
+      "set_label": "incomplete",
+      "state_key": "sp1_69771078bea26d7efe824db6d389b57c"
+    },
+    {
+      "n_candidates_ready": 0,
+      "set_label": "incomplete",
+      "state_key": "sp1_f478ef09f38e3c249c53ded5b1820595"
+    }
+  ],
+  "protocol": {
+    "alpha_final": 0.04,
+    "alpha_first": 0.01,
+    "k": 8,
+    "n_first": 6,
+    "n_total": 20,
+    "set_a_min_good": 3,
+    "sidedness": "one-sided",
+    "threshold": 0.5,
+    "version": "wilson-onesided-alpha-spend-v1"
+  },
+  "rollouts_this_process": 20,
+  "total_rollouts_completed": 6
+}

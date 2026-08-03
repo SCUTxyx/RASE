@@ -2,6 +2,32 @@
 
 配套文档：RASE-Lite 设计报告 v3.1 §4、§6。覆盖：系统架构、特征管线、动作空间与 fallback 执行器实现、offline warm-start（BC+CQL）、online DQN、并行采样 infra、奖励与预算记账、稳定性预案、评测与日志。
 
+> **状态更新（2026-07-27）：Deferred conditional design。** 不得从本指南直接
+> 启动 BC+CQL 或 DQN。当前先做 `EXECUTE_CANDIDATE / ESCALATE_OFT / ABSTAIN`
+> 三臂、低成本特征（ACC/action statistics/frozen feature/value probe）的
+> linear→MLP selector。进入本指南完整路线必须同时满足：① 至少 100 个可恢复和
+> 100 个不可恢复 episode-group；② episode/task-disjoint split；③ escalation paired
+> pilot 净恢复 ≥5pp；④ linear/MLP 在 task-held-out 上优于 matched random-trigger。
+> `WAIT` 与 `REPLAN-text` 移出首版主空间，HELM-like/B2FF-like 仅在三臂 gate
+> 通过后加入。当前计划见
+> [`RASE_top_conference_execution_v4.md`](RASE_top_conference_execution_v4.md)。
+
+> **实现更新（2026-07-29）：** 首版三臂已进一步冻结为
+> `CONTINUE_SMOL / ESCALATE_OFT / ABSTAIN`，不是 K 个 candidate class。
+> `CONTINUE_SMOL` 使用 snapshot 上的空前缀 direct Smol continuation；candidate-0
+> 已降级为 legacy diagnostic arm。`ESCALATE_OFT` 同样从 snapshot direct rollout。
+> 任何 `any_of_K` portfolio 标签均标记为 proxy 并被训练门禁拒绝。
+> `rase/selector/lightweight.py` 与 `scripts/train_lightweight_selector.py` 已实现
+> dependency-free ridge utility baseline；本指南后续 3.5M DQN 结构继续冻结。
+> 扰动 dim/sub/level 与 episode outcome 只可用于报告，禁止进入 selector 特征；
+> W9 首版只用当前 RGB/proprio/t0，并审计 forbidden-feature leakage。
+
+> **W5 kill criterion 已触发：** L3–L5 proposal temperature sweep 为 `0/576`，
+> 因此不能从现有 failure-only pool 构造 selector 正负训练集。RL/BC/CQL 继续冻结，
+> 直到 W6 failure-challenge 获得 paired `EXECUTE` 与 `ESCALATE_OFT` outcome，
+> 且独立 clean-success control 完成 episode-disjoint split。screen-only 的 `uncertain` 行不得
+> 伪装成 Set C 或直接用作监督标签。
+
 > 实施事实（2026-07-17）：当前仓库根目录为 `RASE/`；SmolVLA 环境使用
 > Python 3.12，OFT 环境使用 Python 3.10，LIBERO-Plus 固定 commit
 > `4976dc3`。本指南属于 W10 之后的设计，任何示例版本或硬件参数均由

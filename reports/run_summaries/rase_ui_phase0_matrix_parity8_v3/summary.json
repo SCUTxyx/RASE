@@ -1,0 +1,367 @@
+{
+  "all_operator_success_rate": 0.625,
+  "best_fixed_operator": "continue_smol_active_chunk",
+  "best_fixed_success_rate": 0.75,
+  "diagnostic_only": true,
+  "interpretation": "Eight-state/two-task smoke; use to test arm semantics and locate complementarity, not for paper-level significance.",
+  "n_all_operator_success": 5,
+  "n_complete_snapshots": 8,
+  "n_no_operator_support": 2,
+  "n_snapshots": 8,
+  "no_operator_support_rate": 0.25,
+  "oracle_minus_best_fixed": 0.0,
+  "pairwise_vs_continue": {
+    "replan_smol": {
+      "higher_success_states": 0,
+      "lower_success_states": 1,
+      "tied_success_states": 7
+    },
+    "switch_oft": {
+      "higher_success_states": 0,
+      "lower_success_states": 0,
+      "tied_success_states": 8
+    }
+  },
+  "per_operator_mean_costs": {
+    "continue_smol_active_chunk": {
+      "compute_seconds": 6.157184,
+      "env_steps": 114.375,
+      "latency_seconds": 6.157184
+    },
+    "replan_smol": {
+      "compute_seconds": 7.223404500000001,
+      "env_steps": 135.375,
+      "latency_seconds": 7.223404500000001
+    },
+    "switch_oft": {
+      "compute_seconds": 4.52850575,
+      "env_steps": 124.375,
+      "latency_seconds": 4.52850575
+    }
+  },
+  "per_operator_success_rate": {
+    "continue_smol_active_chunk": 0.75,
+    "replan_smol": 0.625,
+    "switch_oft": 0.75
+  },
+  "per_state": [
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 7.330616,
+          "env_steps": 128.0,
+          "latency_seconds": 7.330616
+        },
+        "replan_smol": {
+          "compute_seconds": 6.657839,
+          "env_steps": 123.0,
+          "latency_seconds": 6.657839
+        },
+        "switch_oft": {
+          "compute_seconds": 3.818646,
+          "env_steps": 107.0,
+          "latency_seconds": 3.818646
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 1.0,
+        "replan_smol": 1.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_3c088ffffda6d34f44c6d03973ebfb1d",
+      "step": 0,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_object_000010",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 5.298545,
+          "env_steps": 80.0,
+          "latency_seconds": 5.298545
+        },
+        "replan_smol": {
+          "compute_seconds": 5.528454,
+          "env_steps": 81.0,
+          "latency_seconds": 5.528454
+        },
+        "switch_oft": {
+          "compute_seconds": 3.755319,
+          "env_steps": 78.0,
+          "latency_seconds": 3.755319
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 1.0,
+        "replan_smol": 1.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_2cbb80e34eefb04e95ff2eb18110441c",
+      "step": 0,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_spatial_000004",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 5.977536,
+          "env_steps": 107.0,
+          "latency_seconds": 5.977536
+        },
+        "replan_smol": {
+          "compute_seconds": 5.609611,
+          "env_steps": 103.0,
+          "latency_seconds": 5.609611
+        },
+        "switch_oft": {
+          "compute_seconds": 3.387017,
+          "env_steps": 97.0,
+          "latency_seconds": 3.387017
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 1.0,
+        "replan_smol": 1.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_3879af491da3547078a0cda0f313c4b5",
+      "step": 2,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_object_000010",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 4.103468,
+          "env_steps": 58.0,
+          "latency_seconds": 4.103468
+        },
+        "replan_smol": {
+          "compute_seconds": 4.419125,
+          "env_steps": 57.0,
+          "latency_seconds": 4.419125
+        },
+        "switch_oft": {
+          "compute_seconds": 2.929286,
+          "env_steps": 52.0,
+          "latency_seconds": 2.929286
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 1.0,
+        "replan_smol": 1.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_014e9360d6f9da3d1106c01b51f6e351",
+      "step": 2,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_spatial_000004",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 5.031024,
+          "env_steps": 90.0,
+          "latency_seconds": 5.031024
+        },
+        "replan_smol": {
+          "compute_seconds": 5.083006,
+          "env_steps": 84.0,
+          "latency_seconds": 5.083006
+        },
+        "switch_oft": {
+          "compute_seconds": 2.768823,
+          "env_steps": 71.0,
+          "latency_seconds": 2.768823
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 1.0,
+        "replan_smol": 1.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_fa9be7b3d0acd8ccb58d4508bd20390d",
+      "step": 4,
+      "success_then_env_steps_winners": [
+        "switch_oft"
+      ],
+      "task_id": "libero_object_000010",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 3.18135,
+          "env_steps": 42.0,
+          "latency_seconds": 3.18135
+        },
+        "replan_smol": {
+          "compute_seconds": 11.412366,
+          "env_steps": 225.0,
+          "latency_seconds": 11.412366
+        },
+        "switch_oft": {
+          "compute_seconds": 7.371753,
+          "env_steps": 180.0,
+          "latency_seconds": 7.371753
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 1.0,
+        "replan_smol": 0.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_7d71b4cc40a489c2ff7ab733f6e015e6",
+      "step": 4,
+      "success_then_env_steps_winners": [
+        "continue_smol_active_chunk"
+      ],
+      "task_id": "libero_spatial_000004",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 8.452253,
+          "env_steps": 205.0,
+          "latency_seconds": 8.452253
+        },
+        "replan_smol": {
+          "compute_seconds": 9.110744,
+          "env_steps": 205.0,
+          "latency_seconds": 9.110744
+        },
+        "switch_oft": {
+          "compute_seconds": 5.457481,
+          "env_steps": 205.0,
+          "latency_seconds": 5.457481
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 0.0
+      },
+      "snapshot_id": "sp1_56ebca60a26406ce105218c254d77c95",
+      "step": 6,
+      "success_then_env_steps_winners": [],
+      "task_id": "libero_object_000010",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_costs": {
+        "continue_smol_active_chunk": {
+          "compute_seconds": 9.88268,
+          "env_steps": 205.0,
+          "latency_seconds": 9.88268
+        },
+        "replan_smol": {
+          "compute_seconds": 9.966091,
+          "env_steps": 205.0,
+          "latency_seconds": 9.966091
+        },
+        "switch_oft": {
+          "compute_seconds": 6.739721,
+          "env_steps": 205.0,
+          "latency_seconds": 6.739721
+        }
+      },
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 0.0
+      },
+      "snapshot_id": "sp1_8a3c10fc8031e35330ae0f4c6d4c5c5c",
+      "step": 6,
+      "success_then_env_steps_winners": [],
+      "task_id": "libero_spatial_000004",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    }
+  ],
+  "same_state_oracle_success_rate": 0.75,
+  "schema_version": "rase-intervention-matrix-summary/v1",
+  "source_oft_summaries": [
+    "/root/autodl-tmp/RASE/runs/rase_ui_phase0_switch_oft_spatial_parity8_v1/summary.json",
+    "/root/autodl-tmp/RASE/runs/rase_ui_phase0_switch_oft_object_parity8_v1/summary.json"
+  ],
+  "source_smol_run": "/root/autodl-tmp/RASE/runs/rase_ui_phase0_smoke_parity_paired",
+  "status": "complete",
+  "success_pattern_counts": {
+    "000": 2,
+    "101": 1,
+    "111": 5
+  },
+  "success_then_env_steps": {
+    "best_fixed_mean_env_steps_on_supported_states": 84.16666666666667,
+    "best_fixed_operator": "continue_smol_active_chunk",
+    "n_oracle_supported_states": 6,
+    "oracle_steps_saved_vs_best_fixed_on_supported_states": 9.666666666666671,
+    "same_state_oracle_mean_env_steps_on_supported_states": 74.5,
+    "semantics": "On states where at least one arm succeeds, lexicographically maximize terminal success, then minimize env_steps.",
+    "winner_mass_on_supported_states": {
+      "continue_smol_active_chunk": 1.0,
+      "switch_oft": 5.0
+    }
+  },
+  "unique_winner_counts": {},
+  "unique_winner_task_counts": {}
+}

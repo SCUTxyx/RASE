@@ -1,0 +1,35 @@
+{
+  "run_name": "rase-ui-phase0-decision-context-smoke",
+  "adapter": "rase.collect.lerobot_libero_plus_adapter:make_adapter",
+  "adapter_config": {
+    "policy_path": "ckpts/smolvla_libero",
+    "tokenizer_path": "ckpts/SmolVLM2-500M-Instruct",
+    "libero_plus_root": null,
+    "libero_clean_root": "/root/autodl-tmp/src/LIBERO",
+    "device": "cuda",
+    "num_steps": 10,
+    "n_action_steps": 10,
+    "continuation_temperature": 0.5,
+    "observation_height": 360,
+    "observation_width": 360,
+    "capture_decision_context_v2": true,
+    "snapshot_offset_steps": 5,
+    "public_history_steps": 4
+  },
+  "sampling": {
+    "dimension_quotas": {"clean": 100},
+    "suite_quotas": {"Spatial": 1, "Object": 1},
+    "levels_by_dimension": {"clean": [0]}
+  },
+  "collection": {
+    "output_dir": "runs/rase_ui_phase0_smoke_parity_pool",
+    "episodes": 2,
+    "seed": 2026073101,
+    "action_chunks_per_episode": 8,
+    "max_action_chunks": 8,
+    "snapshot_cadence_action_chunks": 2,
+    "successful_snapshot_retention": 1.0,
+    "dry_run": false,
+    "smoke_mode": true
+  }
+}

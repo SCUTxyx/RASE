@@ -11,7 +11,7 @@ and upstream revisions here before treating a new environment as reproducible.
 | Python | 3.12.13 | local `smolvla` environment; AutoDL baseline used Python 3.12 |
 | LeRobot | 0.5.1 | installed package |
 | PyTorch | 2.10.0+cu128 | local `smolvla` environment |
-| MuJoCo | 3.8.1 | local `smolvla` environment |
+| MuJoCo | 3.3.2 | AutoDL `smolvla` pip freeze 2026-08-03 (was previously noted 3.8.1) |
 | robosuite | 1.4.0 | local `smolvla` environment |
 | num2words | 0.5.14 | installed package |
 | SmolVLA checkpoint | `HuggingFaceVLA/smolvla_libero` | local path `ckpts/smolvla_libero` |
@@ -53,18 +53,20 @@ LIBERO-10. The complete record is
 
 ## OFT environment
 
-Status: **load smoke verified locally; source archives are not Git checkouts**.
+Status: **load smoke verified locally; transformers fork and LIBERO trees are not Git checkouts on AutoDL**.
 
 | Component | Locked value | Provenance |
 |---|---|---|
-| Python | 3.10.20 | local `oft` environment |
-| PyTorch | 2.2.0+cu121 | local `oft` environment |
-| transformers | 4.40.1 | editable OpenVLA-OFT fork at `/data/data2/yuxuan/transformers-openvla-oft` |
+| Python | 3.10.20 | local `oft` environment at `/root/autodl-tmp/envs/oft` |
+| PyTorch | 2.10.0+cu128 | AutoDL `oft` pip 2026-08-03 |
+| transformers | 4.40.1 | editable `/root/autodl-tmp/src/transformers-openvla-oft` |
+| numpy / mujoco / robosuite | 1.26.4 / 2.3.7 / 1.4.1 | required for CareVLA-compatible replay |
 | protobuf | 4.25.9 | compatibility pin |
 | tensorflow-metadata | 1.14.0 | compatibility pin |
-| OpenVLA-OFT source | local archive checkout | `/data/data2/yuxuan/openvla-oft`; no Git SHA available |
-| dlimp | local archive checkout | `/data/data2/yuxuan/dlimp_openvla`; no Git SHA available |
+| OpenVLA-OFT source | git `e4287e94541f459edc4feabc4e181f537cd569a8` | `/root/autodl-tmp/src/openvla-oft` |
+| dlimp | 0.0.1 site-packages | installed into `oft` env (no separate source tree on AutoDL) |
 | checkpoint | OFT LIBERO Spatial | `ckpts/oft_spatial` |
+| LIBERO-plus | editable, no local `.git` | `/root/autodl-tmp/src/LIBERO-plus` |
 
 The checkpoint load smoke succeeded with all GPUs visible and
 `.to("cuda:0")`. If only one GPU is exposed through `CUDA_VISIBLE_DEVICES`,
@@ -83,3 +85,6 @@ install or cite it before W10.
   LIBERO-plus `4976dc3`, and the frozen seed-0 `nas10` baseline.
 - 2026-07-17: recorded local SmolVLA simulator versions and the OFT load-smoke
   environment; marked archive-based OFT dependencies as lacking Git SHAs.
+- 2026-08-03: AutoDL migration snapshot — refreshed MuJoCo/torch pins from live
+  `pip`, recorded AutoDL paths, added `envs/*.pip.freeze.txt` and
+  `MACHINE_REPLICATION.md`.

@@ -1,0 +1,104 @@
+{
+  "schema_version": "rase-intervention-registry/v1",
+  "operators": [
+    {
+      "operator_id": "continue_smol_active_chunk",
+      "family": "continue",
+      "executor": "smolvla",
+      "recovery_target": "active_action_suffix",
+      "parameters": {
+        "commit": "remaining_active_chunk_then_normal_policy",
+        "policy_reset": false
+      },
+      "requires": [
+        "active_action_suffix",
+        "public_observation"
+      ],
+      "enabled_for_pilot": true
+    },
+    {
+      "operator_id": "replan_smol",
+      "family": "replan",
+      "executor": "smolvla",
+      "recovery_target": "current_observation",
+      "parameters": {
+        "discard_active_chunk": true,
+        "policy_reset": true
+      },
+      "requires": [
+        "public_observation"
+      ],
+      "enabled_for_pilot": true
+    },
+    {
+      "operator_id": "local_correct_retreat_realign",
+      "family": "local_correct",
+      "executor": "primitive_controller",
+      "recovery_target": "contact_free_realign",
+      "parameters": {
+        "max_steps": 20,
+        "profile": "retreat_realign_v1"
+      },
+      "requires": [
+        "public_observation",
+        "proprioception"
+      ],
+      "enabled_for_pilot": false
+    },
+    {
+      "operator_id": "rewind_recent_safe",
+      "family": "rewind",
+      "executor": "trajectory_controller",
+      "recovery_target": "recent_contact_free_state",
+      "parameters": {
+        "max_depth_chunks": 2,
+        "profile": "physical_reverse_v1"
+      },
+      "requires": [
+        "public_history",
+        "safe_milestone"
+      ],
+      "enabled_for_pilot": false
+    },
+    {
+      "operator_id": "switch_oft",
+      "family": "switch_policy",
+      "executor": "openvla_oft",
+      "recovery_target": "current_observation",
+      "parameters": {
+        "handoff": "public_history",
+        "policy_reset": true
+      },
+      "requires": [
+        "public_observation"
+      ],
+      "enabled_for_pilot": true
+    },
+    {
+      "operator_id": "abstain",
+      "family": "abstain",
+      "executor": "system",
+      "recovery_target": "safe_stop",
+      "parameters": {
+        "request_help": false
+      },
+      "requires": [],
+      "enabled_for_pilot": true
+    }
+  ],
+  "opportunity_gate": {
+    "min_complete_snapshots": 20,
+    "min_oracle_gap": 0.05,
+    "min_winning_operators": 3,
+    "min_tasks_per_winning_operator": 2,
+    "min_repeats_per_arm": 1,
+    "require_continue": true,
+    "require_harm": true,
+    "require_futility": true
+  },
+  "notes": [
+    "Legacy direct Smol resets the policy and is REPLAN, not strict CONTINUE.",
+    "Strict CONTINUE was enabled after decision-context v2 suffix provenance and replay parity passed.",
+    "LOCAL_CORRECT and REWIND stay disabled until executable contracts pass CPU and simulator gates."
+  ]
+}

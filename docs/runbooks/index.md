@@ -51,6 +51,21 @@ Generated run directories remain ignored. Promote only compact summaries to
   snapshot retention, storage, and resume behavior.
 - [`ngc_pilot.md`](ngc_pilot.md): K=8 candidates, cross-environment oracle,
   Wilson triage, scheduler resume, and the 20-rollout timing pilot.
+- [`w4_runner_hardening.md`](w4_runner_hardening.md): read-only preflight,
+  frozen-key provenance, resumable OFT suites, and summary-only reporting.
+- [`w5_smol_frontier.md`](w5_smol_frontier.md): balanced screen cohorts,
+  proposal-temperature grid, formal confirm, and optional QC traces.
+- [`w6_benchmark_release.md`](w6_benchmark_release.md): episode-grouped
+  release splits, cross-oracle statistics, and leakage audit.
+- [`w6_l1_l2_policy_matrix.md`](w6_l1_l2_policy_matrix.md): mild-perturbation
+  failure-challenge coverage, Smol→Smol screen, and Smol→OFT verification;
+  clean-success controls remain a separate cohort.
+- [`w7_causal_heldout.md`](w7_causal_heldout.md): direct/zero-prefix causal
+  attribution on W6 OFT-only states, followed by an excluded 24-state held-out
+  paired validation matrix.
+- [`w10_object_spatial_benchmark.md`](w10_object_spatial_benchmark.md): fixed
+  Object/Spatial failure extension paired with frozen W9C clean controls,
+  manual cross-source identity gates, and post-outcome split-support diagnosis.
 
 ## Safety constraints
 

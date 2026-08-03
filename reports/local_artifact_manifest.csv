@@ -1,0 +1,15 @@
+path,size_bytes
+ckpts/SmolVLM2-500M-Instruct,2034876824
+ckpts/oft_10,16103902022
+ckpts/oft_goal,15940029127
+ckpts/oft_object,20857786085
+ckpts/oft_spatial,15945542291
+ckpts/smolvla_libero,1218066525
+pool/ngc_step1_pilot,382843097
+pool/ngc_step1_preflight,37925626
+pool/ngc_step1_scale200,4003869825
+pool/ngc_w10_object_spatial_failures,1247001297
+pool/ngc_w5_l1_l2_camera_robot,796603856
+pool/ngc_w9_clean_controls,2166417712
+pool/ngc_w9b_clean_controls,2250723424
+pool/ngc_w9c_clean_controls,1688440403

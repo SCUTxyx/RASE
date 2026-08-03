@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sys
@@ -25,6 +26,13 @@ def _expand(value: object | None, env_name: str | None = None) -> str | None:
             return os.environ.get(env_name)
         return None
     return str(Path(os.path.expandvars(str(value))).expanduser())
+
+
+def _state_keys_checksum(keys: list[str]) -> str:
+    encoded = json.dumps(
+        keys, ensure_ascii=False, separators=(",", ":")
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
 
 
 def main() -> int:
@@ -107,9 +115,18 @@ def main() -> int:
         _expand(args.pool or cfg.get("pool"), "RASE_POOL_ROOT")
         or "pool/ngc_step1_scale200"
     ).resolve()
-    output_dir = Path(
-        args.output_dir or candidates.get("output_dir") or "runs/ngc_w2_candidates_pilot/candidates"
-    ).resolve()
+    # W3+ YAML uses top-level candidates_dir; W2 JSON used candidates.output_dir.
+    raw_out = (
+        args.output_dir
+        or cfg.get("candidates_dir")
+        or candidates.get("output_dir")
+        or "runs/ngc_w2_candidates_pilot/candidates"
+    )
+    output_dir = Path(str(raw_out)).expanduser()
+    if not output_dir.is_absolute():
+        output_dir = (ROOT / output_dir).resolve()
+    else:
+        output_dir = output_dir.resolve()
     policy_path = Path(
         _expand(args.policy_path or adapter.get("policy_path"), "RASE_POLICY_PATH")
         or "ckpts/smolvla_libero"
@@ -123,9 +140,16 @@ def main() -> int:
         args.base_seed if args.base_seed is not None else candidates.get("base_seed", 17072026)
     )
     chunk_length = int(candidates.get("chunk_length", 10))
-    sample_n = int(args.sample if args.sample is not None else cfg.get("sample", 2))
+    raw_sample = cfg.get("sample", 2)
+    default_sample_n = int(raw_sample) if isinstance(raw_sample, int) else 2
+    sample_n = int(args.sample if args.sample is not None else default_sample_n)
+    default_sample_seed = 0
+    if isinstance(raw_sample, dict) and raw_sample.get("sample_seed") is not None:
+        default_sample_seed = int(raw_sample["sample_seed"])
+    elif cfg.get("sample_seed") is not None:
+        default_sample_seed = int(cfg["sample_seed"])
     sample_seed = int(
-        args.sample_seed if args.sample_seed is not None else cfg.get("sample_seed", 0)
+        args.sample_seed if args.sample_seed is not None else default_sample_seed
     )
     min_endpoint = (
         args.min_endpoint_l2
@@ -136,8 +160,8 @@ def main() -> int:
         args.libero_plus_root or adapter.get("libero_plus_root"), "LIBERO_PLUS_ROOT"
     )
 
-    from rase.backends.libero_plus_paths import ensure_libero_plus_paths
     from rase.backends.lerobot_libero_plus import _patch_lerobot_init_states
+    from rase.backends.libero_plus_paths import ensure_libero_plus_paths
     from rase.collect.pool_candidates import (
         diversity_summary,
         generate_for_state,
@@ -159,18 +183,173 @@ def main() -> int:
 
     pool = StatePool(pool_root)
     keys = list(args.state_key)
+    keys_provenance: dict[str, object] = {
+        "source": "cli:--state-key",
+        "artifact_sha256": None,
+    }
     if not keys and args.state_keys_json is not None:
-        payload = _load_json(args.state_keys_json.resolve())
+        keys_path = args.state_keys_json.resolve()
+        if not keys_path.is_file():
+            raise SystemExit(
+                f"frozen state-key artifact missing: {keys_path}\n"
+                "Sample or export keys first, e.g.\n"
+                "  python scripts/sample_state_keys.py "
+                "--config configs/ngc_w5_failure_frontier_screen.yaml "
+                "--output runs/ngc_w5_failure_frontier_state_keys.json\n"
+                "or for OFT-recovered smoke:\n"
+                "  python scripts/export_dual_oracle_split_keys.py "
+                "--dual-oracle runs/ngc_w4_adequate_dual_oracle_summary.json "
+                "--split oft_only "
+                "--output runs/ngc_w5_oft_recovered_state_keys.json"
+            )
+        raw_keys = keys_path.read_bytes()
+        payload = json.loads(raw_keys)
         if isinstance(payload, list):
             keys = [str(x) for x in payload]
+            declared_checksum = None
         else:
             keys = [str(x) for x in (payload.get("state_keys") or [])]
+            declared_checksum = payload.get("state_keys_sha256")
         if not keys:
             raise SystemExit(f"no state_keys in {args.state_keys_json}")
+        if len(set(keys)) != len(keys):
+            raise SystemExit(f"duplicate state_keys in {args.state_keys_json}")
+        computed_checksum = _state_keys_checksum(keys)
+        if declared_checksum is not None and str(declared_checksum) != computed_checksum:
+            raise SystemExit(
+                f"state_keys_sha256 mismatch in {keys_path}: "
+                f"declared={declared_checksum} computed={computed_checksum}"
+            )
+        keys_provenance = {
+            "source": str(keys_path),
+            "artifact_sha256": hashlib.sha256(raw_keys).hexdigest(),
+        }
     if not keys and pilot_keys:
         keys = list(pilot_keys)
+        keys_provenance = {
+            "source": str(args.pilot_config.resolve()),
+            "artifact_sha256": hashlib.sha256(
+                args.pilot_config.resolve().read_bytes()
+            ).hexdigest(),
+        }
+    # Prefer explicit / stratified sample block from W3+ YAML configs.
     if not keys:
+        sample_block = cfg.get("sample")
+        if isinstance(sample_block, dict):
+            explicit = list(sample_block.get("state_keys") or [])
+            if explicit:
+                keys = [str(x) for x in explicit]
+                keys_provenance = {
+                    "source": "config:sample.state_keys",
+                    "artifact_sha256": None,
+                }
+            elif str(sample_block.get("strategy", "")) == "stratified":
+                from rase.collect.stratified_sample import sample_stratified_keys
+
+                suite_horizons = sample_block.get("suite_horizons")
+                outcomes = sample_block.get(
+                    "episode_outcomes", sample_block.get("episode_outcome")
+                )
+                if isinstance(outcomes, str):
+                    outcomes = [outcomes]
+                excluded_keys = {
+                    str(key) for key in sample_block.get("excluded_keys") or []
+                }
+                excluded_paths = sample_block.get("excluded_keys_json") or []
+                if isinstance(excluded_paths, (str, Path)):
+                    excluded_paths = [excluded_paths]
+                for raw_path in excluded_paths:
+                    path = Path(raw_path)
+                    if not path.is_absolute():
+                        path = ROOT / path
+                    payload = json.loads(path.read_text(encoding="utf-8"))
+                    values = (
+                        payload
+                        if isinstance(payload, list)
+                        else payload.get("state_keys") or []
+                    )
+                    excluded_keys.update(str(key) for key in values)
+                excluded_episode_keys = {
+                    str(key)
+                    for key in sample_block.get("excluded_episode_keys") or []
+                }
+                excluded_episode_paths = (
+                    sample_block.get("excluded_episode_keys_json") or []
+                )
+                if isinstance(excluded_episode_paths, (str, Path)):
+                    excluded_episode_paths = [excluded_episode_paths]
+                for raw_path in excluded_episode_paths:
+                    path = Path(raw_path)
+                    if not path.is_absolute():
+                        path = ROOT / path
+                    payload = json.loads(path.read_text(encoding="utf-8"))
+                    values = (
+                        payload
+                        if isinstance(payload, list)
+                        else payload.get("state_keys") or []
+                    )
+                    excluded_episode_keys.update(str(key) for key in values)
+                keys = sample_stratified_keys(
+                    pool,
+                    per_cell=int(sample_block.get("per_cell", 2)),
+                    seed=int(sample_block.get("sample_seed", sample_seed)),
+                    dims=tuple(sample_block.get("dims") or ("camera", "robot")),
+                    suites=tuple(
+                        sample_block.get("suites")
+                        or ("Spatial", "Object", "Goal", "Long")
+                    ),
+                    levels=tuple(
+                        int(x) for x in (sample_block.get("levels") or (3, 4, 5))
+                    ),
+                    min_remaining_steps=(
+                        int(sample_block["min_remaining_steps"])
+                        if sample_block.get("min_remaining_steps") is not None
+                        else None
+                    ),
+                    max_t0=(
+                        int(sample_block["max_t0"])
+                        if sample_block.get("max_t0") is not None
+                        else None
+                    ),
+                    suite_horizons=(
+                        {str(k): int(v) for k, v in dict(suite_horizons).items()}
+                        if suite_horizons
+                        else None
+                    ),
+                    strata=tuple(sample_block.get("strata") or ("suite", "dim")),
+                    t0_bins=sample_block.get("t0_bins"),
+                    selection=str(sample_block.get("selection", "earliest")),
+                    episode_outcomes=(
+                        tuple(str(value) for value in outcomes)
+                        if outcomes is not None
+                        else None
+                    ),
+                    excluded_keys=excluded_keys,
+                    excluded_episode_keys=excluded_episode_keys,
+                    distinct_episodes=bool(
+                        sample_block.get("distinct_episodes", False)
+                    ),
+                )
+                keys_provenance = {
+                    "source": "config:sample.stratified",
+                    "artifact_sha256": None,
+                }
+    if not keys:
+        # Legacy: cfg["sample"] may be an int count for W2 JSON configs.
+        if isinstance(cfg.get("sample"), int):
+            sample_n = int(cfg["sample"])
         keys = sample_pool_keys(pool, sample_n, sample_seed)
+        keys_provenance = {
+            "source": "config:sample.fallback",
+            "artifact_sha256": None,
+        }
+    keys_checksum = _state_keys_checksum(keys)
+    keys_provenance.update(
+        {
+            "state_keys_sha256": keys_checksum,
+            "n_states": len(keys),
+        }
+    )
 
     print(
         f"CANDIDATES_START n={len(keys)} pool={pool.root} out={output_dir} "
@@ -229,6 +408,8 @@ def main() -> int:
         "base_seed": base_seed,
         "chunk_length": chunk_length,
         "state_keys": keys,
+        "state_keys_provenance": keys_provenance,
+        "state_keys_sha256": keys_checksum,
         "n_written": sum(1 for item in results if not item.skipped),
         "n_skipped": sum(1 for item in results if item.skipped),
         "diversity": diversity_summary(artifacts),

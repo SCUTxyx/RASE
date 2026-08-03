@@ -1,0 +1,46 @@
+{
+  "run_name": "ngc-w9c-clean-alignment-probe-long",
+  "adapter": "rase.collect.lerobot_libero_plus_adapter:make_adapter",
+  "adapter_config": {
+    "policy_path": "ckpts/smolvla_libero",
+    "tokenizer_path": "ckpts/SmolVLM2-500M-Instruct",
+    "libero_plus_root": null,
+    "libero_clean_root": "/root/autodl-tmp/src/LIBERO",
+    "device": "cuda",
+    "num_steps": 10,
+    "n_action_steps": 10,
+    "observation_height": 360,
+    "observation_width": 360
+  },
+  "sampling": {
+    "dimension_quotas": {
+      "clean": 100
+    },
+    "suite_quotas": {
+      "Long": 100
+    },
+    "levels_by_dimension": {
+      "clean": [0]
+    }
+  },
+  "collection": {
+    "output_dir": "runs/ngc_w9c_clean_probe_long_pool",
+    "episodes": 20,
+    "seed": 20260731,
+    "action_chunks_per_episode": 52,
+    "max_action_chunks": null,
+    "snapshot_cadence_action_chunks": 2,
+    "successful_snapshot_retention": 1.0,
+    "dry_run": false,
+    "smoke_mode": true
+  },
+  "probe": {
+    "protocol": "W9C-clean-alignment-probe-long/v1",
+    "episodes_per_suite": 20,
+    "preregistered_suite_sr_floor": {
+      "Long": 0.22
+    },
+    "preregistered_mean_sr_floor": 0.22,
+    "note": "Long-only re-probe after fixing SCENE-prefixed language."
+  }
+}

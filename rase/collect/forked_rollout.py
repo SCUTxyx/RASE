@@ -105,6 +105,10 @@ def restore_pool_state(
     loaded = pool.read_state(state_key)
     snapshot = bundle_to_env_snapshot(loaded)
     meta = loaded.metadata
+    flavor = (
+        str(getattr(meta, "libero_flavor", None) or "")
+        or ("clean" if meta.perturb_dim == "clean" else "plus")
+    )
     handle = make_libero_env_for_task(
         meta.task_id,
         init_state_id=meta.init_state_id if meta.init_state_id is not None else 0,
@@ -112,6 +116,7 @@ def restore_pool_state(
         observation_height=observation_height,
         observation_width=observation_width,
         libero_plus_root=libero_plus_root,
+        libero_flavor=flavor,  # type: ignore[arg-type]
     )
     try:
         live_desc = str(getattr(handle.vector_env.envs[0], "task_description", ""))
@@ -149,8 +154,12 @@ class InProcessSmolVLAContinuation:
         self.temperature = float(temperature)
         self.seed = seed
         self._amp = None
+        self._action_select_calls = 0
+        self._action_select_elapsed_s = 0.0
 
     def reset(self) -> None:
+        self._action_select_calls = 0
+        self._action_select_elapsed_s = 0.0
         if self.seed is not None:
             seed_everything(int(self.seed))
         self.policy_bundle["policy"].reset()
@@ -166,13 +175,28 @@ class InProcessSmolVLAContinuation:
                 if bool(getattr(policy.config, "use_amp", False))
                 else nullcontext()
             )
-        with torch.no_grad(), self._amp:
-            return select_env_action(
-                self.policy_bundle,
-                observation,
-                task=task,
-                temperature=self.temperature,
-            )
+        started = time.perf_counter()
+        try:
+            with torch.no_grad(), self._amp:
+                return select_env_action(
+                    self.policy_bundle,
+                    observation,
+                    task=task,
+                    temperature=self.temperature,
+                )
+        finally:
+            self._action_select_calls += 1
+            self._action_select_elapsed_s += time.perf_counter() - started
+
+    def metrics(self) -> dict[str, float | int | str]:
+        return {
+            "measurement_scope": (
+                "wall time inside SmolVLA select_env_action; includes cached action "
+                "queue access and model forward passes, excludes environment stepping"
+            ),
+            "action_select_calls": self._action_select_calls,
+            "action_select_elapsed_s": self._action_select_elapsed_s,
+        }
 
 
 class FixedActionContinuation:

@@ -1,0 +1,119 @@
+{
+  "direct_oft": {
+    "hits": 3,
+    "trials": 4
+  },
+  "elapsed_wall_s": 29.292,
+  "interpretation": "Direct OFT is a deployable escalation arm with no candidate or time-matched zero prefix.",
+  "n_states": 4,
+  "per_state": [
+    {
+      "dim": "clean",
+      "direct_oft_success": true,
+      "episode_id": "ep-78c36c0d-00000001",
+      "level": 0,
+      "result": {
+        "arm_kind": "direct",
+        "arm_label": "direct_oft",
+        "candidate_index": null,
+        "candidate_s": 5e-06,
+        "candidate_steps": 0,
+        "continuation_s": 3.816814,
+        "continuation_steps": 107,
+        "elapsed_s": 3.818646,
+        "env_steps": 107,
+        "final_timestep": 10,
+        "oracle": "oft",
+        "restore_s": 0.000726,
+        "stop_reason": "success",
+        "success": true,
+        "terminated": true,
+        "truncated": false
+      },
+      "state_key": "sp1_3c088ffffda6d34f44c6d03973ebfb1d",
+      "suite": "Object"
+    },
+    {
+      "dim": "clean",
+      "direct_oft_success": true,
+      "episode_id": "ep-78c36c0d-00000001",
+      "level": 0,
+      "result": {
+        "arm_kind": "direct",
+        "arm_label": "direct_oft",
+        "candidate_index": null,
+        "candidate_s": 5e-06,
+        "candidate_steps": 0,
+        "continuation_s": 3.385262,
+        "continuation_steps": 97,
+        "elapsed_s": 3.387017,
+        "env_steps": 97,
+        "final_timestep": 10,
+        "oracle": "oft",
+        "restore_s": 0.00075,
+        "stop_reason": "success",
+        "success": true,
+        "terminated": true,
+        "truncated": false
+      },
+      "state_key": "sp1_3879af491da3547078a0cda0f313c4b5",
+      "suite": "Object"
+    },
+    {
+      "dim": "clean",
+      "direct_oft_success": true,
+      "episode_id": "ep-78c36c0d-00000001",
+      "level": 0,
+      "result": {
+        "arm_kind": "direct",
+        "arm_label": "direct_oft",
+        "candidate_index": null,
+        "candidate_s": 5e-06,
+        "candidate_steps": 0,
+        "continuation_s": 2.767104,
+        "continuation_steps": 71,
+        "elapsed_s": 2.768823,
+        "env_steps": 71,
+        "final_timestep": 10,
+        "oracle": "oft",
+        "restore_s": 0.000747,
+        "stop_reason": "success",
+        "success": true,
+        "terminated": true,
+        "truncated": false
+      },
+      "state_key": "sp1_fa9be7b3d0acd8ccb58d4508bd20390d",
+      "suite": "Object"
+    },
+    {
+      "dim": "clean",
+      "direct_oft_success": false,
+      "episode_id": "ep-78c36c0d-00000001",
+      "level": 0,
+      "result": {
+        "arm_kind": "direct",
+        "arm_label": "direct_oft",
+        "candidate_index": null,
+        "candidate_s": 5e-06,
+        "candidate_steps": 0,
+        "continuation_s": 5.45571,
+        "continuation_steps": 205,
+        "elapsed_s": 5.457481,
+        "env_steps": 205,
+        "final_timestep": 280,
+        "oracle": "oft",
+        "restore_s": 0.000781,
+        "stop_reason": "horizon",
+        "success": false,
+        "terminated": false,
+        "truncated": true
+      },
+      "state_key": "sp1_56ebca60a26406ce105218c254d77c95",
+      "suite": "Object"
+    }
+  ],
+  "schema_version": "rase-oft-direct-escalation/v1",
+  "state_keys_sha256": "9706bdc9ca0f828ff29c4f166020d38f38d93d1ce838bd9048ff6e2a5f876ad9",
+  "status": "complete",
+  "suite": "libero_object"
+}

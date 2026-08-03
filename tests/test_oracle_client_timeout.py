@@ -58,4 +58,8 @@ def test_timeout_rebuilds_socket(monkeypatch):
         client.health()
     assert len(ctx.sockets) == 2
     assert ctx.sockets[0].closed is True
+    metrics = client.metrics("health")
+    assert metrics["calls"] == 1
+    assert metrics["failures"] == 1
+    assert metrics["elapsed_s"] >= 0.0
     client.close()

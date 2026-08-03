@@ -18,6 +18,11 @@ dependencies = [
 oracle = [
   "pyzmq>=25,<28",
 ]
+video = [
+  "imageio>=2.34,<3",
+  "imageio-ffmpeg>=0.5,<1",
+  "Pillow>=10,<12",
+]
 dev = [
   "pytest>=8,<9",
   "ruff>=0.5,<1",

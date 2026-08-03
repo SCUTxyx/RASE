@@ -1,0 +1,66 @@
+version: 1
+run_name: ngc_w10_object_spatial_failure16
+mode: smolvla-screen
+
+pool: pool/ngc_w5_l1_l2_camera_robot
+output_dir: runs/ngc_w10_object_spatial_direct_smol_failure16
+
+sample:
+  strategy: stratified
+  per_cell: 8
+  sample_seed: 20260801
+  selection: random
+  strata: [suite]
+  distinct_episodes: true
+  dims: [camera, robot]
+  suites: [Spatial, Object]
+  levels: [1, 2]
+  episode_outcomes: [failure]
+  min_remaining_steps: 100
+
+protocol:
+  version: W10-object-spatial-failure-benchmark/v1
+  purpose: benchmark_diagnosis_only
+  schedule_path: configs/w10_object_spatial_failure_schedule.v1.json
+  schedule_sha256: 15feaef3577198ceb2bd468a56080a491516001368ccecbb4985a8c781dfece6
+  expected_n_states: 16
+  expected_per_suite: 8
+  require_task_init_identity: true
+  require_cross_prior_pool_episode_exclusion: true
+  outcome_adaptive_selection: forbidden
+  selector_training: forbidden
+  hard_stop_on_gate_failure: true
+  formal_set_labels: false
+  report: paired_direct_smol_oft
+
+candidates:
+  k: 8
+  chunk_length: 10
+  action_dim: 7
+  temperature: 0.7
+  policy_hash: 71d9563c8295284acba8fc2d5c19de000d6fe9ba58a406832af7ef3d221ed52f
+
+adapter:
+  policy_path: ckpts/smolvla_libero
+  tokenizer_path: ckpts/SmolVLM2-500M-Instruct
+  device: cuda
+  num_steps: 10
+  n_action_steps: 10
+  observation_height: 360
+  observation_width: 360
+  continuation_temperature: 0.5
+
+adaptive:
+  first_stage_rollouts: 1
+  total_rollouts: 1
+
+scheduler:
+  max_attempts: 3
+  lease_seconds: 3600
+  worker: w10-object-spatial-failure16
+
+oracle:
+  protocol: rase-oracle
+  protocol_version: 1
+  endpoint: tcp://127.0.0.1:5555
+  request_timeout_ms: 60000

@@ -1,0 +1,40 @@
+{
+  "run_name": "ngc-w5-l1-l2-camera-robot",
+  "adapter": "rase.collect.lerobot_libero_plus_adapter:make_adapter",
+  "adapter_config": {
+    "policy_path": "ckpts/smolvla_libero",
+    "tokenizer_path": "ckpts/SmolVLM2-500M-Instruct",
+    "libero_plus_root": "/root/autodl-tmp/src/LIBERO-plus",
+    "device": "cuda",
+    "num_steps": 10,
+    "n_action_steps": 10,
+    "observation_height": 360,
+    "observation_width": 360
+  },
+  "sampling": {
+    "dimension_quotas": {
+      "camera": 50,
+      "robot": 50
+    },
+    "suite_quotas": {
+      "Long": 40,
+      "Goal": 25,
+      "Spatial": 20,
+      "Object": 15
+    },
+    "levels_by_dimension": {
+      "camera": [1, 2],
+      "robot": [1, 2]
+    }
+  },
+  "collection": {
+    "output_dir": "pool/ngc_w5_l1_l2_camera_robot",
+    "episodes": 40,
+    "seed": 20260727,
+    "action_chunks_per_episode": 52,
+    "max_action_chunks": null,
+    "snapshot_cadence_action_chunks": 2,
+    "successful_snapshot_retention": 0.20,
+    "dry_run": false
+  }
+}

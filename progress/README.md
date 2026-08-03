@@ -4,6 +4,12 @@ This directory is tracked. It contains concise, reviewable records of completed
 or blocked experiments; large logs, videos, checkpoints, and raw outputs belong
 under ignored artifact directories.
 
+## Start here
+
+- [RASE full project narrative (2026-07-31)](2026-07-31_rase_full_project_narrative.md):
+  **单文件总览**：原计划、各阶段实验、计划转化、W9C/W10 结论、可/不可主张、后续选项。
+  新读者应先读此文，再下钻各次实验记录。
+
 ## Recorded baselines
 
 - [Frozen SmolVLA clean LIBERO, seed 0, `n_action_steps=10`](2026-07-16_smolvla_clean_libero_baseline_seed0_nas10.md):
@@ -28,6 +34,114 @@ under ignored artifact directories.
   OFT 阳性态上 SmolVLA 四温 **0/192** vs OFT **8/8** → 续完能力缺口，非温度/判据假阴性。
 - [NGC W3 ADEQUATE-only pilot](2026-07-19_ngc_w3_pilot_adequate.md):
   ADEQUATE 16 态 SmolVLA 仍 **16×C / 0/768**（0 NARROW）；OFT 四 suite：spatial **7/32**，object/goal/10 **0/32**。
+- [NGC W4 ADEQUATE scale + v2 dual-oracle](2026-07-26_ngc_w4_adequate_scale.md):
+  ADEQUATE 32 态 SmolVLA **32×C / 0/1536**；OFT portfolio **17/32**（候选命中 **65/256**）；交叉全为 `oft_only`/`both_fail`；采样全 `t0=0`。
+- [NGC W5 SmolVLA screen t=0.7](2026-07-27_ngc_w5_smol_screen_t07.md):
+  OFT-recovered smoke **0/136**、failure frontier **0/192**；**Confirm 未跑**；0.3/1.0 与 L1–L2 仍可选。
+- [NGC W5 proposal-temperature sweep](2026-07-27_ngc_w5_temperature_sweep.md):
+  t=0.3/0.7/1.0 在同 24-state frontier 上合计 **0/576**；候选温度与多样性已核验，
+  proposal-temperature 诊断线关闭，下一步转 L1–L2 paired policy pilot。
+- [NGC W6 L1–L2 collection and coverage](2026-07-27_ngc_w6_l1_l2_coverage.md):
+  40 episodes / 762 states，SmolVLA outcome 为 0 success / 40 failure；冻结
+  8-state episode-distinct failure-challenge cohort，clean-success control 后续单列。
+- [NGC W6 L1–L2 paired policy matrix](2026-07-28_ngc_w6_l1_l2_policy_matrix.md):
+  最终矩阵为 Smol **0/64 candidates、0/8 states**，OFT **10/64、2/8**；
+  exact McNemar `p=0.5`，只支持方向性 pilot 结论。
+- [W7 causal attribution and held-out validation](2026-07-29_w7_causal_heldout.md):
+  W6 OFT-only 的 candidate-specific rescue 为 **0/2**；冻结 episode-disjoint
+  24-state W7，Smol held-out 完整为 **0/192、0/24 states**，OFT/归因后台流水线运行。
+- [W8 lightweight selector + direct escalation arm](2026-07-29_w8_lightweight_selector_direct_arm.md):
+  三动作 ridge baseline、严格 readiness gate 与 direct-OFT 24-rollout 已完成。
+- [W8 direct escalation result](2026-07-29_w8_direct_escalation_results.md):
+  W7 Smol **0/24** vs prefix+OFT **8/24**（McNemar `p=0.0078125`）；W8
+  direct OFT **9/24**，成功集中于 Goal/Long；下一 gate 为逐状态配对与 clean controls。
+- [W9 clean controls + direct-policy selector gate](2026-07-29_w9_clean_selector_pipeline.md):
+  W7/W8 overlap 为 both 7 / prefix-only 1 / direct-only 2 / neither 14；修正
+  utility、direct Smol 与特征泄漏后，冻结 32-state clean-control pilot。
+- [W9 clean-control coverage gate](2026-07-29_w9_clean_control_coverage_gate.md):
+  预注册 140 ep 后 coverage **失败**（exit 2）；pool **10/138≈7.2%** success，
+  几乎全在 Spatial；Object/Goal/Long early+mid 全空；selector **未训**。
+
+- [W9C clean task-identity fix](2026-07-31_w9c_clean_task_identity_fix.md):
+  Plus 0–9 与 official clean-10 不同；改用 exact-name vanilla BDDL/init 后 probe **PASS**
+  （mean SR 0.6125），并完成 clean32 coverage 与 selector readiness。
+- [W9C selector gate result](2026-07-31_w9c_selector_gate_result.md):
+  episode/task readiness 均 **PASS**，但 ridge vs action-matched random 在两个 held-out
+  split 上 Δutility 均为 **0**；触发 `kill_method_branch`，不上 MLP/RL。
+- [Paper claim freeze](2026-07-31_paper_claim_freeze.md):
+  主投姿态冻结为 **benchmark / diagnosis**；允许 policy-relative recoverability、direct
+  escalation 与 candidate-specific rescue 否证，禁止 learned-selector claim。
+- [Idea evolution and next questions](2026-07-31_idea_evolution_and_next_questions.md):
+  汇总证据演化、已否证假设、claims 边界、task-held-out 8-clean/0-failure/0-escalation
+  限制，以及下一阶段 benchmark 问题。
+- [W9C benchmark reanalysis result](2026-07-31_w9c_benchmark_reanalysis.md):
+  **COMPLETED（CPU-only）**；56-state composition/oracle/shortcut/LOSO 审计完成。
+  Overall oracle-minus-fixed gaps 为 abstain **0.4729**、continue **0.2071**、escalate
+  **0.0907**；分析 JSON 无 learned-action annotation，结果不撤销 W9C ridge kill。
+- [W10 Object/Spatial failure benchmark](2026-07-31_w10_object_spatial_benchmark.md):
+  独立 Object/Spatial failure cohort 完成；collect **80/80 failure**，direct Smol
+  **0/16**，direct OFT **1/16**（Spatial 0/8）；escalate oracle 仅 1 态，episode split
+  **`NOT_READY`**。结论：该 regime 下几乎无 policy-relative recovery，不开放 selector。
+- [RASE UI Phase 0B 48-state opportunity screen](2026-08-01_rase_ui_phase0b_opportunity12_results.md):
+  三算子完整矩阵 C/R/O = **9/13/30 of 48**，OFT 覆盖全部 Smol success，
+  success-only oracle gap **0.0**（cluster CI `[0,0]`），因此 selector/world model 仍不开闸；
+  探索性 cost sweep 定位到 utility-aware benchmark 的下一验证方向。
+- [RASE UI Phase 0C kickoff](2026-08-01_rase_ui_phase0c_kickoff.md):
+  冻结“物理成本校准 → 弱扰动边界 calibration → 独立 96-state screen”的执行顺序与
+  stop rules；在新 gate 通过前继续禁止 selector/world-model training。
+- [RASE UI Phase 0C balanced factorial16 result](2026-08-01_rase_ui_phase0c_factorial16_results.md):
+  64-state 完整矩阵 C/R/O = **19/14/38**，success oracle **39/64**，相对 always-OFT
+  仅 **+1/64**（episode bootstrap CI `[0, 0.046875]`）；REPLAN-only 为 0，gate
+  **NOT_READY**。已补物理推理计时与 success-supported cost-winner 审计。
+- [RASE UI Phase 0D no-world-model + timing kickoff](2026-08-01_rase_ui_phase0d_no_world_model_timing_kickoff.md):
+  冻结当前阶段**不训练生成式 world model**；先用 episode-independent 16-state cohort
+  补齐 Smol action-selection 计时，并与已有 OFT RPC 计时分范围报告。selector/outcome
+  model/world-model gate 继续关闭。
+- [RASE UI Phase 0D timing16 result](2026-08-01_rase_ui_phase0d_timing16_results.md):
+  16/16 同状态计时覆盖通过；OFT 单次 RPC 较慢，但 action-chunk 摊销后 policy time
+  为 **16.48 ms/env-step**，低于 CONTINUE **29.39** 和 REPLAN **30.09**。因此不能用
+  latency 为 post-hoc `OFT cost=0.10` 背书；下一步转 deferred-switch operator screen。
+- [RASE UI Phase 0E deferred-switch kickoff](2026-08-01_rase_ui_phase0e_deferred_switch_kickoff.md):
+  代码审计确认旧 `full` prefix 来自 candidate artifacts，不能冒充 active suffix；冻结
+  新 `decision-suffix` 合约、prefix SHA/步数 parity gate 与 16-state 语义校准，继续禁止
+  selector/outcome-model/world-model training。
+- [RASE UI Phase 0E/0F deferred-switch result](2026-08-01_rase_ui_phase0e_phase0f_deferred_switch_results.md):
+  立即/延迟 OFT 为 **10/16 vs 9/16**，同状态 oracle **11/16**（相对最佳固定策略
+  **+1/16**）；出现 2 个 immediate-only 与 1 个 deferred-only，3/3 确定性重放及
+  active-suffix SHA 完全一致。已证实切换时机异质性，但独立 opportunity gate 未通过，
+  下一步是 task/episode-disjoint Phase 0G screen，仍不训练 selector/world model。
+- [RASE UI Phase 0G independent48 kickoff](2026-08-01_rase_ui_phase0g_independent48_kickoff.md):
+  预注册 48-state task/episode-disjoint timing screen；冻结 metadata-only seed、48 个唯一且
+  与 Phase 0C–0F 零重叠的 task、三臂 exact join、双向 timing-specific task 支持与
+  `oracle gap >= 0.05` gate。screen 前后身份不一致即停止，仍不训练模型。
+- [RASE UI Phase 0G independent48 result](2026-08-01_rase_ui_phase0g_independent48_results.md):
+  独立 48-task screen 得到 immediate/deferred **37/48 vs 35/48**，双向 timing-only
+  task 为 **4 vs 2**，oracle **39/48**；但相对最佳固定时机仅 **+2/48=4.17pp**，
+  bootstrap CI `[0,8.33pp]`，低于冻结的 5pp gate，故 **NOT READY**。不降阈值、
+  不开 96-state confirmation、不训练模型；下一步仅允许六个分歧态的机制审计。
+- [RASE UI Phase 0H suffix-prefix6 kickoff](2026-08-01_rase_ui_phase0h_suffix_prefix6_kickoff.md):
+  冻结 Phase 0G 的 4 个 immediate-only 与 2 个 deferred-only 状态，执行真实 active
+  suffix 的 `k=0..5` 全前缀机制扫描；`k=0/5` 必须与 Phase 0G 成功和 SHA 双端点一致。
+  本阶段仅为 outcome-selected 探索，不作总体或 selector claim，仍不训练模型。
+- [RASE UI Phase 0H suffix-prefix6 result](2026-08-01_rase_ui_phase0h_suffix_prefix6_results.md):
+  36/36 rollout 完成且 Phase 0G 双端点成功/SHA **6/6 PASS**；曲线中 4/6 单次翻转，
+  2/6 三次非单调翻转，单次边界位于 `k={1,1,4,5}`，六种 pattern 全不同。共享标量
+  timing mechanism **FAIL**，依冻结 stop rule 关闭 timing selector，固定 immediate OFT，
+  不做 post-hoc targeted screen、不训练 selector/world model。
+- [RASE Phase 1A replacement48 kickoff](2026-08-02_rase_phase1a_replacement48_kickoff.md):
+  依旗舰计划首先执行“为什么不一直使用 OFT”审计；在 Phase 0G 的 48 个开发任务上重跑
+  full-horizon SOURCE-ONLY，冻结 reset 后、首个 source action 前的 snapshot 运行
+  OFT-ONLY，并与既有 env-step-25 source→OFT 严格 join。LIBERO reset 内部初始化使
+  simulator timestep=10，但 policy step=0、source action=0；Phase 0 任务明确排除于
+  flagship hidden test，不训练模型。
+- [RASE Phase 1A replacement48 result](2026-08-02_rase_phase1a_replacement48_results.md):
+  48-task exact join 完成：SOURCE-ONLY / OFT-ONLY / source→OFT 为 **10/42/37**；
+  OFT-only 相对 source **+66.67pp**（95% CI `[+50.00,+81.25]pp`，McNemar
+  `p=1.94e-8`），clean 也为 **15/16 vs 9/16**。仅 2 个 source-unique 例外跨两个
+  suite，预注册 pilot gate 给出 `recovery_framing_signal`，但整体是**高 replacement
+  risk + 稀疏待复现例外**；下一步只做互补性/真实成本 confirmation，不训练 selector/world model。
+- [RASE full project narrative](2026-07-31_rase_full_project_narrative.md):
+  从立项到 W10 的完整流程叙事（与上方 Start here 同一文件）。
 
 ## Record requirements
 

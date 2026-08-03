@@ -1,0 +1,60 @@
+version: 1
+run_name: ngc_w10_object_spatial_benchmark
+mode: direct-policy-controls
+
+pool: pool/ngc_w10_object_spatial_failures
+output_dir: runs/ngc_w10_object_spatial_benchmark
+
+sample:
+  strategy: stratified
+  per_cell: 2
+  sample_seed: 20260731
+  selection: random
+  strata: [suite, dim, level]
+  dims: [camera, robot]
+  suites: [Object, Spatial]
+  levels: [1, 2]
+  episode_outcomes: [failure]
+  distinct_episodes: true
+  min_remaining_steps: 100
+
+protocol:
+  version: W10-object-spatial-benchmark/v1
+  phase: fixed_failure_pilot
+  cohort: failure_challenge
+  expected_n_states: 16
+  inferential_unit: episode_group
+  report: benchmark_diagnosis_only
+  note: >-
+    Frozen two-state-per-cell Object/Spatial failure extension. The held-out
+    action dataset pairs these rows with frozen identity-valid W9C Object/Spatial
+    clean controls. Cross-source identity audit and deduplication are manual gates.
+
+candidates:
+  k: 1
+  chunk_length: 0
+  action_dim: 7
+  temperature: 0.7
+  policy_hash: 71d9563c8295284acba8fc2d5c19de000d6fe9ba58a406832af7ef3d221ed52f
+
+adapter:
+  policy_path: ckpts/smolvla_libero
+  tokenizer_path: ckpts/SmolVLM2-500M-Instruct
+  device: cuda
+  num_steps: 10
+  n_action_steps: 10
+  observation_height: 360
+  observation_width: 360
+  continuation_temperature: 0.5
+  libero_plus_root: /root/autodl-tmp/src/LIBERO-plus
+
+scheduler:
+  max_attempts: 3
+  lease_seconds: 3600
+  worker: w10-object-spatial-benchmark
+
+oracle:
+  protocol: rase-oracle
+  protocol_version: 1
+  endpoint: tcp://127.0.0.1:5555
+  request_timeout_ms: 60000

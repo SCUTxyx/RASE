@@ -1,0 +1,85 @@
+version: 1
+run_name: ngc_w5_failure_frontier_screen
+mode: smolvla-screen
+
+pool: pool/ngc_step1_scale200
+candidates_dir: runs/ngc_w5_failure_frontier_candidates_t07
+output_dir: runs/ngc_w5_failure_frontier_screen_t07
+
+sample:
+  strategy: stratified
+  per_cell: 1
+  sample_seed: 5
+  selection: random
+  # Existing scale200 pool has many empty middle/late t0 cells under the full
+  # suite×dim×level×t0 grid (inventory max_per_cell=0). Use level-balanced
+  # strata that are fully populated; keep early bias via max_t0.
+  strata: [suite, dim, level]
+  dims: [camera, robot]
+  suites: [Spatial, Object, Goal, Long]
+  levels: [3, 4, 5]
+  max_t0: 40
+  episode_outcomes: [failure]
+  min_remaining_steps: 100
+  excluded_keys_json:
+    - runs/ngc_w3_adequate_state_keys.json
+    - runs/ngc_w4_adequate_state_keys.json
+
+protocol:
+  phase: screen
+  formal_set_labels: false
+  report: candidate_hits_only
+  candidate_rollouts: 1
+  proposal_temperature_grid: [0.3, 0.7, 1.0]
+  temperature_runs:
+    - proposal_temperature: 0.3
+      candidates_dir: runs/ngc_w5_failure_frontier_candidates_t03
+      output_dir: runs/ngc_w5_failure_frontier_screen_t03
+    - proposal_temperature: 0.7
+      candidates_dir: runs/ngc_w5_failure_frontier_candidates_t07
+      output_dir: runs/ngc_w5_failure_frontier_screen_t07
+    - proposal_temperature: 1.0
+      candidates_dir: runs/ngc_w5_failure_frontier_candidates_t10
+      output_dir: runs/ngc_w5_failure_frontier_screen_t10
+  # Run inventory-only first: every requested Cartesian cell is emitted,
+  # including cells with n=0.
+  inventory_command: >-
+    python scripts/sample_state_keys.py --config
+    configs/ngc_w5_failure_frontier_screen.yaml --inventory-only --output
+    runs/ngc_w5_failure_frontier_inventory.json
+  sample_command: >-
+    python scripts/sample_state_keys.py --config
+    configs/ngc_w5_failure_frontier_screen.yaml --output
+    runs/ngc_w5_failure_frontier_state_keys.json
+
+candidates:
+  k: 8
+  chunk_length: 10
+  action_dim: 7
+  temperature: 0.7
+  policy_hash: 71d9563c8295284acba8fc2d5c19de000d6fe9ba58a406832af7ef3d221ed52f
+
+adapter:
+  policy_path: ckpts/smolvla_libero
+  tokenizer_path: ckpts/SmolVLM2-500M-Instruct
+  device: cuda
+  num_steps: 10
+  n_action_steps: 10
+  observation_height: 360
+  observation_width: 360
+  continuation_temperature: 0.5
+
+adaptive:
+  first_stage_rollouts: 1
+  total_rollouts: 1
+
+scheduler:
+  max_attempts: 3
+  lease_seconds: 3600
+  worker: w5-failure-frontier-screen
+
+oracle:
+  protocol: rase-oracle
+  protocol_version: 1
+  endpoint: tcp://127.0.0.1:5555
+  request_timeout_ms: 60000

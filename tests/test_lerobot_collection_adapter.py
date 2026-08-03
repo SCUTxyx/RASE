@@ -52,6 +52,45 @@ def test_catalog_selection_filters_suite_category_and_level_deterministically():
     assert first.task_id in {2, 3}
 
 
+def test_clean_control_selects_one_of_original_ten_suite_tasks():
+    selected = select_catalog_task(
+        {},
+        request(
+            dimension="clean",
+            subdimension="none",
+            level=0,
+            seed=27,
+        ),
+    )
+    assert selected.suite == "libero_spatial"
+    assert selected.task_id == 8
+    assert selected.category == "Clean Control"
+    # Official clean name for Spatial task 8 (1-based); must not be a Plus variant.
+    assert selected.name == (
+        "pick_up_the_black_bowl_on_the_stove_and_place_it_on_the_plate"
+    )
+    assert "_table_" not in selected.name
+    assert "_view_" not in selected.name
+    assert "_tb_" not in selected.name
+
+
+def test_clean_control_rejects_implicit_plus_index_identity():
+    """Plus indices 0–9 are layout variants; clean must bind frozen names."""
+    selected = select_catalog_task(
+        {},
+        request(
+            suite="Object",
+            dimension="clean",
+            subdimension="none",
+            level=0,
+            task_id=1,
+            seed=0,
+        ),
+    )
+    assert selected.name == "pick_up_the_alphabet_soup_and_place_it_in_the_basket"
+    assert "table_" not in selected.name
+
+
 def test_other_subdimension_maps_to_upstream_category():
     catalog = {
         "libero_goal": (

@@ -1,0 +1,81 @@
+{
+  "continue": {
+    "hits": 5,
+    "mean_env_steps": 41.4,
+    "rate": 1.0
+  },
+  "elapsed_wall_s": 112.767,
+  "n_paired_trials": 5,
+  "n_states": 1,
+  "paired": {
+    "both_failure": 0,
+    "both_success": 0,
+    "continue_only": 5,
+    "mcnemar_exact_p": 0.0625,
+    "replan_only": 0
+  },
+  "per_pair": [
+    {
+      "continuation_seed": 1941111435,
+      "continue_smol_active_chunk": true,
+      "continue_smol_active_chunk_env_steps": 42,
+      "continue_smol_active_chunk_latency_seconds": 4.071982,
+      "repeat": 0,
+      "replan_smol": false,
+      "replan_smol_env_steps": 225,
+      "replan_smol_latency_seconds": 11.387616,
+      "state_key": "sp1_7d71b4cc40a489c2ff7ab733f6e015e6"
+    },
+    {
+      "continuation_seed": 2553235806,
+      "continue_smol_active_chunk": true,
+      "continue_smol_active_chunk_env_steps": 41,
+      "continue_smol_active_chunk_latency_seconds": 3.495361,
+      "repeat": 1,
+      "replan_smol": false,
+      "replan_smol_env_steps": 225,
+      "replan_smol_latency_seconds": 11.416738,
+      "state_key": "sp1_7d71b4cc40a489c2ff7ab733f6e015e6"
+    },
+    {
+      "continuation_seed": 1480963030,
+      "continue_smol_active_chunk": true,
+      "continue_smol_active_chunk_env_steps": 40,
+      "continue_smol_active_chunk_latency_seconds": 3.399965,
+      "repeat": 2,
+      "replan_smol": false,
+      "replan_smol_env_steps": 225,
+      "replan_smol_latency_seconds": 11.532506,
+      "state_key": "sp1_7d71b4cc40a489c2ff7ab733f6e015e6"
+    },
+    {
+      "continuation_seed": 1866703330,
+      "continue_smol_active_chunk": true,
+      "continue_smol_active_chunk_env_steps": 41,
+      "continue_smol_active_chunk_latency_seconds": 3.18678,
+      "repeat": 3,
+      "replan_smol": false,
+      "replan_smol_env_steps": 225,
+      "replan_smol_latency_seconds": 11.614426,
+      "state_key": "sp1_7d71b4cc40a489c2ff7ab733f6e015e6"
+    },
+    {
+      "continuation_seed": 511532855,
+      "continue_smol_active_chunk": true,
+      "continue_smol_active_chunk_env_steps": 43,
+      "continue_smol_active_chunk_latency_seconds": 3.274943,
+      "repeat": 4,
+      "replan_smol": false,
+      "replan_smol_env_steps": 225,
+      "replan_smol_latency_seconds": 11.648481,
+      "state_key": "sp1_7d71b4cc40a489c2ff7ab733f6e015e6"
+    }
+  ],
+  "replan": {
+    "hits": 0,
+    "mean_env_steps": 225.0,
+    "rate": 0.0
+  },
+  "schema_version": "rase-smol-intervention-summary/v1",
+  "status": "complete"
+}

@@ -1,0 +1,407 @@
+{
+  "base_seed": 17072026,
+  "chunk_length": 10,
+  "diversity": {
+    "max_endpoint_l2": 3.0603694420008694,
+    "mean_chunk_l2": 0.6374117907794141,
+    "mean_endpoint_l2": 1.1831765417002909,
+    "min_endpoint_l2": 0.11672156602352868,
+    "n": 32,
+    "per_state": [
+      {
+        "mean_pairwise_chunk_l2": 0.6283832031575056,
+        "mean_pairwise_endpoint_l2": 1.5794705284511978,
+        "min_pairwise_endpoint_l2": 0.667438442612996,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.5636352539844053,
+        "mean_pairwise_endpoint_l2": 1.0909048104985928,
+        "min_pairwise_endpoint_l2": 0.2609948159717078,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.5767467608518853,
+        "mean_pairwise_endpoint_l2": 0.9307111300398406,
+        "min_pairwise_endpoint_l2": 0.3948986289144948,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.37805393233433915,
+        "mean_pairwise_endpoint_l2": 0.6739779407681468,
+        "min_pairwise_endpoint_l2": 0.11672156602352868,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.4874957125150412,
+        "mean_pairwise_endpoint_l2": 1.0133604292765253,
+        "min_pairwise_endpoint_l2": 0.23888628459283043,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.534090122611377,
+        "mean_pairwise_endpoint_l2": 0.996337761672414,
+        "min_pairwise_endpoint_l2": 0.2931223913211837,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.4730062658865656,
+        "mean_pairwise_endpoint_l2": 0.9355384184150761,
+        "min_pairwise_endpoint_l2": 0.1619919280529448,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.494999006773464,
+        "mean_pairwise_endpoint_l2": 0.8812245565738375,
+        "min_pairwise_endpoint_l2": 0.26252096199910574,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.7146332930779853,
+        "mean_pairwise_endpoint_l2": 1.4346747943357063,
+        "min_pairwise_endpoint_l2": 0.44541913792366866,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.7639713439287499,
+        "mean_pairwise_endpoint_l2": 1.4109454843175582,
+        "min_pairwise_endpoint_l2": 0.4529143618984617,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.6423331774902505,
+        "mean_pairwise_endpoint_l2": 1.072435379541883,
+        "min_pairwise_endpoint_l2": 0.21148826087934933,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.7228128434554087,
+        "mean_pairwise_endpoint_l2": 1.6323877914682565,
+        "min_pairwise_endpoint_l2": 0.5200297508910509,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.7264869691928297,
+        "mean_pairwise_endpoint_l2": 1.4851171315269422,
+        "min_pairwise_endpoint_l2": 0.4578085306592584,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.5619515964810466,
+        "mean_pairwise_endpoint_l2": 1.2658906145623072,
+        "min_pairwise_endpoint_l2": 0.42768391003072165,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.6945334459576353,
+        "mean_pairwise_endpoint_l2": 1.3238826160481207,
+        "min_pairwise_endpoint_l2": 0.16594533239248668,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.5807585718837597,
+        "mean_pairwise_endpoint_l2": 1.2596352272347306,
+        "min_pairwise_endpoint_l2": 0.21090661410165198,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.6279015728781788,
+        "mean_pairwise_endpoint_l2": 1.3716377112447666,
+        "min_pairwise_endpoint_l2": 0.607158730997404,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.5349073546260942,
+        "mean_pairwise_endpoint_l2": 0.9799058650962598,
+        "min_pairwise_endpoint_l2": 0.5094570770113496,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.6495666696684569,
+        "mean_pairwise_endpoint_l2": 1.2716190312126294,
+        "min_pairwise_endpoint_l2": 0.2778831869321431,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.6213218717006513,
+        "mean_pairwise_endpoint_l2": 1.1391906780719228,
+        "min_pairwise_endpoint_l2": 0.38769671876577033,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.690503983047568,
+        "mean_pairwise_endpoint_l2": 1.4267305915104236,
+        "min_pairwise_endpoint_l2": 0.3841254766280955,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.48887668589986477,
+        "mean_pairwise_endpoint_l2": 0.9373041031714191,
+        "min_pairwise_endpoint_l2": 0.39967892804370353,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.6243358968651901,
+        "mean_pairwise_endpoint_l2": 1.3134808460689147,
+        "min_pairwise_endpoint_l2": 0.39275901319785594,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.618303368471617,
+        "mean_pairwise_endpoint_l2": 1.30924147206553,
+        "min_pairwise_endpoint_l2": 0.5537156450514706,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.594183055175017,
+        "mean_pairwise_endpoint_l2": 1.2067681722004537,
+        "min_pairwise_endpoint_l2": 0.322863415799213,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.6411800430309993,
+        "mean_pairwise_endpoint_l2": 1.1965440927758848,
+        "min_pairwise_endpoint_l2": 0.4067517968597744,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.5655071113960538,
+        "mean_pairwise_endpoint_l2": 1.1261355847958352,
+        "min_pairwise_endpoint_l2": 0.2537885971687213,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.520518168899618,
+        "mean_pairwise_endpoint_l2": 1.0332741321250458,
+        "min_pairwise_endpoint_l2": 0.23858773730095367,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.5256185361209698,
+        "mean_pairwise_endpoint_l2": 1.0021151669934854,
+        "min_pairwise_endpoint_l2": 0.3293833370143429,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 2.020633551315344,
+        "mean_pairwise_endpoint_l2": 1.4502589036669078,
+        "min_pairwise_endpoint_l2": 0.26608520216285614,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.5045647638950774,
+        "mean_pairwise_endpoint_l2": 1.0303076181126412,
+        "min_pairwise_endpoint_l2": 0.2749009879466483,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.625363172368305,
+        "mean_pairwise_endpoint_l2": 1.0806407505660565,
+        "min_pairwise_endpoint_l2": 0.3122522195766445,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      }
+    ]
+  },
+  "elapsed_s": 102.38,
+  "n_skipped": 0,
+  "n_written": 32,
+  "output_dir": "/data/data2/yuxuan/RASE/runs/ngc_w3_adequate_early_candidates",
+  "policy_hash": "71d9563c8295284acba8fc2d5c19de000d6fe9ba58a406832af7ef3d221ed52f",
+  "policy_path": "/data/data2/yuxuan/RASE/ckpts/smolvla_libero",
+  "pool": "/data/data2/yuxuan/RASE/pool/ngc_step1_scale200",
+  "state_keys": [
+    "sp1_7eff9f7b7ad18ec0fe9da00bcb7f55bf",
+    "sp1_75bbc47bcce0e7a86040acf2357e4dd4",
+    "sp1_f63ef879120073c5e5c71ff03b31b9d2",
+    "sp1_14ff50d23a305496f068ece9c011dc95",
+    "sp1_d7d66d825a0a76249bad4166b0afab6d",
+    "sp1_4938cbcddfcf9b3e1512a9aab0a20200",
+    "sp1_f6ee5cddf0b7a29037df82e82bb83c12",
+    "sp1_7164c516ad192cf9663ef11e0d2043f3",
+    "sp1_86d02ab43d5d58cb543a27f26035f678",
+    "sp1_80d0ac7a09ba72d560f3e8da7dca90c6",
+    "sp1_dcd5b62cdc4b20ac5a7f98482218e0ab",
+    "sp1_07b011859bd3db79c154fccbaf88f674",
+    "sp1_2236aa28e586ee2b9303aad0837fcc2e",
+    "sp1_26b4679fbf0fbdf369c5558b534abab8",
+    "sp1_2936895695978e029a557d1947c51a95",
+    "sp1_cd787c095a8a3fce86994ed688652ec2",
+    "sp1_364ceb240058d458d2f0df7d16f80f79",
+    "sp1_6a6357901473f7996e819e7da5e8bceb",
+    "sp1_c580fb59f5c2c96bc8998bf5a89cbcd0",
+    "sp1_da2effe7c81c26ded7212cc8ed6dc39b",
+    "sp1_112a05338fb342899aaef2922e699682",
+    "sp1_d2d9ecc49f10eee523a98ced4d7fc810",
+    "sp1_f2931f8e38bff24e72cf5414910c4f83",
+    "sp1_b276128870badfacfb2d8fb343e0f1a8",
+    "sp1_814c252962f7bdbb2932b0f3e49756ff",
+    "sp1_494ab5a63127c8ada27b76e3bab289b1",
+    "sp1_19ce89fddab97e566c98df90e736b21c",
+    "sp1_53fae63b9b9a7c824d703eb799450c9d",
+    "sp1_40ee51d5ca85735d8219b28096795ead",
+    "sp1_d0e6aea94235df59baee67d38436ff19",
+    "sp1_1e2174826805fc830cda3624ca04536a",
+    "sp1_538907d76926513a2df57ddb7faeab0b"
+  ],
+  "temperature": 0.7
+}

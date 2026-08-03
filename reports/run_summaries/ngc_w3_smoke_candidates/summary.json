@@ -1,0 +1,47 @@
+{
+  "base_seed": 17072026,
+  "chunk_length": 10,
+  "diversity": {
+    "max_endpoint_l2": 3.1165253145266063,
+    "mean_chunk_l2": 0.702353204685864,
+    "mean_endpoint_l2": 1.5355103365186897,
+    "min_endpoint_l2": 0.3195854802925475,
+    "n": 2,
+    "per_state": [
+      {
+        "mean_pairwise_chunk_l2": 0.6940245500296642,
+        "mean_pairwise_endpoint_l2": 1.3910133359658479,
+        "min_pairwise_endpoint_l2": 0.4641375959149002,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.710681859342064,
+        "mean_pairwise_endpoint_l2": 1.6800073370715316,
+        "min_pairwise_endpoint_l2": 0.3195854802925475,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      }
+    ]
+  },
+  "elapsed_s": 11.079,
+  "n_skipped": 0,
+  "n_written": 2,
+  "output_dir": "/data/data2/yuxuan/RASE/runs/ngc_w3_smoke_candidates/candidates",
+  "policy_hash": "71d9563c8295284acba8fc2d5c19de000d6fe9ba58a406832af7ef3d221ed52f",
+  "policy_path": "/data/data2/yuxuan/RASE/ckpts/smolvla_libero",
+  "pool": "/data/data2/yuxuan/RASE/pool/ngc_step1_scale200",
+  "state_keys": [
+    "sp1_03058fd0dba9567f5158afa4090e09da",
+    "sp1_35474b45718c29447785f5efc5419e96"
+  ],
+  "temperature": 0.7
+}

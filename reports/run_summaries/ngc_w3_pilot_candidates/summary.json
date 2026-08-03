@@ -1,0 +1,215 @@
+{
+  "base_seed": 17072026,
+  "chunk_length": 10,
+  "diversity": {
+    "max_endpoint_l2": 4.805495926198095,
+    "mean_chunk_l2": 1.2627647049278399,
+    "mean_endpoint_l2": 1.4969272521735237,
+    "min_endpoint_l2": 0.1079646164121204,
+    "n": 16,
+    "per_state": [
+      {
+        "mean_pairwise_chunk_l2": 0.416563360813983,
+        "mean_pairwise_endpoint_l2": 0.8652112164734521,
+        "min_pairwise_endpoint_l2": 0.1079646164121204,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 1.0024346669797068,
+        "mean_pairwise_endpoint_l2": 0.9162656382344672,
+        "min_pairwise_endpoint_l2": 0.3204599729620766,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 3.255616459203339,
+        "mean_pairwise_endpoint_l2": 1.378492947544666,
+        "min_pairwise_endpoint_l2": 0.3776417844256235,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.7525741303582534,
+        "mean_pairwise_endpoint_l2": 1.602995979959077,
+        "min_pairwise_endpoint_l2": 0.3659948556131756,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.7461035255406763,
+        "mean_pairwise_endpoint_l2": 1.38169426198282,
+        "min_pairwise_endpoint_l2": 0.4945664544275354,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 3.14336070049131,
+        "mean_pairwise_endpoint_l2": 1.7640226085873694,
+        "min_pairwise_endpoint_l2": 0.5023810122374825,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.7885254426821697,
+        "mean_pairwise_endpoint_l2": 2.071409732974634,
+        "min_pairwise_endpoint_l2": 0.5415691445621673,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.8575982244840048,
+        "mean_pairwise_endpoint_l2": 1.8097730586871947,
+        "min_pairwise_endpoint_l2": 0.5210730287191145,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 2.5856092485965405,
+        "mean_pairwise_endpoint_l2": 1.2655821042095865,
+        "min_pairwise_endpoint_l2": 0.2407076584108944,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.7289418128906965,
+        "mean_pairwise_endpoint_l2": 1.3453975352056557,
+        "min_pairwise_endpoint_l2": 0.4205023166795331,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.7988248153476523,
+        "mean_pairwise_endpoint_l2": 1.481585125149823,
+        "min_pairwise_endpoint_l2": 0.2913991706917132,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.8438050097634967,
+        "mean_pairwise_endpoint_l2": 1.720767221491176,
+        "min_pairwise_endpoint_l2": 0.11222504251060637,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 1.7345691976439406,
+        "mean_pairwise_endpoint_l2": 1.5154308622005925,
+        "min_pairwise_endpoint_l2": 0.19108920870562385,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.9074821680187691,
+        "mean_pairwise_endpoint_l2": 1.2556128528253,
+        "min_pairwise_endpoint_l2": 0.32367888931726424,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.9665320791458383,
+        "mean_pairwise_endpoint_l2": 2.146415087363442,
+        "min_pairwise_endpoint_l2": 0.714320117395549,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      },
+      {
+        "mean_pairwise_chunk_l2": 0.67569443688506,
+        "mean_pairwise_endpoint_l2": 1.4301798018871232,
+        "min_pairwise_endpoint_l2": 0.3095856491829692,
+        "shape": [
+          8,
+          10,
+          7
+        ],
+        "temperature": 0.7
+      }
+    ]
+  },
+  "elapsed_s": 52.828,
+  "n_skipped": 0,
+  "n_written": 16,
+  "output_dir": "/data/data2/yuxuan/RASE/runs/ngc_w3_pilot_candidates/candidates",
+  "policy_hash": "71d9563c8295284acba8fc2d5c19de000d6fe9ba58a406832af7ef3d221ed52f",
+  "policy_path": "/data/data2/yuxuan/RASE/ckpts/smolvla_libero",
+  "pool": "/data/data2/yuxuan/RASE/pool/ngc_step1_scale200",
+  "state_keys": [
+    "sp1_c3da4b196dca67cb4f845a7ffc4fcfe3",
+    "sp1_b82f1e95fde0af0a0196dcac66a24648",
+    "sp1_fc13cdddeec4090d7eba75099531082f",
+    "sp1_7e0484e76545cca84933ec037f2fa969",
+    "sp1_189175f902dc3e3e0609661c724e50b3",
+    "sp1_288ec646cfa36c4ec97da24ce91b8ba1",
+    "sp1_d6454fbe0bf58c9713917359288ee9b9",
+    "sp1_6ec1c0690ca9063c3f3d99d6c10784b0",
+    "sp1_233d98cbfe7adc8479ef0b124c4907b0",
+    "sp1_3540b959436ef3f6ac0a2d744de37e03",
+    "sp1_8779cf1a224e7f31d6f67654deb7646f",
+    "sp1_9f6238d0f0e6ffa478b62225109ab9df",
+    "sp1_c6344d5f7c41a637cb003d285d4037cb",
+    "sp1_6147e380191019aaf1f848c05e49cce9",
+    "sp1_9581e8f40851595a81686fb5c38d42ad",
+    "sp1_804aeb3b74e569456bb465dd3fa8993e"
+  ],
+  "temperature": 0.7
+}

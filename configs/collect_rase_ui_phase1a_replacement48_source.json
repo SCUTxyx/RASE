@@ -1,0 +1,68 @@
+{
+  "run_name": "rase-ui-phase1a-replacement48-source-full-horizon",
+  "pool": "runs/rase_ui_phase1a_replacement48_initial_pool",
+  "adapter": "rase.collect.lerobot_libero_plus_adapter:make_adapter",
+  "adapter_config": {
+    "policy_path": "ckpts/smolvla_libero",
+    "tokenizer_path": "ckpts/SmolVLM2-500M-Instruct",
+    "libero_plus_root": "/root/autodl-tmp/src/LIBERO-plus",
+    "libero_clean_root": "/root/autodl-tmp/src/LIBERO",
+    "device": "cuda",
+    "num_steps": 10,
+    "n_action_steps": 10,
+    "continuation_temperature": 0.5,
+    "observation_height": 360,
+    "observation_width": 360,
+    "capture_decision_context_v2": false,
+    "snapshot_offset_steps": 0,
+    "public_history_steps": 4
+  },
+  "sampling": {
+    "suite_quotas": {
+      "Spatial": 1,
+      "Object": 1,
+      "Goal": 1,
+      "Long": 1
+    },
+    "factorial_cells": [
+      {"dimension": "clean", "level": 0, "weight": 1},
+      {"dimension": "camera", "level": 1, "weight": 1},
+      {"dimension": "robot", "level": 1, "weight": 1}
+    ]
+  },
+  "collection": {
+    "output_dir": "runs/rase_ui_phase1a_replacement48_initial_pool",
+    "episodes": 48,
+    "seed": 2026081807,
+    "action_chunks_per_episode": 50,
+    "snapshot_cadence_action_chunks": 2,
+    "successful_snapshot_retention": 1.0,
+    "dry_run": false,
+    "smoke_mode": false
+  },
+  "oracle": {
+    "endpoint": "tcp://127.0.0.1:5555",
+    "timeout": 120000
+  },
+  "scheduler": {
+    "max_attempts": 3,
+    "lease_seconds": 3600
+  },
+  "protocol": {
+    "version": "rase-replacement-pilot/v1",
+    "purpose": "development-only full-horizon SOURCE-ONLY and reset-state OFT-ONLY replacement audit",
+    "source_design": "runs/rase_ui_phase0g_independent48_design.json",
+    "phase0_isolation": "development evidence only; forbidden from flagship hidden test",
+    "expected_episodes": 48,
+    "expected_initial_states": 48,
+    "initial_snapshot_chunk": 0,
+    "initial_snapshot_env_step": 0,
+    "full_source_horizon": true,
+    "require_unique_tasks": true,
+    "operator_profiles": [
+      "source_only_full_horizon",
+      "oft_only_from_reset",
+      "source_to_oft_at_env_step_25"
+    ]
+  }
+}

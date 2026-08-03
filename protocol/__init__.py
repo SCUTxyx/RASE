@@ -1,3 +1,5 @@
 """Dependency-light NGC-Plus evaluation protocol package."""
 
-__all__: list[str] = []
+from protocol.eval_feb import FebMetrics, evaluate_feb
+
+__all__ = ["FebMetrics", "evaluate_feb"]

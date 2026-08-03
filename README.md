@@ -5,6 +5,53 @@ execution around frozen vision-language-action policies. The repository keeps
 project code and reproducibility metadata in Git while leaving checkpoints and
 generated experiment artifacts local.
 
+The current research plan is
+[`plan/RASE_top_conference_execution_v4.md`](plan/RASE_top_conference_execution_v4.md).
+Older v3.1 and construction guides are retained as historical/reference
+documents; their execution status is indexed in [`plan/README.md`](plan/README.md).
+
+The current scientific focus is **policy-relative recoverability**: the same
+state and candidate set may be unrecoverable under one continuation policy but
+recoverable under another. W4 observed SmolVLA `0/1536` versus OFT portfolio
+recovery on `17/32` matched states. This result motivates a leakage-safe
+cross-policy benchmark and a cost-aware `CONTINUE / ESCALATE / ABSTAIN`
+selector before any full fallback-RL implementation.
+
+The W5 proposal-temperature diagnostic is closed at `0/576`. W6 then found
+Smol `0/64` candidate hits and `0/8` states versus OFT `10/64` and `2/8` states
+(`p=0.5`). Prefix controls attributed candidate-specific rescue to `0/2`
+discordant discovery states, so the method has moved from candidate reranking
+to direct, cost-aware policy escalation. W7 freezes an episode-disjoint
+24-state replication; its Smol arm is complete at `0/192` and `0/24` states.
+
+## Current outcome (2026-07-31)
+
+W9C traced the invalid W9B clean-control result to task identity: LIBERO-Plus
+indices 0–9 are layout variants, not the official clean-10 tasks. The clean
+branch now loads exact vanilla BDDL/init identities; the preregistered probe
+passed (suite SR Spatial 0.45, Object 0.85, Goal 0.80, Long 0.35; mean 0.6125),
+clean32 coverage completed, and both episode- and task-disjoint readiness gates
+passed.
+
+The ridge selector nevertheless did **not** beat its action-matched random
+baseline: held-out Δutility was 0 for both splits, with confidence intervals
+crossing zero. The preregistered decision is therefore `kill_method_branch`:
+do not promote ridge and do not escalate to MLP/RL. The paper posture is now
+**benchmark + diagnosis**, centered on W7/W8 policy-relative recoverability,
+mechanism falsification, and direct escalation outcomes. The task-held-out test
+is especially limited—8 clean-control states, no failure-challenge states, and
+0 method escalation actions—so it is a gate failure, not evidence of routing
+generalization.
+
+W10 then covered Object/Spatial L1/L2 failures: collect **80/80 failure**, direct
+Smol **0/16**, direct OFT **1/16** (Spatial 0/8). Escalate-oracle support was only
+one state, so the held-out split is `NOT_READY`. Recoverability claims must stay
+suite-scoped (Goal/Long positives; Object/Spatial mostly both-fail in this regime).
+See the [full project narrative](progress/2026-07-31_rase_full_project_narrative.md),
+[W9C gate result](progress/2026-07-31_w9c_selector_gate_result.md),
+[W10 result](progress/2026-07-31_w10_object_spatial_benchmark.md), and
+[idea/claims record](progress/2026-07-31_idea_evolution_and_next_questions.md).
+
 ## Reproduced baseline
 
 The locked W1 reference is the frozen

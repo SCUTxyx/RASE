@@ -1,0 +1,161 @@
+{
+  "best_fixed_operator": "continue_smol_active_chunk",
+  "best_fixed_success_rate": 0.75,
+  "diagnostic_only": true,
+  "interpretation": "Eight-state/two-task smoke; use to test arm semantics and locate complementarity, not for paper-level significance.",
+  "n_complete_snapshots": 8,
+  "n_snapshots": 8,
+  "oracle_minus_best_fixed": 0.0,
+  "per_operator_success_rate": {
+    "continue_smol_active_chunk": 0.75,
+    "replan_smol": 0.625,
+    "switch_oft": 0.75
+  },
+  "per_state": [
+    {
+      "complete": true,
+      "operator_success": {
+        "continue_smol_active_chunk": 1.0,
+        "replan_smol": 1.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_3c088ffffda6d34f44c6d03973ebfb1d",
+      "step": 0,
+      "task_id": "libero_object_000010",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_success": {
+        "continue_smol_active_chunk": 1.0,
+        "replan_smol": 1.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_2cbb80e34eefb04e95ff2eb18110441c",
+      "step": 0,
+      "task_id": "libero_spatial_000004",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_success": {
+        "continue_smol_active_chunk": 1.0,
+        "replan_smol": 1.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_3879af491da3547078a0cda0f313c4b5",
+      "step": 2,
+      "task_id": "libero_object_000010",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_success": {
+        "continue_smol_active_chunk": 1.0,
+        "replan_smol": 1.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_014e9360d6f9da3d1106c01b51f6e351",
+      "step": 2,
+      "task_id": "libero_spatial_000004",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_success": {
+        "continue_smol_active_chunk": 1.0,
+        "replan_smol": 1.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_fa9be7b3d0acd8ccb58d4508bd20390d",
+      "step": 4,
+      "task_id": "libero_object_000010",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_success": {
+        "continue_smol_active_chunk": 1.0,
+        "replan_smol": 0.0,
+        "switch_oft": 1.0
+      },
+      "snapshot_id": "sp1_7d71b4cc40a489c2ff7ab733f6e015e6",
+      "step": 4,
+      "task_id": "libero_spatial_000004",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 0.0
+      },
+      "snapshot_id": "sp1_56ebca60a26406ce105218c254d77c95",
+      "step": 6,
+      "task_id": "libero_object_000010",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    },
+    {
+      "complete": true,
+      "operator_success": {
+        "continue_smol_active_chunk": 0.0,
+        "replan_smol": 0.0,
+        "switch_oft": 0.0
+      },
+      "snapshot_id": "sp1_8a3c10fc8031e35330ae0f4c6d4c5c5c",
+      "step": 6,
+      "task_id": "libero_spatial_000004",
+      "unique_winner": null,
+      "winners": [
+        "continue_smol_active_chunk",
+        "replan_smol",
+        "switch_oft"
+      ]
+    }
+  ],
+  "same_state_oracle_success_rate": 0.75,
+  "schema_version": "rase-intervention-matrix-summary/v1",
+  "source_oft_summaries": [
+    "/root/autodl-tmp/RASE/runs/rase_ui_phase0_switch_oft_spatial_parity8_v1/summary.json",
+    "/root/autodl-tmp/RASE/runs/rase_ui_phase0_switch_oft_object_parity8_v1/summary.json"
+  ],
+  "source_smol_run": "/root/autodl-tmp/RASE/runs/rase_ui_phase0_smoke_parity_paired",
+  "status": "complete",
+  "unique_winner_counts": {},
+  "unique_winner_task_counts": {}
+}

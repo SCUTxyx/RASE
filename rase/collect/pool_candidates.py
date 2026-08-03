@@ -166,6 +166,10 @@ def generate_for_state(
     loaded = pool.read_state(state_key)
     snapshot = bundle_to_env_snapshot(loaded)
     meta = loaded.metadata
+    flavor = (
+        str(getattr(meta, "libero_flavor", None) or "")
+        or ("clean" if meta.perturb_dim == "clean" else "plus")
+    )
     handle = make_libero_env_for_task(
         meta.task_id,
         init_state_id=meta.init_state_id if meta.init_state_id is not None else 0,
@@ -173,6 +177,7 @@ def generate_for_state(
         observation_height=observation_height,
         observation_width=observation_width,
         libero_plus_root=libero_plus_root,
+        libero_flavor=flavor,  # type: ignore[arg-type]
     )
     try:
         live_desc = str(getattr(handle.vector_env.envs[0], "task_description", ""))

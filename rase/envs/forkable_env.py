@@ -103,6 +103,30 @@ _OBSERVABLE_FIELDS = (
 )
 _RNG_ATTRS = ("np_random", "_np_random")
 
+# These describe the compiled MuJoCo state-space / object topology and do not
+# change while an episode is running.  In contrast, ``model.get_xml()`` is not
+# a stable identity source in mujoco-py: lazy renderer setup and task runtime
+# code can update values that are serialized back into the XML.
+_MODEL_TOPOLOGY_FIELDS = (
+    "nq",
+    "nv",
+    "nu",
+    "na",
+    "nbody",
+    "njnt",
+    "ngeom",
+    "nsite",
+    "ncam",
+    "nlight",
+    "nmesh",
+    "ntex",
+    "nmat",
+    "neq",
+    "ntendon",
+    "nsensor",
+    "nkey",
+)
+
 
 def _require_attributes(obj: Any, fields: Iterable[str], role: str) -> None:
     missing = [field for field in fields if not hasattr(obj, field)]
@@ -244,6 +268,7 @@ class ForkableEnv:
 
     def _compute_task_fingerprint(self) -> str:
         components: dict[str, Any] = {
+            "fingerprint_schema": "rase-task-identity/v2",
             "wrapper_class": _qualified_name(self.env),
             "task_class": _qualified_name(self._task_env),
         }
@@ -274,16 +299,38 @@ class ForkableEnv:
                 raise UnsupportedEnvironmentError(f"task BDDL file does not exist: {path}")
             components["bddl_sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
 
-        model = getattr(self.env.sim, "model", None)
-        if model is not None and hasattr(model, "get_xml"):
-            xml = model.get_xml()
-            components["model_xml_sha256"] = hashlib.sha256(xml.encode("utf-8")).hexdigest()
-        elif hasattr(self.env.sim, "model_fingerprint"):
+        # Prefer an adapter-supplied immutable identity.  Real LIBERO uses a
+        # mujoco-py model, for which we fingerprint stable topology rather than
+        # get_xml(): that XML can change after renderer initialization or an
+        # environment step even though the task/model is still the same.
+        if hasattr(self.env.sim, "model_fingerprint"):
             components["model_fingerprint"] = str(self.env.sim.model_fingerprint)
         else:
-            raise UnsupportedEnvironmentError(
-                "sim must expose model.get_xml() or an explicit model_fingerprint"
-            )
+            model = getattr(self.env.sim, "model", None)
+            if model is None:
+                raise UnsupportedEnvironmentError(
+                    "sim must expose model topology or an explicit model_fingerprint"
+                )
+            topology: dict[str, Any] = {"class": _qualified_name(model)}
+            for field in _MODEL_TOPOLOGY_FIELDS:
+                if hasattr(model, field):
+                    topology[field] = int(getattr(model, field))
+            names = getattr(model, "names", None)
+            if names is not None:
+                if isinstance(names, str):
+                    names_bytes = names.encode("utf-8")
+                else:
+                    try:
+                        names_bytes = bytes(names)
+                    except (TypeError, ValueError):
+                        names_bytes = repr(names).encode("utf-8")
+                topology["names_sha256"] = hashlib.sha256(names_bytes).hexdigest()
+            if len(topology) == 1:
+                raise UnsupportedEnvironmentError(
+                    "sim.model exposes no supported stable topology fields; "
+                    "provide sim.model_fingerprint"
+                )
+            components["model_topology"] = topology
 
         canonical = json.dumps(components, sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
@@ -370,11 +417,12 @@ class ForkableEnv:
     ) -> None:
         """Restore in a fixed order and reject cross-task snapshots.
 
-        ``check_task_fingerprint=True`` (default) enforces the full identity
-        hash, including ``model.get_xml()``. Some Plus robot init-state variants
-        produce XML that is not bit-stable across processes; pool restore gates
-        may pass ``check_task_fingerprint=False`` after an external task_id /
-        BDDL bind check, then rely on double-restore determinism.
+        ``check_task_fingerprint=True`` (default) enforces the stable task
+        identity hash: task metadata, BDDL content, and compiled model topology.
+        It deliberately excludes ``model.get_xml()``, whose serialized runtime
+        values are not invariant within a mujoco-py episode. Legacy v1 pool
+        snapshots may still require ``check_task_fingerprint=False`` after an
+        external task_id / BDDL bind check and double-restore determinism gate.
         """
 
         np = _numpy()
