@@ -6,7 +6,7 @@
 #   ENDPOINT, CONDA_ROOT, SMOLVLA_ENV, OFT_ENV, LIBERO_PLUS_ROOT, PYTHONPATH_OFT
 #   OUTPUT_PREFIX (default: ngc_w4_oft) → runs/${OUTPUT_PREFIX}_${short}_${TAG}
 #   STATE_KEYS_JSON, CANDIDATES_DIR, FRESH_RUN=1, HEALTH_RETRIES, HEALTH_INTERVAL
-#   OFT_RUNNER=verify|prefix-ablation
+#   OFT_RUNNER=verify|prefix-ablation|generate-prefix
 #   OFT_PREFIX_ARMS=full|direct|decision-suffix|suffix-prefix-grid
 #   OFT_SUITE_SHORTS=spatial,object,goal,10
 #   PREFLIGHT=0 skips the default read-only environment/artifact checks.
@@ -104,13 +104,15 @@ if [[ ! -f "$STATE_KEYS_JSON" ]]; then
   echo "ERROR: frozen state key artifact missing: $STATE_KEYS_JSON" >&2
   exit 1
 fi
-if [[ "$OFT_RUNNER" == "verify" || "$OFT_PREFIX_ARMS" == "full" ]] \
+if [[ "$OFT_RUNNER" == "verify" \
+  || ( "$OFT_RUNNER" == "prefix-ablation" && "$OFT_PREFIX_ARMS" == "full" ) ]] \
   && [[ ! -d "$CANDIDATES_DIR" ]]; then
   echo "ERROR: candidates directory missing: $CANDIDATES_DIR" >&2
   exit 1
 fi
-if [[ "$OFT_RUNNER" != "verify" && "$OFT_RUNNER" != "prefix-ablation" ]]; then
-  echo "ERROR: OFT_RUNNER must be verify or prefix-ablation" >&2
+if [[ "$OFT_RUNNER" != "verify" && "$OFT_RUNNER" != "prefix-ablation" \
+  && "$OFT_RUNNER" != "generate-prefix" ]]; then
+  echo "ERROR: OFT_RUNNER must be verify, prefix-ablation, or generate-prefix" >&2
   exit 1
 fi
 if [[ "$OFT_PREFIX_ARMS" != "full" && "$OFT_PREFIX_ARMS" != "direct" \
@@ -218,7 +220,7 @@ run_suite() {
         --candidates-dir "$CANDIDATES_DIR" \
         --output-dir "${out_dir}" \
         "${run_behavior[@]}"
-    else
+    elif [[ "$OFT_RUNNER" == "prefix-ablation" ]]; then
       python -u scripts/rollout_oft_prefix_ablation.py \
         --config "$CFG" \
         --suite "$suite" --endpoint "$ENDPOINT" \
@@ -226,6 +228,14 @@ run_suite() {
         --candidates-dir "$CANDIDATES_DIR" \
         --output-dir "${out_dir}" \
         --arms "$OFT_PREFIX_ARMS" \
+        "${run_behavior[@]}"
+    else
+      python -u scripts/generate_oft_pool_candidates.py \
+        --config "$CFG" \
+        --suite "$suite" --endpoint "$ENDPOINT" \
+        --state-keys-json "$STATE_KEYS_JSON" \
+        --output-dir "$CANDIDATES_DIR" \
+        --summary-output "${out_dir}/summary.json" \
         "${run_behavior[@]}"
     fi
   )

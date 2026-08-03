@@ -56,6 +56,8 @@ def test_oft_shell_runner_uses_lock_owned_pid_and_resume_default():
     assert 'OFT_SUITE_SHORTS="${OFT_SUITE_SHORTS:-spatial,object,goal,10}"' in source
     assert "SKIP_EMPTY_SUITE" in source
     assert "rollout_oft_prefix_ablation.py" in source
+    assert "generate_oft_pool_candidates.py" in source
+    assert 'OFT_RUNNER" != "generate-prefix"' in source
 
 
 def test_oft_gpu_capacity_gate_is_hard_by_default():

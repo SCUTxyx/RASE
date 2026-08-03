@@ -146,6 +146,12 @@ under ignored artifact directories.
   strict-only/fallback-only/both/neither = **0/8/3/1**。异构增益完全来自 fallback，
   所以状态为 **NOT READY**；下一步先做真实异构、同预算 PRE-A1 generator assay，
   不扩展当前重采样、不训练 critic/world model。
+- [RASE-PRE PRE-A1 replan mechanism](2026-08-03_rase_pre_a1_replan_mechanism.md):
+  在同一 12-state cohort 上用 OFT expert prefix 做 `h={0,1,4,8}` 配对 handback；
+  四个长度均为 **3/12**，short-prefix rescue **0/9**，而 persistent OFT **11/12**、
+  direct-only rescue **8**。结论是系统性的 Smol closed-loop 能力缺口，而非首 chunk
+  采样问题；方法转为 temporally extended recovery option / persistent fallback，
+  不训练短 replan head、critic 或 world model。
 - [RASE full project narrative](2026-07-31_rase_full_project_narrative.md):
   从立项到 W10 的完整流程叙事（与上方 Start here 同一文件）。
 
