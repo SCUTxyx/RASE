@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""W2 pilot: restore pool states → K=8 SmolVLA candidate artifacts."""
+"""Restore pool states and generate configurable-K SmolVLA candidate artifacts."""
 
 from __future__ import annotations
 
@@ -140,6 +140,9 @@ def main() -> int:
         args.base_seed if args.base_seed is not None else candidates.get("base_seed", 17072026)
     )
     chunk_length = int(candidates.get("chunk_length", 10))
+    k = int(candidates.get("k", 8))
+    if k < 2:
+        raise SystemExit("candidates.k must be >= 2")
     raw_sample = cfg.get("sample", 2)
     default_sample_n = int(raw_sample) if isinstance(raw_sample, int) else 2
     sample_n = int(args.sample if args.sample is not None else default_sample_n)
@@ -353,7 +356,7 @@ def main() -> int:
 
     print(
         f"CANDIDATES_START n={len(keys)} pool={pool.root} out={output_dir} "
-        f"T={chunk_length} temp={temperature} device={device}",
+        f"K={k} T={chunk_length} temp={temperature} device={device}",
         flush=True,
     )
     print(f"POLICY path={policy_path} hash={policy_hash}", flush=True)
@@ -381,6 +384,7 @@ def main() -> int:
             temperature=temperature,
             base_seed=base_seed,
             policy_hash=str(policy_hash),
+            k=k,
             libero_plus_root=libero_plus_root,
             strict_fingerprint=args.strict_fingerprint,
             force=args.force,
@@ -407,6 +411,7 @@ def main() -> int:
         "temperature": temperature,
         "base_seed": base_seed,
         "chunk_length": chunk_length,
+        "k": k,
         "state_keys": keys,
         "state_keys_provenance": keys_provenance,
         "state_keys_sha256": keys_checksum,

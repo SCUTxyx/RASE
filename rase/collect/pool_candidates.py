@@ -13,6 +13,7 @@ from typing import Any
 import numpy as np
 
 from rase.collect.candidates import (
+    K_DEFAULT,
     CandidateArtifact,
     generate_candidates,
     load_artifact,
@@ -115,7 +116,9 @@ def observation_from_libero_env(libero_env: Any) -> dict[str, Any]:
     return batch_single_gym_observation({**formatted, "task": task})
 
 
-def candidate_base_seed(metadata_seed: int, state_key: str, base_seed: int) -> int:
+def candidate_base_seed(
+    metadata_seed: int, state_key: str, base_seed: int, *, k: int = K_DEFAULT
+) -> int:
     """Per-state seed offset so K candidates stay isolated across states.
 
     NumPy's legacy ``np.random.seed`` only accepts ``[0, 2**32 - 1]``. Mixing
@@ -123,11 +126,11 @@ def candidate_base_seed(metadata_seed: int, state_key: str, base_seed: int) -> i
     fold into a range that still leaves headroom for the K=8 offsets
     (``base + 0..7``) used by ``generate_candidates``.
     """
-    from rase.collect.candidates import K_DEFAULT
-
     digest = int(state_key.replace("sp1_", "")[:8], 16) if "sp1_" in state_key else 0
     mixed = int(base_seed) + int(metadata_seed) + digest
-    return int(mixed % (2**32 - K_DEFAULT))
+    if k < 2 or k >= 2**32:
+        raise ValueError("k must be within [2, 2**32)")
+    return int(mixed % (2**32 - k))
 
 
 @dataclass(frozen=True)
@@ -147,19 +150,21 @@ def generate_for_state(
     temperature: float,
     base_seed: int,
     policy_hash: str,
+    k: int = K_DEFAULT,
     libero_plus_root: str | None = None,
     strict_fingerprint: bool = False,
     force: bool = False,
     observation_height: int = 360,
     observation_width: int = 360,
 ) -> CandidateRunResult:
-    """Restore one pool state, sample K=8 chunks, write ``{state_key}.npz``."""
+    """Restore one pool state, sample K chunks, write ``{state_key}.npz``."""
     target = Path(output_dir) / f"{state_key}.npz"
     if target.is_file() and not force:
         existing = load_artifact(target)
         if (
             existing.metadata.policy_hash == policy_hash
             and abs(existing.metadata.temperature - temperature) < 1e-12
+            and existing.actions.shape[0] == k
         ):
             return CandidateRunResult(state_key, target, existing, skipped=True)
 
@@ -193,8 +198,9 @@ def generate_for_state(
         artifact = generate_candidates(
             policy,
             observation,
+            k=k,
             temperature=temperature,
-            base_seed=candidate_base_seed(meta.seed, state_key, base_seed),
+            base_seed=candidate_base_seed(meta.seed, state_key, base_seed, k=k),
             policy_hash=policy_hash,
         )
         save_artifact(target, artifact)

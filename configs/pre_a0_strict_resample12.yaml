@@ -1,0 +1,49 @@
+version: 1
+run_name: rase_pre_a0_strict_resample12
+mode: smolvla-screen
+
+pool: runs/rase_ui_phase1a_replacement48_initial_pool_v2
+candidates_dir: runs/rase_pre_a0_strict_resample12_candidates_v1
+output_dir: runs/rase_pre_a0_strict_resample12_screen_v1
+
+sample:
+  strategy: explicit_frozen_json
+
+protocol:
+  phase: pre_a0_candidate_opportunity
+  cohort: development_only_reset_states
+  expected_n_states: 12
+  formal_set_labels: false
+  report: one_shot_candidate_hits
+  candidate_rollouts: 1
+  first_sample_role: preregistered_sampling_baseline
+  note: >-
+    Opportunity screen only. These are outcome-independent reset states selected
+    before this run. They are excluded from the flagship hidden test.
+
+candidates:
+  k: 4
+  chunk_length: 10
+  action_dim: 7
+  temperature: 0.7
+  base_seed: 2026080301
+  policy_hash: 71d9563c8295284acba8fc2d5c19de000d6fe9ba58a406832af7ef3d221ed52f
+
+adapter:
+  policy_path: ckpts/smolvla_libero
+  tokenizer_path: ckpts/SmolVLM2-500M-Instruct
+  device: cuda
+  num_steps: 10
+  n_action_steps: 10
+  observation_height: 360
+  observation_width: 360
+  continuation_temperature: 0.5
+
+adaptive:
+  first_stage_rollouts: 1
+  total_rollouts: 1
+
+scheduler:
+  max_attempts: 3
+  lease_seconds: 3600
+  worker: pre-a0-strict-resample12

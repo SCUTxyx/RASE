@@ -140,6 +140,12 @@ under ignored artifact directories.
   `p=1.94e-8`），clean 也为 **15/16 vs 9/16**。仅 2 个 source-unique 例外跨两个
   suite，预注册 pilot gate 给出 `recovery_framing_signal`，但整体是**高 replacement
   risk + 稀疏待复现例外**；下一步只做互补性/真实成本 confirmation，不训练 selector/world model。
+- [RASE-PRE PRE-A0 candidate opportunity](2026-08-03_rase_pre_a0_candidate_opportunity.md):
+  12-state、K=4 严格同 profile 重采样得到 first / oracle@4 均为 **3/12**，
+  **0 strict rescue、0 mixed-outcome state**；OFT 为 **11/12**，portfolio
+  strict-only/fallback-only/both/neither = **0/8/3/1**。异构增益完全来自 fallback，
+  所以状态为 **NOT READY**；下一步先做真实异构、同预算 PRE-A1 generator assay，
+  不扩展当前重采样、不训练 critic/world model。
 - [RASE full project narrative](2026-07-31_rase_full_project_narrative.md):
   从立项到 W10 的完整流程叙事（与上方 Start here 同一文件）。
 

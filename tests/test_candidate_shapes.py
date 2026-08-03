@@ -54,10 +54,24 @@ def test_generate_fixed_shape_and_provenance(tmp_path):
     assert restored.metadata == artifact.metadata
 
 
+def test_generate_protocol_k4_is_supported_and_roundtrips(tmp_path):
+    policy = FakePolicy()
+    artifact = generate_candidates(
+        policy, {}, k=4, base_seed=20, temperature=0.7, policy_hash="k4"
+    )
+    assert artifact.actions.shape == (4, 4, 7)
+    assert artifact.metadata.seeds == (20, 21, 22, 23)
+    assert policy.resets == 4
+    path = tmp_path / "candidate-k4.npz"
+    save_artifact(path, artifact)
+    restored = load_artifact(path)
+    np.testing.assert_array_equal(restored.actions, artifact.actions)
+    assert restored.metadata == artifact.metadata
+
+
 @pytest.mark.parametrize(
     "shape",
     [
-        (7, 4, 7),
         (8, 4, 6),
         (8, 0, 7),
         (8, 7),
@@ -71,6 +85,14 @@ def test_rejects_non_protocol_shapes(shape):
             temperature=0.7,
             policy_hash="hash",
         )
+
+
+def test_rejects_seed_count_mismatch_and_duplicates():
+    actions = np.zeros((4, 4, 7), dtype=np.float32)
+    with pytest.raises(ValueError, match="seed count"):
+        make_artifact(actions, seeds=range(3), temperature=0.7, policy_hash="hash")
+    with pytest.raises(ValueError, match="seeds must be unique"):
+        make_artifact(actions, seeds=[1, 1, 2, 3], temperature=0.7, policy_hash="hash")
 
 
 def test_generation_is_seed_reproducible():

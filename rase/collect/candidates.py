@@ -123,10 +123,15 @@ def make_artifact(
     temperature: float,
     policy_hash: str,
 ) -> CandidateArtifact:
-    array = validate_actions(actions)
+    array = validate_actions(actions, require_k=False)
     normalized_seeds = tuple(int(seed) for seed in seeds)
-    if len(normalized_seeds) != K_DEFAULT:
-        raise ValueError(f"exactly {K_DEFAULT} candidate seeds are required")
+    if len(normalized_seeds) != array.shape[0]:
+        raise ValueError(
+            "candidate seed count must match the candidate axis: "
+            f"seeds={len(normalized_seeds)} candidates={array.shape[0]}"
+        )
+    if len(set(normalized_seeds)) != len(normalized_seeds):
+        raise ValueError("candidate seeds must be unique")
     if not np.isfinite(temperature) or temperature < 0:
         raise ValueError("temperature must be finite and non-negative")
     if not policy_hash:
@@ -152,9 +157,9 @@ def generate_candidates(
     policy_hash: str | None = None,
     seed_fn: Callable[[int], None] = seed_everything,
 ) -> CandidateArtifact:
-    """Generate the fixed pilot candidate set with isolated policy state."""
-    if k != K_DEFAULT:
-        raise ValueError(f"the NGC pilot protocol fixes K={K_DEFAULT}")
+    """Generate K same-profile samples with isolated, identical policy resets."""
+    if k < 2:
+        raise ValueError("candidate generation requires k >= 2")
     seeds = tuple(base_seed + index for index in range(k))
     chunks = []
     for seed in seeds:
@@ -178,7 +183,7 @@ def _metadata_dict(metadata: CandidateMetadata) -> dict[str, Any]:
 
 def save_artifact(path: str | os.PathLike[str], artifact: CandidateArtifact) -> None:
     """Atomically save an artifact. Loading never requires pickle."""
-    actions = validate_actions(artifact.actions)
+    actions = validate_actions(artifact.actions, require_k=False)
     if tuple(actions.shape) != artifact.metadata.shape:
         raise ValueError("metadata shape does not match candidate actions")
     target = Path(path)
@@ -216,7 +221,7 @@ def save_artifact(path: str | os.PathLike[str], artifact: CandidateArtifact) -> 
 
 def load_artifact(path: str | os.PathLike[str]) -> CandidateArtifact:
     with np.load(path, allow_pickle=False) as data:
-        actions = validate_actions(data["actions"])
+        actions = validate_actions(data["actions"], require_k=False)
         raw = json.loads(str(data["metadata"].item()))
         if "format_version" in data and int(data["format_version"].item()) != raw.get(
             "version"
