@@ -100,14 +100,14 @@ cd RASE
 git log -1 --oneline
 ```
 
-若远程尚未包含本机最新提交，从源机：
+若远程尚未包含本机最新提交，用已打好的 bundle：
 
 ```bash
-# 源机
-cd /root/autodl-tmp/RASE
-git bundle create /tmp/RASE.bundle --all
+# 源机已生成：/root/autodl-tmp/RASE.bundle
 # 新机
 git clone RASE.bundle RASE
+cd RASE
+git remote set-url origin https://github.com/SCUTxyx/RASE.git
 ```
 
 仓库：`https://github.com/SCUTxyx/RASE.git`
