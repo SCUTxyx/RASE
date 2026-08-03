@@ -39,6 +39,8 @@ results/
 # Experiment provenance is intentionally tracked.
 !progress/
 !progress/**
+# Keep provenance records, but not macOS AppleDouble sidecars copied with them.
+progress/._*
 
 # Compact mirrors of run summaries are tracked under reports/.
 !reports/
