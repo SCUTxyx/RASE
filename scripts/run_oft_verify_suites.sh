@@ -6,7 +6,7 @@
 #   ENDPOINT, CONDA_ROOT, SMOLVLA_ENV, OFT_ENV, LIBERO_PLUS_ROOT, PYTHONPATH_OFT
 #   OUTPUT_PREFIX (default: ngc_w4_oft) → runs/${OUTPUT_PREFIX}_${short}_${TAG}
 #   STATE_KEYS_JSON, CANDIDATES_DIR, FRESH_RUN=1, HEALTH_RETRIES, HEALTH_INTERVAL
-#   OFT_RUNNER=verify|prefix-ablation|generate-prefix
+#   OFT_RUNNER=verify|prefix-ablation|generate-prefix|generate-trajectory
 #   OFT_PREFIX_ARMS=full|direct|decision-suffix|suffix-prefix-grid
 #   OFT_SUITE_SHORTS=spatial,object,goal,10
 #   PREFLIGHT=0 skips the default read-only environment/artifact checks.
@@ -111,8 +111,9 @@ if [[ "$OFT_RUNNER" == "verify" \
   exit 1
 fi
 if [[ "$OFT_RUNNER" != "verify" && "$OFT_RUNNER" != "prefix-ablation" \
-  && "$OFT_RUNNER" != "generate-prefix" ]]; then
-  echo "ERROR: OFT_RUNNER must be verify, prefix-ablation, or generate-prefix" >&2
+  && "$OFT_RUNNER" != "generate-prefix" \
+  && "$OFT_RUNNER" != "generate-trajectory" ]]; then
+  echo "ERROR: invalid OFT_RUNNER: $OFT_RUNNER" >&2
   exit 1
 fi
 if [[ "$OFT_PREFIX_ARMS" != "full" && "$OFT_PREFIX_ARMS" != "direct" \
@@ -229,8 +230,16 @@ run_suite() {
         --output-dir "${out_dir}" \
         --arms "$OFT_PREFIX_ARMS" \
         "${run_behavior[@]}"
-    else
+    elif [[ "$OFT_RUNNER" == "generate-prefix" ]]; then
       python -u scripts/generate_oft_pool_candidates.py \
+        --config "$CFG" \
+        --suite "$suite" --endpoint "$ENDPOINT" \
+        --state-keys-json "$STATE_KEYS_JSON" \
+        --output-dir "$CANDIDATES_DIR" \
+        --summary-output "${out_dir}/summary.json" \
+        "${run_behavior[@]}"
+    else
+      python -u scripts/generate_oft_recovery_trajectories.py \
         --config "$CFG" \
         --suite "$suite" --endpoint "$ENDPOINT" \
         --state-keys-json "$STATE_KEYS_JSON" \

@@ -152,6 +152,12 @@ under ignored artifact directories.
   direct-only rescue **8**。结论是系统性的 Smol closed-loop 能力缺口，而非首 chunk
   采样问题；方法转为 temporally extended recovery option / persistent fallback，
   不训练短 replan head、critic 或 world model。
+- [RASE-PRE PRE-A2 recovery duration](2026-08-03_rase_pre_a2_recovery_duration.md):
+  12-state 闭环 OFT 轨迹的 `h={0,8,16,32,64}` handback 扫描得到
+  **3/12, 3/12, 3/12, 2/12, 5/12**；两个跨 suite 的 camera failure 仅在
+  64 步被救回，但 32 步误伤一个 base success，persistent OFT 仍为 **11/12**。
+  结论升级为 recovery duration / safe handback 的机制信号；先做 task-disjoint
+  replication，再决定是否训练 conservative termination model，world model 继续关闭。
 - [RASE full project narrative](2026-07-31_rase_full_project_narrative.md):
   从立项到 W10 的完整流程叙事（与上方 Start here 同一文件）。
 

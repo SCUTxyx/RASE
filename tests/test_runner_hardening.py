@@ -58,6 +58,8 @@ def test_oft_shell_runner_uses_lock_owned_pid_and_resume_default():
     assert "rollout_oft_prefix_ablation.py" in source
     assert "generate_oft_pool_candidates.py" in source
     assert 'OFT_RUNNER" != "generate-prefix"' in source
+    assert 'OFT_RUNNER" != "generate-trajectory"' in source
+    assert "generate_oft_recovery_trajectories.py" in source
 
 
 def test_oft_gpu_capacity_gate_is_hard_by_default():
