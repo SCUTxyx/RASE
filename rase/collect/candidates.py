@@ -20,7 +20,8 @@ import numpy as np
 
 K_DEFAULT = 8
 ACTION_DIM = 7
-ARTIFACT_VERSION = 1
+ARTIFACT_VERSION = 2
+SUPPORTED_ARTIFACT_VERSIONS = frozenset({1, 2})
 
 
 class CandidatePolicy(Protocol):
@@ -41,10 +42,14 @@ class DiversityMetrics:
 class CandidateMetadata:
     version: int
     seeds: tuple[int, ...]
-    temperature: float
+    # ``temperature`` remains populated for uniform v1/v2 profiles.  It is
+    # ``None`` for a heterogeneous v2 schedule; consumers must then inspect
+    # the per-candidate ``temperatures`` tuple.
+    temperature: float | None
     policy_hash: str
     shape: tuple[int, int, int]
     diversity: DiversityMetrics
+    temperatures: tuple[float, ...]
 
 
 @dataclass(frozen=True)
@@ -120,8 +125,9 @@ def make_artifact(
     actions: Any,
     *,
     seeds: Sequence[int],
-    temperature: float,
     policy_hash: str,
+    temperature: float | None = None,
+    temperatures: Sequence[float] | None = None,
 ) -> CandidateArtifact:
     array = validate_actions(actions, require_k=False)
     normalized_seeds = tuple(int(seed) for seed in seeds)
@@ -132,17 +138,43 @@ def make_artifact(
         )
     if len(set(normalized_seeds)) != len(normalized_seeds):
         raise ValueError("candidate seeds must be unique")
-    if not np.isfinite(temperature) or temperature < 0:
-        raise ValueError("temperature must be finite and non-negative")
+    if temperatures is None:
+        if temperature is None:
+            raise ValueError("temperature or temperatures must be provided")
+        normalized_temperatures = tuple(float(temperature) for _ in normalized_seeds)
+    else:
+        normalized_temperatures = tuple(float(value) for value in temperatures)
+        if len(normalized_temperatures) != array.shape[0]:
+            raise ValueError(
+                "candidate temperature count must match the candidate axis: "
+                f"temperatures={len(normalized_temperatures)} "
+                f"candidates={array.shape[0]}"
+            )
+        if temperature is not None and any(
+            abs(value - float(temperature)) > 1e-12
+            for value in normalized_temperatures
+        ):
+            raise ValueError("scalar temperature disagrees with temperatures schedule")
+    if not all(np.isfinite(value) and value >= 0 for value in normalized_temperatures):
+        raise ValueError("temperatures must be finite and non-negative")
+    uniform_temperature = (
+        normalized_temperatures[0]
+        if all(
+            abs(value - normalized_temperatures[0]) <= 1e-12
+            for value in normalized_temperatures
+        )
+        else None
+    )
     if not policy_hash:
         raise ValueError("policy_hash must be non-empty")
     metadata = CandidateMetadata(
         version=ARTIFACT_VERSION,
         seeds=normalized_seeds,
-        temperature=float(temperature),
+        temperature=uniform_temperature,
         policy_hash=str(policy_hash),
         shape=tuple(int(value) for value in array.shape),
         diversity=diversity_metrics(array),
+        temperatures=normalized_temperatures,
     )
     return CandidateArtifact(array, metadata)
 
@@ -152,7 +184,8 @@ def generate_candidates(
     observation: Any,
     *,
     k: int = K_DEFAULT,
-    temperature: float = 0.7,
+    temperature: float | None = 0.7,
+    temperatures: Sequence[float] | None = None,
     base_seed: int = 0,
     policy_hash: str | None = None,
     seed_fn: Callable[[int], None] = seed_everything,
@@ -160,17 +193,35 @@ def generate_candidates(
     """Generate K same-profile samples with isolated, identical policy resets."""
     if k < 2:
         raise ValueError("candidate generation requires k >= 2")
+    if temperatures is None:
+        if temperature is None:
+            raise ValueError("temperature or temperatures must be provided")
+        schedule = tuple(float(temperature) for _ in range(k))
+    else:
+        schedule = tuple(float(value) for value in temperatures)
+        if len(schedule) != k:
+            raise ValueError(
+                f"temperature schedule length must match k: {len(schedule)} != {k}"
+            )
+        if temperature not in {None, 0.7}:
+            raise ValueError("pass either temperature or temperatures, not both")
     seeds = tuple(base_seed + index for index in range(k))
     chunks = []
-    for seed in seeds:
+    for seed, candidate_temperature in zip(seeds, schedule, strict=True):
         policy.reset()
         seed_fn(seed)
-        chunks.append(np.asarray(policy.sample_chunk(observation, temperature=temperature)))
+        chunks.append(
+            np.asarray(
+                policy.sample_chunk(
+                    observation, temperature=float(candidate_temperature)
+                )
+            )
+        )
     return make_artifact(
         np.stack(chunks),
         seeds=seeds,
-        temperature=temperature,
         policy_hash=policy_fingerprint(policy, policy_hash),
+        temperatures=schedule,
     )
 
 
@@ -199,7 +250,15 @@ def save_artifact(path: str | os.PathLike[str], artifact: CandidateArtifact) -> 
                 handle,
                 actions=actions,
                 seeds=np.asarray(artifact.metadata.seeds, dtype=np.int64),
-                temperature=np.asarray(artifact.metadata.temperature, dtype=np.float64),
+                temperature=np.asarray(
+                    np.nan
+                    if artifact.metadata.temperature is None
+                    else artifact.metadata.temperature,
+                    dtype=np.float64,
+                ),
+                temperatures=np.asarray(
+                    artifact.metadata.temperatures, dtype=np.float64
+                ),
                 policy_hash=np.asarray(artifact.metadata.policy_hash),
                 diversity=np.asarray(
                     json.dumps(
@@ -229,30 +288,47 @@ def load_artifact(path: str | os.PathLike[str]) -> CandidateArtifact:
             raise ValueError("corrupt artifact: version fields disagree")
         if "seeds" in data and tuple(data["seeds"].tolist()) != tuple(raw["seeds"]):
             raise ValueError("corrupt artifact: seed fields disagree")
-        if "temperature" in data and float(data["temperature"].item()) != float(
-            raw["temperature"]
-        ):
-            raise ValueError("corrupt artifact: temperature fields disagree")
+        if "temperature" in data:
+            stored_temperature = float(data["temperature"].item())
+            raw_temperature = raw.get("temperature")
+            if raw_temperature is None:
+                if not np.isnan(stored_temperature):
+                    raise ValueError("corrupt artifact: temperature fields disagree")
+            elif stored_temperature != float(raw_temperature):
+                raise ValueError("corrupt artifact: temperature fields disagree")
+        if "temperatures" in data and tuple(
+            float(value) for value in data["temperatures"].tolist()
+        ) != tuple(float(value) for value in raw.get("temperatures") or ()):
+            raise ValueError("corrupt artifact: temperatures fields disagree")
         if "policy_hash" in data and str(data["policy_hash"].item()) != raw["policy_hash"]:
             raise ValueError("corrupt artifact: policy hash fields disagree")
-    if raw.get("version") != ARTIFACT_VERSION:
+    if raw.get("version") not in SUPPORTED_ARTIFACT_VERSIONS:
         raise ValueError(f"unsupported candidate artifact version: {raw.get('version')}")
+    raw_temperature = raw.get("temperature")
+    temperatures = tuple(
+        float(value)
+        for value in (
+            raw.get("temperatures")
+            or [raw_temperature for _ in range(actions.shape[0])]
+        )
+    )
     diversity = DiversityMetrics(**raw["diversity"])
     metadata = CandidateMetadata(
         version=int(raw["version"]),
         seeds=tuple(int(value) for value in raw["seeds"]),
-        temperature=float(raw["temperature"]),
+        temperature=(float(raw_temperature) if raw_temperature is not None else None),
         policy_hash=str(raw["policy_hash"]),
         shape=tuple(int(value) for value in raw["shape"]),
         diversity=diversity,
+        temperatures=temperatures,
     )
     artifact = CandidateArtifact(actions, metadata)
     # Reuse construction validation while preserving stored metrics.
     make_artifact(
         actions,
         seeds=metadata.seeds,
-        temperature=metadata.temperature,
         policy_hash=metadata.policy_hash,
+        temperatures=metadata.temperatures,
     )
     if metadata.shape != tuple(actions.shape):
         raise ValueError("corrupt artifact: metadata shape does not match actions")

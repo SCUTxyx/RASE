@@ -15,11 +15,13 @@ class FakePolicy:
 
     def __init__(self):
         self.resets = 0
+        self.seen_temperatures = []
 
     def reset(self):
         self.resets += 1
 
     def sample_chunk(self, observation, *, temperature):
+        self.seen_temperatures.append(float(temperature))
         return np.random.normal(size=(4, 7)).astype(np.float32) * temperature
 
 
@@ -32,6 +34,7 @@ def test_generate_fixed_shape_and_provenance(tmp_path):
     assert artifact.metadata.shape == (8, 4, 7)
     assert artifact.metadata.seeds == tuple(range(10, 18))
     assert artifact.metadata.policy_hash == "abc123"
+    assert artifact.metadata.temperatures == (0.4,) * 8
     assert artifact.metadata.diversity.mean_pairwise_endpoint_l2 > 0
     assert policy.resets == K_DEFAULT
 
@@ -67,6 +70,40 @@ def test_generate_protocol_k4_is_supported_and_roundtrips(tmp_path):
     restored = load_artifact(path)
     np.testing.assert_array_equal(restored.actions, artifact.actions)
     assert restored.metadata == artifact.metadata
+
+
+def test_generate_multiscale_schedule_roundtrips(tmp_path):
+    schedule = (0.5, 0.5, 0.3, 0.3, 0.7, 0.7, 0.9, 0.9)
+    policy = FakePolicy()
+    artifact = generate_candidates(
+        policy,
+        {},
+        k=8,
+        base_seed=30,
+        temperature=None,
+        temperatures=schedule,
+        policy_hash="multiscale",
+    )
+    assert artifact.metadata.version == 2
+    assert artifact.metadata.temperature is None
+    assert artifact.metadata.temperatures == schedule
+    assert policy.seen_temperatures == list(schedule)
+
+    path = tmp_path / "candidate-multiscale.npz"
+    save_artifact(path, artifact)
+    with np.load(path, allow_pickle=False) as stored:
+        np.testing.assert_array_equal(stored["temperatures"], schedule)
+        assert np.isnan(stored["temperature"].item())
+    restored = load_artifact(path)
+    np.testing.assert_array_equal(restored.actions, artifact.actions)
+    assert restored.metadata == artifact.metadata
+
+
+def test_rejects_schedule_length_mismatch():
+    with pytest.raises(ValueError, match="schedule length"):
+        generate_candidates(
+            FakePolicy(), {}, k=4, temperature=None, temperatures=(0.3, 0.5)
+        )
 
 
 @pytest.mark.parametrize(

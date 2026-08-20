@@ -147,7 +147,8 @@ def generate_for_state(
     policy: SmolVLACandidatePolicy,
     *,
     output_dir: Path,
-    temperature: float,
+    temperature: float | None,
+    temperatures: Sequence[float] | None = None,
     base_seed: int,
     policy_hash: str,
     k: int = K_DEFAULT,
@@ -158,12 +159,21 @@ def generate_for_state(
     observation_width: int = 360,
 ) -> CandidateRunResult:
     """Restore one pool state, sample K chunks, write ``{state_key}.npz``."""
+    schedule = tuple(
+        float(value) for value in (
+            temperatures
+            if temperatures is not None
+            else [temperature for _ in range(k)]
+        )
+    )
+    if len(schedule) != k or any(value is None for value in schedule):
+        raise ValueError("temperature schedule must contain exactly K values")
     target = Path(output_dir) / f"{state_key}.npz"
     if target.is_file() and not force:
         existing = load_artifact(target)
         if (
             existing.metadata.policy_hash == policy_hash
-            and abs(existing.metadata.temperature - temperature) < 1e-12
+            and existing.metadata.temperatures == schedule
             and existing.actions.shape[0] == k
         ):
             return CandidateRunResult(state_key, target, existing, skipped=True)
@@ -199,7 +209,8 @@ def generate_for_state(
             policy,
             observation,
             k=k,
-            temperature=temperature,
+            temperature=None,
+            temperatures=schedule,
             base_seed=candidate_base_seed(meta.seed, state_key, base_seed, k=k),
             policy_hash=policy_hash,
         )
@@ -236,6 +247,7 @@ def diversity_summary(artifacts: Sequence[CandidateArtifact]) -> dict[str, Any]:
                 "mean_pairwise_chunk_l2": item.metadata.diversity.mean_pairwise_chunk_l2,
                 "shape": list(item.metadata.shape),
                 "temperature": item.metadata.temperature,
+                "temperatures": list(item.metadata.temperatures),
             }
             for item in artifacts
         ],

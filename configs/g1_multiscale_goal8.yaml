@@ -1,0 +1,48 @@
+version: 1
+run_name: g1_multiscale_goal8
+mode: smolvla-screen
+
+pool: runs/rase_ui_phase0g_independent48_pool
+candidates_dir: runs/g1_multiscale_goal8_candidates_v1
+output_dir: runs/g1_multiscale_goal8_screen_v1
+
+sample:
+  strategy: explicit_frozen_json
+
+protocol:
+  phase: g1_multiscale_temperature_probe
+  cohort: development_only_clean_goal_steps_2_4
+  continuation_seed_mode: common_root_rollout
+  expected_n_states: 8
+  selection_uses_outcomes: false
+  formal_set_labels: false
+  note: >-
+    Development-only generator selection. All four clean Goal tasks at frozen
+    steps 2 and 4. These roots cannot support held-out confirmation.
+
+candidates:
+  k: 8
+  chunk_length: 10
+  action_dim: 7
+  temperatures: [0.5, 0.5, 0.3, 0.3, 0.7, 0.7, 0.9, 0.9]
+  base_seed: 2026082005
+  policy_hash: 71d9563c8295284acba8fc2d5c19de000d6fe9ba58a406832af7ef3d221ed52f
+
+adapter:
+  policy_path: ckpts/smolvla_libero
+  tokenizer_path: ckpts/SmolVLM2-500M-Instruct
+  device: cuda
+  num_steps: 10
+  n_action_steps: 10
+  observation_height: 360
+  observation_width: 360
+  continuation_temperature: 0.5
+
+adaptive:
+  first_stage_rollouts: 1
+  total_rollouts: 1
+
+scheduler:
+  max_attempts: 3
+  lease_seconds: 3600
+  worker: g1-multiscale-goal8

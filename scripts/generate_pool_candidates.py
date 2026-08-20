@@ -11,6 +11,8 @@ import sys
 import time
 from pathlib import Path
 
+import numpy as np
+
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -133,9 +135,6 @@ def main() -> int:
     ).resolve()
     tokenizer_path = _expand(adapter.get("tokenizer_path"), "RASE_TOKENIZER_PATH")
     device = args.device or adapter.get("device") or "cuda"
-    temperature = float(
-        args.temperature if args.temperature is not None else candidates.get("temperature", 0.7)
-    )
     base_seed = int(
         args.base_seed if args.base_seed is not None else candidates.get("base_seed", 17072026)
     )
@@ -143,6 +142,27 @@ def main() -> int:
     k = int(candidates.get("k", 8))
     if k < 2:
         raise SystemExit("candidates.k must be >= 2")
+    configured_schedule = candidates.get("temperatures")
+    if args.temperature is not None:
+        temperature: float | None = float(args.temperature)
+        temperatures = tuple(temperature for _ in range(k))
+    elif configured_schedule is not None:
+        temperatures = tuple(float(value) for value in configured_schedule)
+        if len(temperatures) != k:
+            raise SystemExit(
+                "candidates.temperatures must contain exactly candidates.k values: "
+                f"{len(temperatures)} != {k}"
+            )
+        if not all(np.isfinite(value) and value >= 0 for value in temperatures):
+            raise SystemExit("candidate temperatures must be finite and non-negative")
+        temperature = (
+            temperatures[0]
+            if all(abs(value - temperatures[0]) <= 1e-12 for value in temperatures)
+            else None
+        )
+    else:
+        temperature = float(candidates.get("temperature", 0.7))
+        temperatures = tuple(temperature for _ in range(k))
     raw_sample = cfg.get("sample", 2)
     default_sample_n = int(raw_sample) if isinstance(raw_sample, int) else 2
     sample_n = int(args.sample if args.sample is not None else default_sample_n)
@@ -356,7 +376,7 @@ def main() -> int:
 
     print(
         f"CANDIDATES_START n={len(keys)} pool={pool.root} out={output_dir} "
-        f"K={k} T={chunk_length} temp={temperature} device={device}",
+        f"K={k} T={chunk_length} temperatures={list(temperatures)} device={device}",
         flush=True,
     )
     print(f"POLICY path={policy_path} hash={policy_hash}", flush=True)
@@ -382,6 +402,7 @@ def main() -> int:
             policy,
             output_dir=output_dir,
             temperature=temperature,
+            temperatures=temperatures,
             base_seed=base_seed,
             policy_hash=str(policy_hash),
             k=k,
@@ -409,6 +430,7 @@ def main() -> int:
         "policy_path": str(policy_path),
         "policy_hash": str(policy_hash),
         "temperature": temperature,
+        "temperatures": list(temperatures),
         "base_seed": base_seed,
         "chunk_length": chunk_length,
         "k": k,
