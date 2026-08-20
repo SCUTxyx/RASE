@@ -8,8 +8,8 @@ true future, could we rank candidates correctly?  Three risk dimensions:
                     displacement along the future trajectory, gripper change)
   - Drift         : sustained deviation growth (future proprio variance /
                     end-state distance from a reference trajectory)
-  - Recoverability: whether a reference policy succeeds from s_{t+H}
-                    (row.recovery_success when label-mode=reference)
+  - Recoverability is the independent evaluation target, not an input to the
+    oracle score.  Feeding the target into the score is circular.
 
 Score_i = w_p*Progress_i - w_d*Drift_i + w_r*Recoverability_i
 (weights fit on the train split only)
@@ -45,10 +45,18 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--w-progress", type=float, default=1.0)
     parser.add_argument("--w-drift", type=float, default=0.5)
-    parser.add_argument("--w-recover", type=float, default=1.0)
+    parser.add_argument("--outcome-key", default="recovery_success",
+                        choices=["recovery_success", "candidate_success"],
+                        help="independent task-relevant outcome to rank")
     args = parser.parse_args()
 
     rows = load_rows(args.data)
+    missing = [i for i, r in enumerate(rows) if args.outcome_key not in r]
+    if missing:
+        raise SystemExit(
+            f"independent outcome '{args.outcome_key}' missing from "
+            f"{len(missing)}/{len(rows)} rows; proxy displacement cannot pass "
+            "Gate C. Recollect with corrected --label-mode reference.")
     roots: dict[tuple, list[dict]] = defaultdict(list)
     for r in rows:
         roots[(r["task"], r["episode_idx"], r["decision_idx"])].append(r)
@@ -77,11 +85,9 @@ def main() -> int:
         for c in cands:
             p = progress_of(c)
             dr = drift_of(c)
-            rec = float(c.get("recovery_success", c.get("consequence_label", 0.0)))
-            s = args.w_progress * p - args.w_drift * dr + args.w_recover * rec
+            s = args.w_progress * p - args.w_drift * dr
             per[c["model"]] = s
-            out[c["model"]] = float(c.get("consequence_label",
-                                          c.get("displacement", 0.0)))
+            out[c["model"]] = float(c[args.outcome_key])
         scores[key] = per
         outcomes[key] = out
 
@@ -125,6 +131,8 @@ def main() -> int:
 
     report = {
         "schema": "rase-phase-3-oracle-future/v1",
+        "outcome_key": args.outcome_key,
+        "leakage_guard": "outcome is not included in oracle score",
         "n_rows": len(rows),
         "n_roots": n_roots,
         "n_informative_roots": n_inform,

@@ -121,14 +121,28 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--episodes", type=int, default=2)
     parser.add_argument("--horizon", type=int, default=8)
+    parser.add_argument(
+        "--candidate-rollout-mode",
+        choices=["single_chunk", "repeat_chunk_legacy"],
+        default="single_chunk",
+        help="single_chunk forbids reusing a frozen action chunk beyond its "
+             "native length; repeat_chunk_legacy only reproduces old data",
+    )
     parser.add_argument("--label-mode", choices=["reference", "progress"],
                         default="progress")
     parser.add_argument("--reference", default="oft_spatial")
-    parser.add_argument("--ref-steps", type=int, default=40)
+    parser.add_argument("--ref-steps", type=int, default=40,
+                        help="closed-loop reference continuation budget from s_t+H")
     parser.add_argument("--num-steps-wait", type=int, default=10)
     parser.add_argument("--env-img-res", type=int, default=256)
     parser.add_argument("--tasks", type=int, default=8,
                         help="subset of tasks for the first pass")
+    parser.add_argument("--task-indices", default=None,
+                        help="comma-separated indices into matrix.per_task; "
+                             "overrides --tasks (useful for balanced pilots)")
+    parser.add_argument("--reference-map", default=None,
+                        help="optional suite=model map, e.g. "
+                             "libero_spatial=oft_spatial,libero_object=oft_object")
     parser.add_argument("--decisions-per-episode", type=int, default=4,
                         help="only collect the first N decision points")
     args = parser.parse_args()
@@ -185,14 +199,52 @@ def main() -> int:
 
     resize = get_image_resize_size(argparse.Namespace(model_family="openvla"))
     matrix = json.loads(args.matrix.read_text())
-    tasks = [t for t in matrix["per_task"][: args.tasks]]
+    if args.task_indices:
+        task_indices = [int(x) for x in args.task_indices.split(",") if x.strip()]
+        tasks = [matrix["per_task"][i] for i in task_indices]
+    else:
+        tasks = [t for t in matrix["per_task"][: args.tasks]]
     benchmark_dict = benchmark.get_benchmark_dict()
 
-    # reference model is loaded first and kept; candidates are loaded one at a
-    # time (VRAM: 7B bf16 ≈ 15.5G each; two residents OK, more must swap).
-    ref = load_model(args.reference)
+    reference_map = {}
+    if args.reference_map:
+        for item in args.reference_map.split(","):
+            suite, model = item.split("=", 1)
+            reference_map[suite.strip()] = model.strip()
+
+    # Keep up to two unique policies resident (7B bf16 ≈15.5G each).  This
+    # removes repeated checkpoint loads in the common two-policy screen while
+    # retaining the swap path for larger candidate sets.
+    needed_names = set(models)
+    needed_names.update(reference_map.get(t["suite"], args.reference) for t in tasks)
+    cache_all = len(needed_names) <= 2
+    model_cache = {}
+
+    def cached_model(name: str):
+        if name not in model_cache:
+            model_cache[name] = load_model(name)
+        return model_cache[name]
+
+    ref = None
+    ref_name = None
     rows: list[dict] = []
     for i, task in enumerate(tasks):
+        wanted_ref = reference_map.get(task["suite"], args.reference)
+        if ref is None or ref_name != wanted_ref:
+            if cache_all:
+                ref = cached_model(wanted_ref)
+            else:
+                if ref is not None:
+                    del ref
+                    import gc
+                    gc.collect()
+                    try:
+                        import torch
+                        torch.cuda.empty_cache()
+                    except Exception:
+                        pass
+                ref = load_model(wanted_ref)
+            ref_name = wanted_ref
         task_suite = benchmark_dict[task["suite"]]()
         task_obj = task_index = None
         for idx, t in enumerate(task_suite.tasks):
@@ -222,11 +274,24 @@ def main() -> int:
                 s_t_prop = proprio_from_full_obs(obs)
                 s_t_obj = object_poses(env)  # decision-point object poses
                 for name in models:
-                    m = load_model(name)
+                    owns_candidate = not cache_all and name != ref_name
+                    if cache_all:
+                        m = cached_model(name)
+                    else:
+                        m = load_model(name) if owns_candidate else ref
                     obs_at = restore_env(env, snapshot)
                     observation = prep(obs_at, resize)
                     chunk = act(m, observation, task_description)
                     arr = np.asarray(chunk, dtype=np.float64)
+                    if args.horizon > len(arr) and \
+                            args.candidate_rollout_mode == "single_chunk":
+                        raise ValueError(
+                            f"horizon={args.horizon} exceeds native candidate "
+                            f"chunk length={len(arr)}. Repeating a frozen chunk "
+                            "does not represent policy continuation; use "
+                            "--horizon <= native length or explicitly request "
+                            "--candidate-rollout-mode repeat_chunk_legacy only "
+                            "for historical reproduction.")
                     future_prop: list[list[float]] = []
                     future_objects: list[list] = []
                     steps_taken = 0
@@ -246,6 +311,11 @@ def main() -> int:
                         if done:
                             break
                     s_th_prop = proprio_from_full_obs(obs_at)
+                    # Capture the actual branch endpoint before any restore.
+                    # Recoverability must be evaluated from s_{t+H}, not from
+                    # the common root snapshot s_t.
+                    branch_snapshot = env.get_sim_state()
+                    candidate_success = bool(done)
                     row = {
                         "task": task["task"], "suite": task["suite"],
                         "episode_idx": ep, "decision_idx": decision_idx,
@@ -257,22 +327,39 @@ def main() -> int:
                         "future_steps": steps_taken,
                         "s_t_objects": s_t_obj,
                         "s_th_objects": object_poses(env),
+                        "candidate_success": int(candidate_success),
+                        "candidate_rollout_mode": args.candidate_rollout_mode,
+                        "candidate_native_chunk_len": int(len(arr)),
                         **chunk_stats(arr),
                     }
                     if args.label_mode == "reference":
-                        # unified evaluator: reference policy from s_{t+H}
-                        obs_r = restore_env(env, snapshot)
-                        queue = act(ref, prep(obs_r, resize), task_description)
-                        q = [normalize_gripper_action(x, binarize=True) for x in queue]
-                        q = [invert_gripper_action(x) for x in q]
-                        succ = False
-                        for h in range(args.ref_steps):
-                            obs_r, _, done, info = env.step(q[h % len(q)].tolist())
-                            if done:
-                                succ = True
+                        # Unified evaluator: closed-loop reference continuation
+                        # from the candidate-specific branch endpoint s_{t+H}.
+                        # Requery whenever a native action chunk is exhausted;
+                        # repeating one frozen chunk would not measure recovery.
+                        obs_r = restore_env(env, branch_snapshot)
+                        succ = candidate_success
+                        ref_used = 0
+                        while not succ and ref_used < args.ref_steps:
+                            queue = act(ref, prep(obs_r, resize), task_description)
+                            if not queue:
                                 break
+                            for x in queue:
+                                aa = normalize_gripper_action(x, binarize=True)
+                                aa = invert_gripper_action(aa)
+                                force_clear(env)
+                                obs_r, _, done_r, info = env.step(aa.tolist())
+                                ref_used += 1
+                                if done_r:
+                                    succ = True
+                                    break
+                                if ref_used >= args.ref_steps:
+                                    break
                         row["recovery_success"] = int(succ)
                         row["consequence_label"] = int(succ)
+                        row["reference_model"] = ref_name
+                        row["reference_start_state"] = "s_t_plus_h"
+                        row["reference_steps_used"] = int(ref_used)
                     else:  # progress proxy: displacement + gripper change
                         d = float(np.linalg.norm(s_th_prop[:3] - s_t_prop[:3]))
                         g = float(abs(s_th_prop[7] - s_t_prop[7]))
@@ -280,9 +367,15 @@ def main() -> int:
                         row["gripper_delta"] = g
                         row["consequence_label"] = float(d)  # larger = progressed
                     rows.append(row)
-                    del m  # free VRAM before next candidate
-                    import gc
-                    gc.collect()
+                    if owns_candidate:
+                        del m  # free VRAM before next candidate
+                        import gc
+                        gc.collect()
+                        try:
+                            import torch
+                            torch.cuda.empty_cache()
+                        except Exception:
+                            pass
                     obs = restore_env(env, snapshot)
                 # continue the source trajectory one chunk (use reference)
                 observation = prep(obs, resize)
@@ -295,6 +388,8 @@ def main() -> int:
                         break
                 decision_idx += 1
                 t += args.horizon
+                if done:
+                    break
         env.close()
         print(f"[sr] {i + 1}/{len(tasks)} {task['task'][:40]} rows={len(rows)}",
               flush=True)
