@@ -225,6 +225,12 @@ def main() -> int:
     parser.add_argument("--protocol", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--max-episodes", type=int, default=0)
+    parser.add_argument("--start-index", type=int, default=0)
+    parser.add_argument("--end-index", type=int, default=0)
+    parser.add_argument(
+        "--summary-only", action="store_true",
+        help="Load all frozen episode files and write the formal summary without loading the policy.",
+    )
     parser.add_argument("--device", default="cuda")
     args = parser.parse_args()
 
@@ -233,26 +239,41 @@ def main() -> int:
     records = validate_protocol(protocol)
     if args.max_episodes < 0 or args.max_episodes > len(records):
         raise ValueError("--max-episodes must be in [0, 80]")
-    selected = records[: args.max_episodes] if args.max_episodes else records
-    formal = args.max_episodes == 0
+    if args.max_episodes and (args.start_index or args.end_index or args.summary_only):
+        raise ValueError("--max-episodes cannot be combined with sharding or --summary-only")
+    end_index = args.end_index or len(records)
+    if args.start_index < 0 or end_index > len(records) or args.start_index >= end_index:
+        raise ValueError("invalid [start-index, end-index) shard")
+    if args.summary_only and (args.start_index != 0 or end_index != len(records)):
+        raise ValueError("--summary-only requires the complete frozen index range")
+    if args.max_episodes:
+        selected = records[: args.max_episodes]
+    else:
+        selected = records[args.start_index:end_index]
+    formal = bool(
+        args.summary_only
+        or (not args.max_episodes and args.start_index == 0 and end_index == len(records))
+    )
     output_dir = args.output_dir.resolve()
     episode_dir = output_dir / "episodes"
     episode_dir.mkdir(parents=True, exist_ok=True)
 
     repo_root = Path.cwd().resolve()
     policy_path = (repo_root / str(protocol["policy_path"])).resolve()
-    from rase.collect.forked_rollout import load_lerobot_policy_bundle
+    bundle: Mapping[str, Any] | None = None
+    if not args.summary_only:
+        from rase.collect.forked_rollout import load_lerobot_policy_bundle
 
-    bundle = load_lerobot_policy_bundle(
-        policy_path,
-        device=args.device,
-        num_steps=int(protocol["num_steps"]),
-        n_action_steps=int(protocol["n_action_steps"]),
-        tokenizer_path=repo_root / str(protocol["tokenizer_path"]),
-        action_tokenizer_path=repo_root / str(protocol["action_tokenizer_path"]),
-        observation_height=int(protocol["observation_height"]),
-        observation_width=int(protocol["observation_width"]),
-    )
+        bundle = load_lerobot_policy_bundle(
+            policy_path,
+            device=args.device,
+            num_steps=int(protocol["num_steps"]),
+            n_action_steps=int(protocol["n_action_steps"]),
+            tokenizer_path=repo_root / str(protocol["tokenizer_path"]),
+            action_tokenizer_path=repo_root / str(protocol["action_tokenizer_path"]),
+            observation_height=int(protocol["observation_height"]),
+            observation_width=int(protocol["observation_width"]),
+        )
     rows: list[dict[str, Any]] = []
     for index, row in enumerate(selected):
         target = episode_dir / f"{row['episode_id']}.json"
@@ -261,7 +282,10 @@ def main() -> int:
             if result.get("protocol_sha256") != protocol["protocol_sha256"]:
                 raise ValueError(f"stale episode result: {target}")
             skipped = True
+        elif args.summary_only:
+            raise ValueError(f"missing frozen episode result: {target}")
         else:
+            assert bundle is not None
             result = evaluate_episode(bundle, row)
             result["protocol_sha256"] = protocol["protocol_sha256"]
             result["checkpoint"] = checkpoint_identity(policy_path)
@@ -287,7 +311,17 @@ def main() -> int:
         }
     )
     output_dir.mkdir(parents=True, exist_ok=True)
-    (output_dir / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
+    if formal:
+        summary_path = output_dir / "summary.json"
+    elif args.max_episodes:
+        summary_path = output_dir / f"summary_smoke_{args.max_episodes}.json"
+    else:
+        summary_path = output_dir / f"summary_shard_{args.start_index:03d}_{end_index:03d}.json"
+    summary["execution_range"] = [
+        int(args.start_index if not args.max_episodes else 0),
+        int(end_index if not args.max_episodes else args.max_episodes),
+    ]
+    summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
     print(json.dumps({key: summary[key] for key in ("status", "successes", "episodes", "success_rate", "gate_decision")}, sort_keys=True))
     return 0
 

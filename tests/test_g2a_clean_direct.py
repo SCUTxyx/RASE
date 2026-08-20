@@ -35,3 +35,15 @@ def test_wilson_and_cluster_bootstrap() -> None:
     low, high = MODULE.task_cluster_bootstrap(rows, seed=7, replicates=2000)
     assert low == 0.0
     assert high == 1.0
+
+
+def test_frozen_protocol_validates() -> None:
+    freeze_path = Path(__file__).resolve().parents[1] / "scripts" / "freeze_g2a_protocol.py"
+    freeze_spec = importlib.util.spec_from_file_location("freeze_g2a", freeze_path)
+    assert freeze_spec and freeze_spec.loader
+    freeze_module = importlib.util.module_from_spec(freeze_spec)
+    freeze_spec.loader.exec_module(freeze_module)
+    protocol = freeze_module.build_protocol(2026082002)
+    rows = MODULE.validate_protocol(protocol)
+    assert len(rows) == 80
+    assert len({row["episode_id"] for row in rows}) == 80
