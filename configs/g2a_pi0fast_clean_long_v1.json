@@ -1,0 +1,767 @@
+{
+  "action_tokenizer_path": "ckpts/pi0fast_action_tokenizer_79ae83e",
+  "cost_reporting": [
+    "environment_steps",
+    "wall_seconds",
+    "model_forward_calls",
+    "action_select_seconds"
+  ],
+  "episodes_per_task": 8,
+  "gate": {
+    "above_interval_decision": "PI0FAST_DOMINATES_TRY_SPATIAL_PAIR",
+    "below_interval_decision": "PI0FAST_TOO_WEAK_STOP_LONG_PAIR",
+    "inside_interval_decision": "PROCEED_G2B_LONG",
+    "long_pair_eligible_interval": [
+      0.3,
+      0.7
+    ],
+    "lower_inclusive": true,
+    "metric": "micro_episode_success_rate",
+    "note": "The point-estimate gate is preregistered; confidence intervals do not override it.",
+    "uncertainty_reporting_only": [
+      "wilson_95_interval",
+      "task_cluster_bootstrap_95_interval"
+    ],
+    "upper_inclusive": true
+  },
+  "libero_flavor": "clean",
+  "n_action_steps": 10,
+  "n_episodes": 80,
+  "n_tasks": 10,
+  "num_steps": 10,
+  "observation_height": 360,
+  "observation_width": 360,
+  "policy_id": "pi0fast_libero",
+  "policy_path": "ckpts/pi0fast_libero",
+  "protocol_sha256": "663d8847c86291a0c7eefcb8a0a4e848cb5256cf49533e622358c9b597a90a43",
+  "records": [
+    {
+      "clean_task_index": 1,
+      "environment_seed": 2839674904,
+      "episode_id": "g2a-long-t01-i00",
+      "init_state_id": 0,
+      "policy_seed": 1559780955,
+      "suite": "libero_10",
+      "task_id": "libero_10_000001"
+    },
+    {
+      "clean_task_index": 1,
+      "environment_seed": 2796079288,
+      "episode_id": "g2a-long-t01-i01",
+      "init_state_id": 1,
+      "policy_seed": 366906682,
+      "suite": "libero_10",
+      "task_id": "libero_10_000001"
+    },
+    {
+      "clean_task_index": 1,
+      "environment_seed": 2209764703,
+      "episode_id": "g2a-long-t01-i02",
+      "init_state_id": 2,
+      "policy_seed": 3503268982,
+      "suite": "libero_10",
+      "task_id": "libero_10_000001"
+    },
+    {
+      "clean_task_index": 1,
+      "environment_seed": 2529293248,
+      "episode_id": "g2a-long-t01-i03",
+      "init_state_id": 3,
+      "policy_seed": 836772909,
+      "suite": "libero_10",
+      "task_id": "libero_10_000001"
+    },
+    {
+      "clean_task_index": 1,
+      "environment_seed": 1612064698,
+      "episode_id": "g2a-long-t01-i04",
+      "init_state_id": 4,
+      "policy_seed": 1452333681,
+      "suite": "libero_10",
+      "task_id": "libero_10_000001"
+    },
+    {
+      "clean_task_index": 1,
+      "environment_seed": 669672352,
+      "episode_id": "g2a-long-t01-i05",
+      "init_state_id": 5,
+      "policy_seed": 2344132097,
+      "suite": "libero_10",
+      "task_id": "libero_10_000001"
+    },
+    {
+      "clean_task_index": 1,
+      "environment_seed": 1536300458,
+      "episode_id": "g2a-long-t01-i06",
+      "init_state_id": 6,
+      "policy_seed": 2753556505,
+      "suite": "libero_10",
+      "task_id": "libero_10_000001"
+    },
+    {
+      "clean_task_index": 1,
+      "environment_seed": 1670993606,
+      "episode_id": "g2a-long-t01-i07",
+      "init_state_id": 7,
+      "policy_seed": 1532549371,
+      "suite": "libero_10",
+      "task_id": "libero_10_000001"
+    },
+    {
+      "clean_task_index": 2,
+      "environment_seed": 3762280231,
+      "episode_id": "g2a-long-t02-i00",
+      "init_state_id": 0,
+      "policy_seed": 3469949113,
+      "suite": "libero_10",
+      "task_id": "libero_10_000002"
+    },
+    {
+      "clean_task_index": 2,
+      "environment_seed": 3866981149,
+      "episode_id": "g2a-long-t02-i01",
+      "init_state_id": 1,
+      "policy_seed": 2325154501,
+      "suite": "libero_10",
+      "task_id": "libero_10_000002"
+    },
+    {
+      "clean_task_index": 2,
+      "environment_seed": 3751725229,
+      "episode_id": "g2a-long-t02-i02",
+      "init_state_id": 2,
+      "policy_seed": 225860805,
+      "suite": "libero_10",
+      "task_id": "libero_10_000002"
+    },
+    {
+      "clean_task_index": 2,
+      "environment_seed": 754100687,
+      "episode_id": "g2a-long-t02-i03",
+      "init_state_id": 3,
+      "policy_seed": 4047729601,
+      "suite": "libero_10",
+      "task_id": "libero_10_000002"
+    },
+    {
+      "clean_task_index": 2,
+      "environment_seed": 306815558,
+      "episode_id": "g2a-long-t02-i04",
+      "init_state_id": 4,
+      "policy_seed": 1626470559,
+      "suite": "libero_10",
+      "task_id": "libero_10_000002"
+    },
+    {
+      "clean_task_index": 2,
+      "environment_seed": 4265591058,
+      "episode_id": "g2a-long-t02-i05",
+      "init_state_id": 5,
+      "policy_seed": 1726005624,
+      "suite": "libero_10",
+      "task_id": "libero_10_000002"
+    },
+    {
+      "clean_task_index": 2,
+      "environment_seed": 3226730484,
+      "episode_id": "g2a-long-t02-i06",
+      "init_state_id": 6,
+      "policy_seed": 594304093,
+      "suite": "libero_10",
+      "task_id": "libero_10_000002"
+    },
+    {
+      "clean_task_index": 2,
+      "environment_seed": 3943598555,
+      "episode_id": "g2a-long-t02-i07",
+      "init_state_id": 7,
+      "policy_seed": 2891821752,
+      "suite": "libero_10",
+      "task_id": "libero_10_000002"
+    },
+    {
+      "clean_task_index": 3,
+      "environment_seed": 3857000944,
+      "episode_id": "g2a-long-t03-i00",
+      "init_state_id": 0,
+      "policy_seed": 124689869,
+      "suite": "libero_10",
+      "task_id": "libero_10_000003"
+    },
+    {
+      "clean_task_index": 3,
+      "environment_seed": 1685101358,
+      "episode_id": "g2a-long-t03-i01",
+      "init_state_id": 1,
+      "policy_seed": 996401551,
+      "suite": "libero_10",
+      "task_id": "libero_10_000003"
+    },
+    {
+      "clean_task_index": 3,
+      "environment_seed": 2707165088,
+      "episode_id": "g2a-long-t03-i02",
+      "init_state_id": 2,
+      "policy_seed": 2524370626,
+      "suite": "libero_10",
+      "task_id": "libero_10_000003"
+    },
+    {
+      "clean_task_index": 3,
+      "environment_seed": 2815529,
+      "episode_id": "g2a-long-t03-i03",
+      "init_state_id": 3,
+      "policy_seed": 3031374892,
+      "suite": "libero_10",
+      "task_id": "libero_10_000003"
+    },
+    {
+      "clean_task_index": 3,
+      "environment_seed": 935732609,
+      "episode_id": "g2a-long-t03-i04",
+      "init_state_id": 4,
+      "policy_seed": 732872870,
+      "suite": "libero_10",
+      "task_id": "libero_10_000003"
+    },
+    {
+      "clean_task_index": 3,
+      "environment_seed": 1592275526,
+      "episode_id": "g2a-long-t03-i05",
+      "init_state_id": 5,
+      "policy_seed": 40722964,
+      "suite": "libero_10",
+      "task_id": "libero_10_000003"
+    },
+    {
+      "clean_task_index": 3,
+      "environment_seed": 831815146,
+      "episode_id": "g2a-long-t03-i06",
+      "init_state_id": 6,
+      "policy_seed": 4274537089,
+      "suite": "libero_10",
+      "task_id": "libero_10_000003"
+    },
+    {
+      "clean_task_index": 3,
+      "environment_seed": 4272724562,
+      "episode_id": "g2a-long-t03-i07",
+      "init_state_id": 7,
+      "policy_seed": 4133578595,
+      "suite": "libero_10",
+      "task_id": "libero_10_000003"
+    },
+    {
+      "clean_task_index": 4,
+      "environment_seed": 4158995094,
+      "episode_id": "g2a-long-t04-i00",
+      "init_state_id": 0,
+      "policy_seed": 4074017448,
+      "suite": "libero_10",
+      "task_id": "libero_10_000004"
+    },
+    {
+      "clean_task_index": 4,
+      "environment_seed": 2173006954,
+      "episode_id": "g2a-long-t04-i01",
+      "init_state_id": 1,
+      "policy_seed": 604578032,
+      "suite": "libero_10",
+      "task_id": "libero_10_000004"
+    },
+    {
+      "clean_task_index": 4,
+      "environment_seed": 250742258,
+      "episode_id": "g2a-long-t04-i02",
+      "init_state_id": 2,
+      "policy_seed": 2074786492,
+      "suite": "libero_10",
+      "task_id": "libero_10_000004"
+    },
+    {
+      "clean_task_index": 4,
+      "environment_seed": 4246707181,
+      "episode_id": "g2a-long-t04-i03",
+      "init_state_id": 3,
+      "policy_seed": 2765291889,
+      "suite": "libero_10",
+      "task_id": "libero_10_000004"
+    },
+    {
+      "clean_task_index": 4,
+      "environment_seed": 4228605210,
+      "episode_id": "g2a-long-t04-i04",
+      "init_state_id": 4,
+      "policy_seed": 1069268275,
+      "suite": "libero_10",
+      "task_id": "libero_10_000004"
+    },
+    {
+      "clean_task_index": 4,
+      "environment_seed": 3611533339,
+      "episode_id": "g2a-long-t04-i05",
+      "init_state_id": 5,
+      "policy_seed": 2900506284,
+      "suite": "libero_10",
+      "task_id": "libero_10_000004"
+    },
+    {
+      "clean_task_index": 4,
+      "environment_seed": 3972335697,
+      "episode_id": "g2a-long-t04-i06",
+      "init_state_id": 6,
+      "policy_seed": 4117348373,
+      "suite": "libero_10",
+      "task_id": "libero_10_000004"
+    },
+    {
+      "clean_task_index": 4,
+      "environment_seed": 748557671,
+      "episode_id": "g2a-long-t04-i07",
+      "init_state_id": 7,
+      "policy_seed": 3000900148,
+      "suite": "libero_10",
+      "task_id": "libero_10_000004"
+    },
+    {
+      "clean_task_index": 5,
+      "environment_seed": 73528606,
+      "episode_id": "g2a-long-t05-i00",
+      "init_state_id": 0,
+      "policy_seed": 2918451476,
+      "suite": "libero_10",
+      "task_id": "libero_10_000005"
+    },
+    {
+      "clean_task_index": 5,
+      "environment_seed": 4190478758,
+      "episode_id": "g2a-long-t05-i01",
+      "init_state_id": 1,
+      "policy_seed": 4070821413,
+      "suite": "libero_10",
+      "task_id": "libero_10_000005"
+    },
+    {
+      "clean_task_index": 5,
+      "environment_seed": 3502182014,
+      "episode_id": "g2a-long-t05-i02",
+      "init_state_id": 2,
+      "policy_seed": 2891767289,
+      "suite": "libero_10",
+      "task_id": "libero_10_000005"
+    },
+    {
+      "clean_task_index": 5,
+      "environment_seed": 645452647,
+      "episode_id": "g2a-long-t05-i03",
+      "init_state_id": 3,
+      "policy_seed": 143246932,
+      "suite": "libero_10",
+      "task_id": "libero_10_000005"
+    },
+    {
+      "clean_task_index": 5,
+      "environment_seed": 64058440,
+      "episode_id": "g2a-long-t05-i04",
+      "init_state_id": 4,
+      "policy_seed": 278369720,
+      "suite": "libero_10",
+      "task_id": "libero_10_000005"
+    },
+    {
+      "clean_task_index": 5,
+      "environment_seed": 3470590333,
+      "episode_id": "g2a-long-t05-i05",
+      "init_state_id": 5,
+      "policy_seed": 1615037110,
+      "suite": "libero_10",
+      "task_id": "libero_10_000005"
+    },
+    {
+      "clean_task_index": 5,
+      "environment_seed": 3756142039,
+      "episode_id": "g2a-long-t05-i06",
+      "init_state_id": 6,
+      "policy_seed": 3285412032,
+      "suite": "libero_10",
+      "task_id": "libero_10_000005"
+    },
+    {
+      "clean_task_index": 5,
+      "environment_seed": 2754561346,
+      "episode_id": "g2a-long-t05-i07",
+      "init_state_id": 7,
+      "policy_seed": 3088111303,
+      "suite": "libero_10",
+      "task_id": "libero_10_000005"
+    },
+    {
+      "clean_task_index": 6,
+      "environment_seed": 1704833106,
+      "episode_id": "g2a-long-t06-i00",
+      "init_state_id": 0,
+      "policy_seed": 351346722,
+      "suite": "libero_10",
+      "task_id": "libero_10_000006"
+    },
+    {
+      "clean_task_index": 6,
+      "environment_seed": 3919378148,
+      "episode_id": "g2a-long-t06-i01",
+      "init_state_id": 1,
+      "policy_seed": 3587294605,
+      "suite": "libero_10",
+      "task_id": "libero_10_000006"
+    },
+    {
+      "clean_task_index": 6,
+      "environment_seed": 4011904555,
+      "episode_id": "g2a-long-t06-i02",
+      "init_state_id": 2,
+      "policy_seed": 3437741571,
+      "suite": "libero_10",
+      "task_id": "libero_10_000006"
+    },
+    {
+      "clean_task_index": 6,
+      "environment_seed": 2179441253,
+      "episode_id": "g2a-long-t06-i03",
+      "init_state_id": 3,
+      "policy_seed": 940949408,
+      "suite": "libero_10",
+      "task_id": "libero_10_000006"
+    },
+    {
+      "clean_task_index": 6,
+      "environment_seed": 3694432275,
+      "episode_id": "g2a-long-t06-i04",
+      "init_state_id": 4,
+      "policy_seed": 1104711697,
+      "suite": "libero_10",
+      "task_id": "libero_10_000006"
+    },
+    {
+      "clean_task_index": 6,
+      "environment_seed": 2206496111,
+      "episode_id": "g2a-long-t06-i05",
+      "init_state_id": 5,
+      "policy_seed": 705544532,
+      "suite": "libero_10",
+      "task_id": "libero_10_000006"
+    },
+    {
+      "clean_task_index": 6,
+      "environment_seed": 1951340950,
+      "episode_id": "g2a-long-t06-i06",
+      "init_state_id": 6,
+      "policy_seed": 2726641949,
+      "suite": "libero_10",
+      "task_id": "libero_10_000006"
+    },
+    {
+      "clean_task_index": 6,
+      "environment_seed": 431231247,
+      "episode_id": "g2a-long-t06-i07",
+      "init_state_id": 7,
+      "policy_seed": 2452816229,
+      "suite": "libero_10",
+      "task_id": "libero_10_000006"
+    },
+    {
+      "clean_task_index": 7,
+      "environment_seed": 24950188,
+      "episode_id": "g2a-long-t07-i00",
+      "init_state_id": 0,
+      "policy_seed": 501269339,
+      "suite": "libero_10",
+      "task_id": "libero_10_000007"
+    },
+    {
+      "clean_task_index": 7,
+      "environment_seed": 3890073842,
+      "episode_id": "g2a-long-t07-i01",
+      "init_state_id": 1,
+      "policy_seed": 411948085,
+      "suite": "libero_10",
+      "task_id": "libero_10_000007"
+    },
+    {
+      "clean_task_index": 7,
+      "environment_seed": 1002931651,
+      "episode_id": "g2a-long-t07-i02",
+      "init_state_id": 2,
+      "policy_seed": 267021432,
+      "suite": "libero_10",
+      "task_id": "libero_10_000007"
+    },
+    {
+      "clean_task_index": 7,
+      "environment_seed": 1212175737,
+      "episode_id": "g2a-long-t07-i03",
+      "init_state_id": 3,
+      "policy_seed": 3469338791,
+      "suite": "libero_10",
+      "task_id": "libero_10_000007"
+    },
+    {
+      "clean_task_index": 7,
+      "environment_seed": 1441290361,
+      "episode_id": "g2a-long-t07-i04",
+      "init_state_id": 4,
+      "policy_seed": 3646648188,
+      "suite": "libero_10",
+      "task_id": "libero_10_000007"
+    },
+    {
+      "clean_task_index": 7,
+      "environment_seed": 185529871,
+      "episode_id": "g2a-long-t07-i05",
+      "init_state_id": 5,
+      "policy_seed": 1696434558,
+      "suite": "libero_10",
+      "task_id": "libero_10_000007"
+    },
+    {
+      "clean_task_index": 7,
+      "environment_seed": 1338166123,
+      "episode_id": "g2a-long-t07-i06",
+      "init_state_id": 6,
+      "policy_seed": 3453062595,
+      "suite": "libero_10",
+      "task_id": "libero_10_000007"
+    },
+    {
+      "clean_task_index": 7,
+      "environment_seed": 513363195,
+      "episode_id": "g2a-long-t07-i07",
+      "init_state_id": 7,
+      "policy_seed": 1979098747,
+      "suite": "libero_10",
+      "task_id": "libero_10_000007"
+    },
+    {
+      "clean_task_index": 8,
+      "environment_seed": 2190398141,
+      "episode_id": "g2a-long-t08-i00",
+      "init_state_id": 0,
+      "policy_seed": 3939099167,
+      "suite": "libero_10",
+      "task_id": "libero_10_000008"
+    },
+    {
+      "clean_task_index": 8,
+      "environment_seed": 3030148231,
+      "episode_id": "g2a-long-t08-i01",
+      "init_state_id": 1,
+      "policy_seed": 3524752253,
+      "suite": "libero_10",
+      "task_id": "libero_10_000008"
+    },
+    {
+      "clean_task_index": 8,
+      "environment_seed": 4253834739,
+      "episode_id": "g2a-long-t08-i02",
+      "init_state_id": 2,
+      "policy_seed": 2927038017,
+      "suite": "libero_10",
+      "task_id": "libero_10_000008"
+    },
+    {
+      "clean_task_index": 8,
+      "environment_seed": 3635994815,
+      "episode_id": "g2a-long-t08-i03",
+      "init_state_id": 3,
+      "policy_seed": 4058024035,
+      "suite": "libero_10",
+      "task_id": "libero_10_000008"
+    },
+    {
+      "clean_task_index": 8,
+      "environment_seed": 2800819114,
+      "episode_id": "g2a-long-t08-i04",
+      "init_state_id": 4,
+      "policy_seed": 938220970,
+      "suite": "libero_10",
+      "task_id": "libero_10_000008"
+    },
+    {
+      "clean_task_index": 8,
+      "environment_seed": 232138386,
+      "episode_id": "g2a-long-t08-i05",
+      "init_state_id": 5,
+      "policy_seed": 62958245,
+      "suite": "libero_10",
+      "task_id": "libero_10_000008"
+    },
+    {
+      "clean_task_index": 8,
+      "environment_seed": 3359275984,
+      "episode_id": "g2a-long-t08-i06",
+      "init_state_id": 6,
+      "policy_seed": 4227853196,
+      "suite": "libero_10",
+      "task_id": "libero_10_000008"
+    },
+    {
+      "clean_task_index": 8,
+      "environment_seed": 1933144042,
+      "episode_id": "g2a-long-t08-i07",
+      "init_state_id": 7,
+      "policy_seed": 2543415498,
+      "suite": "libero_10",
+      "task_id": "libero_10_000008"
+    },
+    {
+      "clean_task_index": 9,
+      "environment_seed": 2539892222,
+      "episode_id": "g2a-long-t09-i00",
+      "init_state_id": 0,
+      "policy_seed": 1836742440,
+      "suite": "libero_10",
+      "task_id": "libero_10_000009"
+    },
+    {
+      "clean_task_index": 9,
+      "environment_seed": 1883208751,
+      "episode_id": "g2a-long-t09-i01",
+      "init_state_id": 1,
+      "policy_seed": 3069242501,
+      "suite": "libero_10",
+      "task_id": "libero_10_000009"
+    },
+    {
+      "clean_task_index": 9,
+      "environment_seed": 2116179435,
+      "episode_id": "g2a-long-t09-i02",
+      "init_state_id": 2,
+      "policy_seed": 3149470442,
+      "suite": "libero_10",
+      "task_id": "libero_10_000009"
+    },
+    {
+      "clean_task_index": 9,
+      "environment_seed": 981916265,
+      "episode_id": "g2a-long-t09-i03",
+      "init_state_id": 3,
+      "policy_seed": 2100258759,
+      "suite": "libero_10",
+      "task_id": "libero_10_000009"
+    },
+    {
+      "clean_task_index": 9,
+      "environment_seed": 1582714043,
+      "episode_id": "g2a-long-t09-i04",
+      "init_state_id": 4,
+      "policy_seed": 2323828710,
+      "suite": "libero_10",
+      "task_id": "libero_10_000009"
+    },
+    {
+      "clean_task_index": 9,
+      "environment_seed": 3092286387,
+      "episode_id": "g2a-long-t09-i05",
+      "init_state_id": 5,
+      "policy_seed": 2414538914,
+      "suite": "libero_10",
+      "task_id": "libero_10_000009"
+    },
+    {
+      "clean_task_index": 9,
+      "environment_seed": 2501080243,
+      "episode_id": "g2a-long-t09-i06",
+      "init_state_id": 6,
+      "policy_seed": 1686514893,
+      "suite": "libero_10",
+      "task_id": "libero_10_000009"
+    },
+    {
+      "clean_task_index": 9,
+      "environment_seed": 4077497336,
+      "episode_id": "g2a-long-t09-i07",
+      "init_state_id": 7,
+      "policy_seed": 3909130083,
+      "suite": "libero_10",
+      "task_id": "libero_10_000009"
+    },
+    {
+      "clean_task_index": 10,
+      "environment_seed": 3062751157,
+      "episode_id": "g2a-long-t10-i00",
+      "init_state_id": 0,
+      "policy_seed": 83096839,
+      "suite": "libero_10",
+      "task_id": "libero_10_000010"
+    },
+    {
+      "clean_task_index": 10,
+      "environment_seed": 2742241850,
+      "episode_id": "g2a-long-t10-i01",
+      "init_state_id": 1,
+      "policy_seed": 490814324,
+      "suite": "libero_10",
+      "task_id": "libero_10_000010"
+    },
+    {
+      "clean_task_index": 10,
+      "environment_seed": 1152379061,
+      "episode_id": "g2a-long-t10-i02",
+      "init_state_id": 2,
+      "policy_seed": 815732093,
+      "suite": "libero_10",
+      "task_id": "libero_10_000010"
+    },
+    {
+      "clean_task_index": 10,
+      "environment_seed": 3001752561,
+      "episode_id": "g2a-long-t10-i03",
+      "init_state_id": 3,
+      "policy_seed": 789189048,
+      "suite": "libero_10",
+      "task_id": "libero_10_000010"
+    },
+    {
+      "clean_task_index": 10,
+      "environment_seed": 221767737,
+      "episode_id": "g2a-long-t10-i04",
+      "init_state_id": 4,
+      "policy_seed": 209358906,
+      "suite": "libero_10",
+      "task_id": "libero_10_000010"
+    },
+    {
+      "clean_task_index": 10,
+      "environment_seed": 21652173,
+      "episode_id": "g2a-long-t10-i05",
+      "init_state_id": 5,
+      "policy_seed": 470170289,
+      "suite": "libero_10",
+      "task_id": "libero_10_000010"
+    },
+    {
+      "clean_task_index": 10,
+      "environment_seed": 3787839828,
+      "episode_id": "g2a-long-t10-i06",
+      "init_state_id": 6,
+      "policy_seed": 2394349130,
+      "suite": "libero_10",
+      "task_id": "libero_10_000010"
+    },
+    {
+      "clean_task_index": 10,
+      "environment_seed": 1592362897,
+      "episode_id": "g2a-long-t10-i07",
+      "init_state_id": 7,
+      "policy_seed": 3856428317,
+      "suite": "libero_10",
+      "task_id": "libero_10_000010"
+    }
+  ],
+  "records_sha256": "2a057b849bccc46d302debe4575e212e539ab12b269d4f8e48b5124b3b1c36bc",
+  "schema_version": "rase-g2a-pi0fast-clean-direct-protocol/v1",
+  "scientific_scope": "development eligibility screen; no held-out claim",
+  "seed_base": 2026082002,
+  "selection_uses_outcomes": false,
+  "status": "frozen",
+  "suite": "libero_10",
+  "tokenizer_path": "ckpts/paligemma_tokenizer_35e4f46"
+}
