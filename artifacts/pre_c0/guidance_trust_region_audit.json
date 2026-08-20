@@ -1,0 +1,447 @@
+{
+  "applied_guidance_norm_max": 0.19999999999999998,
+  "applied_guidance_norm_mean": 0.19999999999999998,
+  "fallback_count": 0,
+  "fallback_rate": 0.0,
+  "n_probes": 48,
+  "naming": "privileged trust-region action refinement",
+  "not_smolvla_flow_api_guidance": true,
+  "note": "Numerical trust-region probe only; closed-loop privileged refinement is a separate Gate B stage when the offline ceiling shows signal.",
+  "probes": [
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_9756cb1992bc9e1139237cc71612b550",
+      "update_norm": 0.010000000000000106,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_d7dfa1769a349bde631c0d95395428c2",
+      "update_norm": 0.009999999999999981,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_7a1bb57832041ab8c45134b75fadc349",
+      "update_norm": 0.010000000000000077,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_e8cc07a8a94e9a1bb37136809717f108",
+      "update_norm": 0.010000000000000066,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_222557677731f2249226b1fd3c25bc67",
+      "update_norm": 0.010000000000000073,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_ac77c73afe60b815106a17e223ebe35b",
+      "update_norm": 0.01000000000000002,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_3d04a36d3f686aa0b58ca47573af2041",
+      "update_norm": 0.010000000000000151,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_e45c917d2b3c35f27c06582e10eb1e7f",
+      "update_norm": 0.01000000000000013,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_f85569137bf5f66f78c4f737136590a5",
+      "update_norm": 0.009999999999999992,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_f3f8f23fab1bf3dfb88866a36366c66c",
+      "update_norm": 0.009999999999999997,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_5938127ab116c519bcb0dd1709f50ad1",
+      "update_norm": 0.009999999999999995,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_710ceaee4c30b4471f9ed358f54175a3",
+      "update_norm": 0.009999999999999995,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_8f426a6d87da60139c78420333772a29",
+      "update_norm": 0.01000000000000003,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_47648e3f2e135ae049a939fd69b832de",
+      "update_norm": 0.010000000000000085,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_91bab71a542721f62ec8bf28ec446dad",
+      "update_norm": 0.01,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_67bfe7a4a3f484a739b9f1e44755fd5e",
+      "update_norm": 0.009999999999999997,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_ca72ec230b818264d3155a0eba8d6611",
+      "update_norm": 0.009999999999999978,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_a783e4821a1540e343b4decb201ac07d",
+      "update_norm": 0.009999999999999983,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_65b9d7fb98ef8cdecb41ee20acad3c97",
+      "update_norm": 0.010000000000000082,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_f5a7cf855dc344de7a215af8b13b59b7",
+      "update_norm": 0.01000000000000008,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_824c363ce0e5e64cbed216c3ce4c929e",
+      "update_norm": 0.009999999999999974,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_2cc1881d76de8b9dcd7ade7810dfd069",
+      "update_norm": 0.01000000000000005,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_0b79453cd8e5cbe3ab667527ad4daa05",
+      "update_norm": 0.010000000000000083,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_423275328020db6413a81fcad6d0bc16",
+      "update_norm": 0.009999999999999986,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_181660afb760fda3b9c630d0c6f25f35",
+      "update_norm": 0.010000000000000085,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_7f34cab12de297286a88cee512c06d33",
+      "update_norm": 0.010000000000000078,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_f7f3bdef551f6f4e152247beefdb7d7d",
+      "update_norm": 0.010000000000000028,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_00d6e7770b589950f7e6639c70b43a65",
+      "update_norm": 0.009999999999999978,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_c793922aa32734e3fade1391144d9834",
+      "update_norm": 0.009999999999999995,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_7addce838ef87ab61cf4efcb91a63f04",
+      "update_norm": 0.009999999999999995,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_fdda2ea8c5e04b19029cbd77b92f03b7",
+      "update_norm": 0.010000000000000097,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_a86924e3909e1b1e9882f3fb426f41c8",
+      "update_norm": 0.010000000000000057,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_39cb47f5b2b2b372bf217b860e0eb422",
+      "update_norm": 0.010000000000000056,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_a858a183b4a980e9d59875bdf5714f9d",
+      "update_norm": 0.009999999999999998,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_1581d6752a2b53d48850e6e30eefd9d8",
+      "update_norm": 0.010000000000000018,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_c1dba396af0560829aadd2d0d9d9efb1",
+      "update_norm": 0.010000000000000024,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_92d7c8473237876d9b4f2eeb78b7ba52",
+      "update_norm": 0.010000000000000045,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_09c34a7458bb6a084a80e34a93c24d10",
+      "update_norm": 0.00999999999999999,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_19a874d695032208aa4f012770c25581",
+      "update_norm": 0.009999999999999986,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_7750bca22461327ad15e8cc7282c21d4",
+      "update_norm": 0.009999999999999985,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_90e2b191375eab7cde97abff91c60acc",
+      "update_norm": 0.009999999999999985,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_12eb752e0374eeb295e7b5ef73864860",
+      "update_norm": 0.009999999999999976,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_d9692ec51653bfcd48e3d294bf56fc88",
+      "update_norm": 0.010000000000000042,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_eeea605bc59e056d4bea137ce2480b5a",
+      "update_norm": 0.009999999999999985,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_56ac6dcaecb4ec23f1253d60d1b26824",
+      "update_norm": 0.009999999999999986,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_581942b04184f4b33433cf92507f2e23",
+      "update_norm": 0.009999999999999988,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_def8dd2b1b28714d4bd9f581897fc962",
+      "update_norm": 0.009999999999999985,
+      "used_fallback": false
+    },
+    {
+      "applied_guidance_norm": 0.19999999999999998,
+      "note": "numerical trust-region probe only; not SmolVLA API injection",
+      "raw_guidance_norm": 5.477225575051661,
+      "reason": null,
+      "state_key": "sp1_3ad25dca82aeb73cec29c40e0fe2f6b5",
+      "update_norm": 0.009999999999999985,
+      "used_fallback": false
+    }
+  ],
+  "schema_version": "rase-pre-c0-guidance-trust-region-audit/v1",
+  "update_norm_max": 0.010000000000000151,
+  "update_norm_mean": 0.010000000000000024
+}

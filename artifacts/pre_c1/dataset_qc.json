@@ -1,0 +1,28 @@
+{
+  "cell_counts": {
+    "camera:L1": 16,
+    "clean:L0": 15,
+    "robot:L1": 16
+  },
+  "hard_stop": false,
+  "leakage_episode_overlap": [],
+  "min_clean_states": 4,
+  "min_recovery_states": 8,
+  "missing_oft_teacher": 0,
+  "n_clean_retention": 5,
+  "n_recovery": 42,
+  "n_samples": 47,
+  "schema_version": "rase-pre-c1-dataset-qc/v1",
+  "splits": {
+    "n_train_episodes": 18,
+    "n_train_rows": 36,
+    "n_val_episodes": 6,
+    "n_val_rows": 11
+  },
+  "suite_counts": {
+    "Goal": 12,
+    "Long": 12,
+    "Object": 12,
+    "Spatial": 11
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "run_name": "rase-pre-c0-deviation-pilot24-v1",
+  "pool": "runs/rase_pre_c0_deviation_pilot24_pool_v1",
+  "adapter": "rase.collect.lerobot_libero_plus_adapter:make_adapter",
+  "adapter_config": {
+    "policy_path": "ckpts/smolvla_libero",
+    "tokenizer_path": "ckpts/SmolVLM2-500M-Instruct",
+    "libero_plus_root": "/root/autodl-tmp/src/LIBERO-plus",
+    "libero_clean_root": "/root/autodl-tmp/src/LIBERO",
+    "device": "cuda",
+    "num_steps": 10,
+    "n_action_steps": 10,
+    "observation_height": 360,
+    "observation_width": 360,
+    "continuation_temperature": 0.5,
+    "capture_decision_context_v2": true,
+    "snapshot_offset_steps": 1,
+    "public_history_steps": 4
+  },
+  "collection": {
+    "episodes": 24,
+    "seed": 2026080405,
+    "action_chunks_per_episode": 60,
+    "max_action_chunks": 60,
+    "snapshot_cadence_action_chunks": 1,
+    "successful_snapshot_retention": 1.0,
+    "output_dir": "runs/rase_pre_c0_deviation_pilot24_pool_v1",
+    "dry_run": false,
+    "smoke_mode": false
+  },
+  "sampling": {
+    "design": "runs/rase_pre_c0_design24_v1.json",
+    "use_concrete_task_id": true
+  },
+  "protocol": {
+    "version": "rase-pre-c0-same-policy-corrective/v1",
+    "design": "runs/rase_pre_c0_design24_v1.json",
+    "design_sha256": "981d9599622d5823ab619cb3225abe133a8dd53a20266c3b031752790df13efe",
+    "expected_episodes": 24,
+    "source_split": "train",
+    "selection_uses_outcomes": false,
+    "hidden_test_sealed": true,
+    "purpose": "early-deviation same-policy corrective pilot"
+  },
+  "scheduler": {
+    "lease_seconds": 3600,
+    "max_attempts": 3
+  }
+}

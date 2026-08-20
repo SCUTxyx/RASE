@@ -1,0 +1,79 @@
+{
+  "schema_version": "rase-vnext-protocol/v1",
+  "status": "frozen",
+  "activation_gate": {
+    "audit": "runs/pre_c0_r10/r10b_chunk_input_divergence_audit_v1.json",
+    "required_schema": "rase-r10b-chunk-input-divergence-audit/v2",
+    "audit_sha256": "aa8cb14ec898093df9b5b93d23e750fcd6f5d131e8af5ac1050c2f1efd77808c",
+    "accepted_status": "B_CLOSED_LOOP_INPUT_DIVERGENCE"
+  },
+  "targets": {
+    "T1": "short_horizon_source_risk",
+    "T2": "intervention_urgency",
+    "T3": "cost_aware_correction_operator_value"
+  },
+  "utility": {
+    "success_reward": 1.0,
+    "harm_weight": 1.0,
+    "query_weight": 0.02,
+    "fallback_weight": 0.1,
+    "latency_weight": 0.01,
+    "cost_units": {
+      "harm": "binary paired harm: operator fails while matched continue succeeds",
+      "query": "extra source-policy or verifier calls divided by 250-step episode horizon",
+      "fallback": "persistent-fallback environment steps divided by 250-step episode horizon",
+      "latency": "added wall-clock seconds divided by nominal 25-second episode budget"
+    },
+    "sensitivity_grid": {
+      "harm_weight": [0.5, 1.0, 2.0],
+      "query_weight": [0.0, 0.02, 0.05],
+      "fallback_weight": [0.05, 0.1, 0.2],
+      "latency_weight": [0.0, 0.01, 0.02]
+    },
+    "normalization": {
+      "max_episode_steps": 250,
+      "control_hz": 10.0,
+      "primary_utility_selected_without_discovery_or_confirmation_outcomes": true
+    }
+  },
+  "operators": [
+    {"operator_id": "continue.source", "kind": "continue", "candidate_ids": []},
+    {"operator_id": "requery.source", "kind": "requery", "candidate_ids": []},
+    {"operator_id": "resample.source", "kind": "resample", "candidate_ids": ["candidate.0", "candidate.1"], "candidate_verifier": "minimum_first_action_l2_then_candidate_id"},
+    {"operator_id": "fallback.persistent", "kind": "fallback", "candidate_ids": []},
+    {"operator_id": "abort.safe", "kind": "abort", "candidate_ids": []}
+  ],
+  "collection": {
+    "discovery_repeats": 3,
+    "confirmation_repeats": 5,
+    "outcome_dependent_sampling": false,
+    "discovery_tasks_per_suite": 2,
+    "discovery_roots_per_task": 2,
+    "decision_points": [
+      {"decision_point_id": "source.step.8", "rule": "source_elapsed_step", "value": 8},
+      {"decision_point_id": "source.step.16", "rule": "source_elapsed_step", "value": 16}
+    ],
+    "source_policies": ["pi05.libero", "pi0fast.libero"],
+    "seed_layers": ["init_state_id", "environment_seed", "source_sampling_seed", "operator_seed", "exact_repeat_replica"]
+  },
+  "gates": {
+    "feasibility": {
+      "minimum_completed_branch_fraction": 1.0,
+      "minimum_unmasked_operator_fraction": 0.8,
+      "minimum_nondegenerate_outcome_fraction": 0.05
+    },
+    "opportunity": {
+      "minimum_oracle_minus_best_fixed": 0.03,
+      "bootstrap_confidence": 0.95,
+      "minimum_root_winner_fraction": 0.1,
+      "minimum_winner_operators": 2,
+      "minimum_tasks": 8,
+      "minimum_suites": 3,
+      "required_policies": ["pi05.libero", "pi0fast.libero"]
+    }
+  },
+  "locks": [
+    "learned_risk", "selector", "world_model", "validation", "test",
+    "third_vla", "second_benchmark", "public_data", "reinforcement_learning"
+  ]
+}

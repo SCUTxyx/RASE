@@ -1,0 +1,68 @@
+{
+  "schema_version": "rase-r8b-local-recoverability-hazard-protocol/v1",
+  "status": "frozen_before_r8a1_outcome",
+  "scientific_scope": "development task-held-out no-world-model representation probe",
+  "input_contract": {
+    "dataset_sha256": "5678e8c6cb811918cb4f1879c2c97da47535426f3dae898305ac1a163f21bd50",
+    "r8a0_status_required": "PASS",
+    "r8a1_status_required": "PASS",
+    "complete_boundaries": [0, 8, 16],
+    "ambiguous_k2_transitions": "exclude from hard-label probe; retain for later probabilistic sensitivity analysis"
+  },
+  "targets": {
+    "current_recoverable": "persistent fallback succeeds at the current boundary",
+    "next_recoverable": "persistent fallback succeeds after eight more source steps",
+    "primary_loss_hazard": "current_recoverable AND NOT next_recoverable",
+    "primary_evaluation_population": "natural cohort transitions with certain current_recoverable=true"
+  },
+  "features": [
+    "current two-view RGB observation",
+    "current proprioception",
+    "current source action proposal summary",
+    "causal source action history",
+    "elapsed boundary context",
+    "instruction hash",
+    "optional seen-VLA ID embedding"
+  ],
+  "forbidden_features": [
+    "future frames",
+    "OFT actions",
+    "teacher cost",
+    "outcome labels",
+    "world-model features",
+    "task ordinal",
+    "suite identity"
+  ],
+  "split": {
+    "outer": "5-fold task-held-out",
+    "calibration": "task-held-out subset of outer train; natural cohort only",
+    "training": "natural plus enrichment from fit tasks only",
+    "evaluation": "natural cohort only",
+    "bootstrap": "task clustered, 1000 samples"
+  },
+  "canonical_mode": "shared_plus_vla_id",
+  "comparators_after_canonical_pass": ["shared_without_vla_id", "per_vla"],
+  "seeds": [701, 702, 703, 704, 705],
+  "members": 3,
+  "gates_per_seed": {
+    "hazard_auroc_min": 0.7,
+    "hazard_task_bootstrap_auroc_lower95_min": 0.6,
+    "hazard_ap_above_prevalence_min": 0.1,
+    "hazard_ece_max": 0.12,
+    "current_recoverable_auroc_min": 0.7,
+    "each_policy_hazard_auroc_strictly_above": 0.55,
+    "each_horizon_hazard_auroc_strictly_above": 0.55,
+    "each_suite_hazard_auroc_strictly_above": 0.55
+  },
+  "stability_gate": "at least 4 of 5 canonical seeds pass every gate",
+  "unlock_on_pass": [
+    "R8-B comparator ablations",
+    "offline early-window selector using local recoverability and hazard"
+  ],
+  "remains_locked": [
+    "world-model residual/disagreement",
+    "independent validation",
+    "test",
+    "closed-loop claims"
+  ]
+}

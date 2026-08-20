@@ -1,0 +1,50 @@
+{
+  "schema_version": "rase-vnext-domain-mining-preregistration/v1",
+  "status": "frozen",
+  "frozen_before_mining": true,
+  "objective": "Find outcome-blind candidate domains with success headroom for the RASE selector; if none passes the Opportunity Gate, form the final result that the current benchmark has no identifiable success space.",
+  "two_layer_outcome_policy": {
+    "candidate_domain_features": "pre-rollout only: source historical failure rate, progress/time, state/action representation, policy/suite/task metadata, predefined decision boundary",
+    "domain_classification_labels": "allowed from inner development outcomes (confirmation + K5 + K3); outer validation set frozen and never read during mining",
+    "split": "nested task/root split; outer folds freeze final validation tasks; inner folds only may tune miner thresholds and selector"
+  },
+  "domain_classes": {
+    "all_candidates_fail": "fallback fails and no other executable candidate succeeds",
+    "fallback_dominates": "fallback succeeds and no non-fallback counterfactual winner",
+    "heterogeneous_winner": "fallback fails but some other candidate succeeds"
+  },
+  "atlas_cell_outputs": [
+    "support units", "source success", "fallback success", "fallback-not-optimal rate",
+    "winner entropy", "oracle-minus-best-fixed", "all-fail rate", "task-bootstrap CI"
+  ],
+  "opportunity_gate": {
+    "requirements": [
+      ">=24 independent tasks (>=6 per suite)",
+      ">=100 independent roots",
+      ">=2 operators each unique/co-best on >=10% of roots",
+      "fallback-not-optimal 95% CI lower bound > 5%",
+      "oracle-minus-best-fixed success point estimate >= 5pp with bootstrap CI lower bound > 0",
+      "all-fail rate must not dominate the headroom"
+    ],
+    "baseline": "best fixed operator of the domain; always-fallback reported separately; continue weakness is never a substitute for the strong baseline",
+    "multiplicity": "multiplicity-aware reporting; exactly one primary domain preregistered before training"
+  },
+  "pilot_budget": "24 tasks x 3 decision times x K5, only for the single domain closest to the gate; expand to 48 tasks only if the pilot still satisfies the gate; else stop",
+  "decision_times": {
+    "static": ["source.step.8", "source.step.16"],
+    "critical_dynamic": "source first progress stall / low progress (<20%) or first collision; preregistered fallback: source.step.32"
+  },
+  "primary_metric": "closed-loop success improvement vs best-fixed/always-fallback; paired task-bootstrap 95% CI; PASS only if CI lower bound > 0 and absolute gain >= 3pp",
+  "stop_rules": {
+    "gate_fail": "no more data, no bigger model; final result = checked domains lack success headroom",
+    "gate_pass_selector_fail": "opportunity holds but observability/learning failed; exactly one preregistered feature/urgency ablation allowed",
+    "offline_pass_closedloop_fail": "diagnose distribution shift / candidate execution bias; offline results alone never claim effectiveness"
+  },
+  "inputs": {
+    "confirmation_v1": "runs/rase_vnext/confirmation_v1/branches.jsonl (2 policies x step 8/16 x 5 ops x 5 reps)",
+    "k5": "runs/rase_vnext/k5_collect_v1/branches.jsonl (pi0fast step 8)",
+    "k3": "runs/rase_vnext/k3_collect_v1/branches.jsonl (pi0fast step 8)",
+    "phase_a": "runs/rase_vnext/phase_a_v1/phase_a_audit.json"
+  },
+  "atlas_output": "runs/rase_vnext/domain_atlas_v1.json"
+}

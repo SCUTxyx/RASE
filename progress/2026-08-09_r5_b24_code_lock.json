@@ -1,0 +1,28 @@
+{
+  "schema_version": "rase-pre-c0-r5-b24-code-lock/v1",
+  "frozen_before_collection": true,
+  "manifest_sha256": "bd6675a635ec2885664597ce5c60fd11a0d5a27cfa7fcab8537f86435b2236ac",
+  "qc_audit_sha256": "9e4d306960d0ecfd1c6aff5449750545893055ccac5c6658e1ab3cdcc506adb4",
+  "collector_sha256": "170980635a317a2e35488b69add1fa6b876d0a642d1706d1dec295f7865ec983",
+  "collection_runner_sha256": "9eb910dd24ba3fb4d6799903ddd7a4b79edb993c109be355837dd1e0aa69862e",
+  "summarizer_sha256": "a9449c2c6a662b1cdad5babbd1639811b51309e4ac344e4b7c46166e7e00ee74",
+  "freezer_sha256": "6deebe32265ad41a355e3b91dae074ff0cdd141664f6e81284b884d8d5785619",
+  "launcher_sha256": "40adeaddf2872f3c7e09bb3ad18d03176e5bb45d5edc3315ee0384d5a1f48af0",
+  "boundaries": [0, 16, 32, 64, 96, 128],
+  "handback_repeats": 5,
+  "paired_repeat_seeds_across_boundaries": true,
+  "n_states": 24,
+  "n_tasks": 24,
+  "gates": {
+    "minimum_finite_safe_states": 20,
+    "minimum_finite_safe_tasks": 3,
+    "minimum_populated_stopping_bins": 2,
+    "minimum_conservative_oracle_savings": 0.25
+  },
+  "downstream_locks": {
+    "model_training": "closed_until_b24_opportunity_gate",
+    "second_vla": "closed",
+    "world_model": "closed",
+    "test": "sealed"
+  }
+}

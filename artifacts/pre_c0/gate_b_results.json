@@ -1,0 +1,13 @@
+{
+  "audit": "runs/rase_pre_c0_guided_audit_v1.json",
+  "decision": "runs/rase_pre_c0_guided_decision_v1.json",
+  "decision_label": "frozen_same_policy_recovery_nogo",
+  "frozen_same_policy_recovery": "NOGO",
+  "gate_pass": false,
+  "guided_gain_pp": 0.0,
+  "mode": "offline_best_of_k_upper_bound",
+  "naming": "privileged trust-region action refinement",
+  "not_smolvla_flow_api_guidance": true,
+  "schema_version": "rase-pre-c0-gate-b-artifacts/v1",
+  "trust_region_audit": "artifacts/pre_c0/guidance_trust_region_audit.json"
+}

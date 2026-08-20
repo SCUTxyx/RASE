@@ -1,0 +1,108 @@
+{
+  "schema_version": "rase-r6a-policy-pair-manifest/v1",
+  "status": "frozen_before_source_outcomes",
+  "frozen_date": "2026-08-09",
+  "scientific_scope": "development-only initial-state model-free opportunity screen; excluded from validation and test",
+  "repository_commit_before_r6a": "8d8212643893935368152efce4bc571bb83b59db",
+  "initial_keys": "runs/rase_ui_phase1a_replacement48_initial_keys_v2.json",
+  "initial_keys_sha256": "abf6a156856c4121ffb10b9b90864375df0e837b905869e9040008208072ffb5",
+  "state_keys_sha256": "df345cbd35e22ff1b736893ccd9d67cfb0e6b28b5290fc5e3072517819365065",
+  "initial_pool_manifest_sha256": "3b4b0b9b063bb872651bdd9639e34c816cc72eee7af61950dbb53af3a2063228",
+  "oft_analysis": "runs/rase_ui_phase1a_replacement48_analysis_v2.json",
+  "oft_analysis_sha256": "7b2a984ef7054553704b66721ce78bb63b4af88b05c67ac2f451963c614f7909",
+  "cohort": {
+    "states": 48,
+    "unique_tasks": 48,
+    "unique_episodes": 48,
+    "states_per_suite": 12,
+    "dimensions": {
+      "clean": 16,
+      "camera_l1": 16,
+      "robot_l1": 16
+    },
+    "snapshot_policy_step": 0,
+    "source_actions_before_snapshot": 0,
+    "selection_uses_outcomes": false
+  },
+  "control_protocol": {
+    "source_replan_interval_env_steps": 10,
+    "source_action_space": "LeRobot LIBERO relative 7-DoF after frozen environment postprocessing",
+    "persistent_arm_reused_without_rerun": true
+  },
+  "tokenizer_dependencies": {
+    "paligemma_text_tokenizer": {
+      "canonical_repo": "google/paligemma-3b-pt-224",
+      "canonical_revision": "35e4f46485b4d07967e7e9935bc3786aad50687c",
+      "canonical_tokenizer_json_sha256": "ef6773c135b77b834de1d13c75a4c98ab7a3684ffd602d1831e1f1bf5467c563",
+      "canonical_tokenizer_model_sha256": "8986bb4f423f07f8c7f70d0dbe3526fb2316056c17bae71b1ea975e77a168fc6",
+      "byte_identical_public_replica": "leo009/paligemma-3b-pt-224",
+      "replica_revision": "39996beb6fb17c5d16a50d3ef8f7a96ad9d03986",
+      "local_path": "ckpts/paligemma_tokenizer_35e4f46"
+    },
+    "pi0fast_action_tokenizer": {
+      "repo": "jadechoghari/tokenizer-lib-mean",
+      "revision": "79ae83e3cbd8786dcb84b628569f8d076ca8151e",
+      "local_path": "ckpts/pi0fast_action_tokenizer_79ae83e"
+    }
+  },
+  "source_policies": [
+    {
+      "policy_id": "smolvla_libero",
+      "local_path": "ckpts/smolvla_libero",
+      "role": "diagnostic baseline known to have insufficient boundary-state margin"
+    },
+    {
+      "policy_id": "pi0fast_libero",
+      "hub_repo": "lerobot/pi0fast-libero",
+      "revision": "840f4b503f4c09110421c33c810a85b6684fd658",
+      "expected_download_bytes": 7729830688,
+      "model_safetensors_sha256": "f1f8236d44016a533daba7b8249756e84df047f46e20ca17d3fc34d8f2f691ba",
+      "official_reported_mean_success": 0.825,
+      "control_mode": "relative",
+      "text_tokenizer": "paligemma_text_tokenizer",
+      "action_tokenizer": "pi0fast_action_tokenizer"
+    },
+    {
+      "policy_id": "pi05_libero",
+      "hub_repo": "lerobot/pi05_libero_finetuned_v044",
+      "revision": "8e174154ef5f6c60a8da12ae99c303d8963138c1",
+      "expected_download_bytes": 7473096344,
+      "model_safetensors_sha256": "877b3ec1130548b69af7f8aeef3ec9d3fc7738040f0b9beb490857ec970997ae",
+      "official_reported_mean_success": 0.975,
+      "control_mode": "relative",
+      "text_tokenizer": "paligemma_text_tokenizer"
+    }
+  ],
+  "source_seed_indices": [0, 1],
+  "persistent_policy": "suite-specific deterministic OpenVLA-OFT from the exact reset snapshot",
+  "gates": {
+    "privileged_success_no_worse_than_persistent": true,
+    "minimum_privileged_teacher_savings": 0.3,
+    "minimum_source_safe_tasks": 12,
+    "require_source_safe_support_all_four_suites": true,
+    "maximum_single_suite_savings_share": 0.5,
+    "require_both_source_seeds": true,
+    "minimum_passing_policy_pairs": 2
+  },
+  "downstream_locks": {
+    "shared_risk_model": "closed_until_atlas_ready",
+    "zero_shot": "closed",
+    "leave_one_vla_out": "closed",
+    "world_model": "closed",
+    "validation": "closed",
+    "test": "sealed"
+  },
+  "protocol_amendment_1": {
+    "scope": "dependency closure only; no cohort, source policy, corrective policy, seed, gate, or analysis change",
+    "reason": "checkpoint inspection showed runtime tokenizer repos; pin local byte identities before any Pi0Fast/Pi0.5 source outcome",
+    "outcomes_available_when_decided": "no Pi0Fast or Pi0.5 outcomes; partial SmolVLA diagnostic rollout only",
+    "status": "frozen_before_new_vla_outcomes"
+  },
+  "protocol_amendment_2": {
+    "scope": "Pi0.5 deployment compatibility only; no cohort, checkpoint, source policy, corrective policy, seed, gate, or analysis change",
+    "reason": "the pre-outcome Pi0.5 smoke showed that the shared loader injected a Pi0Fast-only action_tokenizer_processor override into the Pi0.5 preprocessing pipeline",
+    "fix": "apply the action-tokenizer processor override only when an explicit action tokenizer is configured; retain the common text-tokenizer override",
+    "outcomes_available_when_decided": "both Pi0Fast seeds were complete; the failed Pi0.5 smoke terminated during processor construction before environment rollout and produced no Pi0.5 outcome",
+    "status": "frozen_before_pi05_outcomes"
+  }
+}

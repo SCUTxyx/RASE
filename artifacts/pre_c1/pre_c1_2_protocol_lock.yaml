@@ -1,0 +1,304 @@
+schema_version: rase-pre-c1-2-protocol-lock/v1
+phase: PRE-C1.2
+method: recovery_lora_student_query_dagger_native_prefix_flow
+naming: recovery LoRA / OFT action distillation
+not_runtime_oft: true
+not_smolvla_flow_api_guidance: true
+revision:
+  id: r0_pivot_2026_08_05
+  summary: Keep DAgger R1 engineering carrier; insert R0 diagnostics before any retraining; pause legacy E3/E4 full OFT-action BC.
+  main_path:
+  - E0_interface
+  - E1_horizon_freeze_H2
+  - DAgger_R1_student_query
+  - global_QC
+  - R0_teacher_forced
+  - R0_one_step_recoverability
+  - R0_survival_Rk
+  - branch_decision
+  - revised_short_horizon_training
+  legacy_e3_e4_paused: true
+  legacy_unlock: ALLOW_LEGACY_E3_E4=1
+  e0_e1_r1_provenance_protocol_sha256: 87916082ceacf3415bc28c40b0d968c86f5b36924fd05e224907994504c57790
+inherit:
+  pre_c1_1_decision: capacity_or_data_review
+  pre_c1_1_protocol: artifacts/pre_c1/pre_c1_1_protocol_lock.yaml
+  offline_teacher_only: true
+  runtime_oft_forbidden: true
+  recovery_gate_threshold_pp: 8.0
+  retention_drop_limit_pp: 2.0
+predecessor:
+  pre_c1_1_decision: runs/rase_pre_c1_1_decision_v1.json
+  pre_c1_1_recovery_gain_pp: 0.0
+  pre_c1_1_adapter: runs/rase_pre_c1_1_lora_train_v1/adapter_final
+  gate_a_natural_headroom_pp: 2.0833333333333335
+  gate_b_guided_gain_pp: 0.0
+sources:
+  pre_c0_48_state_manifest: artifacts/pre_c0/pre_c0_48_state_manifest.json
+  pre_c0_pool: runs/rase_pre_c0_deviation_pilot24_pool_v1
+  pre_c0_rollouts: runs/rase_pre_c0_same_policy_pilot48_v1
+  config: configs/collect_pre_c0_deviation_pilot24.json
+  smolvla_checkpoint: ckpts/smolvla_libero
+  pre_c1_1_distill_dataset: runs/rase_pre_c1_1_distill_dataset_v1.jsonl
+  oft_checkpoints:
+    Spatial: ckpts/oft_spatial
+    Object: ckpts/oft_object
+    Goal: ckpts/oft_goal
+    Long: ckpts/oft_10
+evaluation:
+  recovery:
+    candidate_horizons:
+    - 1
+    - 2
+    - 4
+    - 8
+    - 10
+    selected_horizon: 2
+    base_execution_horizon: 2
+    adapted_execution_horizon: 2
+    comparator: adapted_minus_base_same_horizon
+  clean_retention:
+    base_n_action_steps: 10
+    adapted_n_action_steps: 10
+    comparator: adapted_minus_base_locked_baseline
+receding_horizon_invariants:
+  force_fresh_forward_at_boundary: true
+  clear_action_queue_at_boundary: true
+  report_forward_calls: true
+  report_cache_resets: true
+  report_mean_steps_per_forward: true
+  forward_call_tolerance: 1
+horizon_selection:
+  candidate_horizons:
+  - 1
+  - 2
+  - 4
+  - 8
+  - 10
+  minimum_adapted_successes: 2
+  require_positive_adapter_delta_vs_base: true
+  tie_breaker:
+  - smallest_horizon
+  - highest_best_progress
+  - latest_first_divergence
+  fallback_horizon: 2
+  freeze_before_phase2: true
+successor_test:
+  compare_in_env_action_space: true
+  same_action_repeatability_control: true
+  fixed_student_noise: true
+  report_per_dimension_error: true
+  block_training_on_interface_mismatch: true
+  cross_over_sim_floor_ratio: 5.0
+progress_defs:
+  best_progress: env_native_task_score
+  first_divergence: consecutive_2_replan_boundaries_over_threshold
+  first_divergence_threshold: 0.05
+recoverability:
+  # Legacy protocol note (E1 era). R0 uses r0.k_env_steps instead.
+  k_env_steps:
+  - 1
+  - 4
+  teacher_attempts_per_state: 1
+  teacher_seed: 2026080405
+  max_teacher_steps: same_as_pre_c1_1
+r0:
+  enabled: true
+  adapter: runs/rase_pre_c1_1_lora_train_v1/adapter_final
+  seed: 2026080405
+  k_env_steps:
+  - 0
+  - 1
+  - 2
+  - 4
+  - 8
+  - 16
+  arms:
+  - base
+  - adapted
+  oft_controls:
+  - teacher_direct_k0
+  - teacher_replan_k1
+  teacher_forced:
+    compare_arms:
+    - base
+    - adapted
+    split_original_c1_1_states: true
+    split_r1_student_query_states: true
+    suffix_as_secondary_only: true
+    primary_metric: native_flow_loss
+    auxiliary_sampled_action_mse: false
+  remaining_episode_budget: true
+  independent_restore_per_cell: true
+  fresh_forward_on_handover: true
+  decision_primary_metrics:
+  - teacher_forced_fit
+  - R_adapted_1
+  - R_adapted_4
+  - return_to_stable
+  terminal_success_is_final_gate_only: true
+  exact_state_memorization: conditional_branch_only
+revised_training:
+  paused_until_r0_decision: true
+  exclude_failed_teacher_from_bc: true
+  prefer_early_student_query_state: true
+  max_suffix_chunks_per_query: 0
+  residual_correction:
+    enabled_if_r0_supports: true
+    form: a_corr = a_base + clip(delta_a)
+    primary_targets:
+    - R_adapted_1_gt_R_base_1
+    - R_adapted_4_gt_R_base_4
+    - return_to_stable
+  execution_horizon_candidates:
+  - 1
+  - 2
+  - 4
+  frozen_engineering_horizon: 2
+  batch_mix_target:
+    hard_student_recovery: 0.40
+    initial_deviation: 0.25
+    boundary_success_failure: 0.20
+    clean_retention: 0.15
+dagger:
+  rounds: 3
+  beta_by_round:
+  - 0.5
+  - 0.25
+  - 0.0
+  beta_unit: replan_boundary
+  teacher_query_mode: forked_environment
+  mutate_student_rollout_env: false
+  store_failed_teacher_rollouts: true
+  failed_teacher_rollouts_enter_bc: false
+  query_triggers:
+    periodic_every_student_steps: 4
+    progress_stall: true
+    first_divergence: true
+    near_failure_boundary: true
+dagger_sources:
+  distinguish_student_query_state: true
+  distinguish_teacher_suffix: true
+  max_suffix_chunks_per_query: 2
+  weight_by_offset:
+    0: 1.0
+    1: 0.75
+    2: 0.5
+dagger_round_1_minimum:
+  seeds_per_anchor: 5
+  unique_student_query_states_per_anchor: 10
+  successful_teacher_relabels_per_anchor: 5
+  accepted_query_near_chunks_per_anchor: 20
+dagger_round_target:
+  unique_student_query_states_per_anchor: 25
+  accepted_query_near_chunks_per_anchor: 50
+batch_schedule:
+  cycle_length: 10
+  recovery_batches: 9
+  clean_batches: 1
+recovery_source_weights:
+  student_state_recovery: 0.7222
+  original_recovery: 0.2778
+loss:
+  type: native_flow_matching
+  horizon_weighting: piecewise
+  weights:
+    0:4: 4.0
+    '4:8': 2.0
+    '8:': 1.0
+  normalize_weights_to_mean_one: true
+  auxiliary_sampled_action_mse: false
+dataset:
+  stages:
+  - T0
+  - T1
+  - T2
+  - T3
+  - T4
+  keep_only_successful_oft: true
+  clean_retention_cell: clean:L0
+  split_seed: 2026080405
+  val_episode_fraction: 0.25
+  min_successful_recovery_states: 16
+  min_train_chunks: 200
+  min_clean_states: 4
+lora:
+  rank: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules:
+  - q_proj
+  - v_proj
+  - k_proj
+  - o_proj
+  - gate_proj
+  - up_proj
+  - down_proj
+  - action_in_proj
+  - action_out_proj
+  freeze_vlm_backbone: true
+  train_lm_expert_only: true
+train:
+  seed: 2026080405
+  epochs: 5
+  batch_size: 1
+  lr: 0.0001
+  weight_decay: 0.01
+  retain_loss_weight: 0.5
+  grad_clip: 1.0
+  device: cuda
+  e3_e4_split: true
+gate:
+  recovery_gain_pp: 8.0
+  clean_retention_drop_pp: 2.0
+  bootstrap_replicates: 2000
+  bootstrap_seed: 2026080405
+  cluster_unit: episode_id
+  ci95_lower_must_be_positive: true
+  primary:
+    cohort: locked_9_failure_keys
+    seeds: locked_c1_1_seed
+    recovery_delta_threshold_pp: 8.0
+    retention_drop_limit_pp: 2.0
+    note: 9 trials → 8pp ≈ ≥1 extra success; discrete nature reported
+  secondary:
+    multiple_seeds: true
+    perturbed_anchors: true
+    affects_gate_decision: false
+capacity:
+  initial_rank: 16
+  capacity_ladder_locked: true
+  order:
+  - expand_lora_targets
+  - rank_32
+  - rank_64
+  - full_action_expert
+  - top_cross_modal_layers
+  expand_lora_targets:
+  - q_proj
+  - v_proj
+  - k_proj
+  - o_proj
+  - gate_proj
+  - up_proj
+  - down_proj
+  - action_in_proj
+  - action_out_proj
+  - state_proj
+  - action_time_mlp_in
+  - action_time_mlp_out
+  full_action_expert_optimizer:
+    lr: 3.0e-05
+    weight_decay: 0.01
+    grad_clip: 1.0
+    preregistered: true
+sealed:
+  hidden_test24: sealed
+  pre_a3_method_gate: closed
+  pre_b_allowed: false
+  world_model_gate: closed
+  gate_a_thresholds_frozen: true
+  gate_b_thresholds_frozen: true
+  pre_c1_thresholds_frozen: true
+  recovery_adapter_gate: open_for_audit
+  selected_horizon_frozen: true

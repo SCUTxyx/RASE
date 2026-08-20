@@ -1,0 +1,53 @@
+version: 1
+run_name: rase_pre_a3_recovery_duration120
+mode: live-oft-duration
+
+pool: runs/rase_pre_a3_recovery120_pool_v1
+output_dir: runs/rase_pre_a3_recovery_duration120_v1
+
+sample:
+  strategy: explicit_frozen_json
+
+protocol:
+  phase: pre_a3_recovery_duration
+  cohort: task_disjoint_120
+  design: runs/rase_pre_a3_design120_v1.1.json
+  expected_n_states: 120
+  expected_n_tasks: 40
+  split_policy: per_suite_tasks_6_train_2_val_2_test
+  formal_set_labels: true
+  execution_mode: live_closed_loop_oft_prefix
+  durations: [0, 8, 16, 32, 64, 96, 128]
+  include_persistent_oft: true
+  deterministic_replay_role: diagnostic_only
+  note: >-
+    Confirmatory task-disjoint recovery-duration study. Hidden test outcomes must
+    not be inspected before analysis scripts and gates are frozen.
+
+adapter:
+  policy_path: ckpts/smolvla_libero
+  tokenizer_path: ckpts/SmolVLM2-500M-Instruct
+  libero_plus_root: /root/autodl-tmp/src/LIBERO-plus
+  libero_clean_root: /root/autodl-tmp/src/LIBERO
+  device: cuda
+  num_steps: 10
+  n_action_steps: 10
+  observation_height: 360
+  observation_width: 360
+  continuation_temperature: 0.5
+
+scheduler:
+  max_attempts: 3
+  lease_seconds: 3600
+  worker: pre-a3-recovery-duration120
+
+gates:
+  oracle_gap_ge_8pp: true
+  rescues_ge_4_task_disjoint: true
+  rescues_cover_ge_2_suites: true
+  rescues_cover_ge_2_cells: true
+  duration_heterogeneity: true
+  best_fixed_harm_le_5pct: true
+  adaptive_headroom_ge_5pp: true
+  world_model_gate: closed
+  critic_gate: closed

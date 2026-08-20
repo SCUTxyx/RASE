@@ -1,0 +1,54 @@
+{
+  "adapter": "rase.collect.lerobot_libero_plus_adapter:make_adapter",
+  "adapter_config": {
+    "capture_decision_context_v2": false,
+    "continuation_temperature": 0.5,
+    "device": "cuda",
+    "libero_clean_root": "/root/autodl-tmp/src/LIBERO",
+    "libero_plus_root": "/root/autodl-tmp/src/LIBERO-plus",
+    "n_action_steps": 10,
+    "num_steps": 10,
+    "observation_height": 360,
+    "observation_width": 360,
+    "policy_path": "ckpts/smolvla_libero",
+    "public_history_steps": 4,
+    "snapshot_offset_steps": 0,
+    "tokenizer_path": "ckpts/SmolVLM2-500M-Instruct"
+  },
+  "collection": {
+    "action_chunks_per_episode": 1,
+    "dry_run": false,
+    "episodes": 120,
+    "max_action_chunks": 1,
+    "output_dir": "runs/rase_pre_a3_recovery120_pool_v1",
+    "seed": 2026080401,
+    "smoke_mode": false,
+    "snapshot_cadence_action_chunks": 1,
+    "successful_snapshot_retention": 1.0
+  },
+  "oracle": {
+    "endpoint": "tcp://127.0.0.1:5555",
+    "timeout": 120000
+  },
+  "pool": "runs/rase_pre_a3_recovery120_pool_v1",
+  "protocol": {
+    "design": "runs/rase_pre_a3_design120_v1.1.json",
+    "design_sha256": "ee202c35556c1c3b0ea639b3ea016cd9119e4fb7f62341a91757d235271df375",
+    "expected_episodes": 120,
+    "expected_initial_states": 120,
+    "hidden_test_blind": true,
+    "purpose": "task-disjoint confirmatory recovery-duration cohort",
+    "require_unique_logical_tasks": true,
+    "selection_uses_outcomes": false,
+    "version": "rase-pre-a3-recovery120/v1"
+  },
+  "run_name": "rase-pre-a3-recovery120-v1",
+  "sampling": {
+    "design": "runs/rase_pre_a3_design120_v1.1.json",
+    "use_concrete_task_id": true
+  },
+  "scheduler": {
+    "lease_seconds": 3600,
+    "max_attempts": 3
+  }
+}

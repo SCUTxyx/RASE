@@ -171,6 +171,17 @@ def select_catalog_task(
             f"no LIBERO-Plus task for suite={suite}, category={category}, "
             f"level=L{request.level}"
         )
+    if request.task_id is not None:
+        matches = tuple(
+            task for task in candidates if int(task.task_id) == int(request.task_id)
+        )
+        if len(matches) != 1:
+            raise ValueError(
+                f"explicit Plus task_id={request.task_id} not unique in "
+                f"suite={suite}, category={category}, level=L{request.level} "
+                f"(matches={len(matches)})"
+            )
+        return matches[0]
     return candidates[request.seed % len(candidates)]
 
 
@@ -368,6 +379,22 @@ class LeRobotLiberoPlusCollectionAdapter:
         )
         if self.tokenizer_path is not None and not self.tokenizer_path.is_dir():
             raise ValueError(f"tokenizer path does not exist: {self.tokenizer_path}")
+        action_tokenizer = (
+            adapter.get("action_tokenizer_path")
+            or os.environ.get("RASE_ACTION_TOKENIZER_PATH")
+        )
+        self.action_tokenizer_path = (
+            Path(os.path.expandvars(str(action_tokenizer))).expanduser().resolve()
+            if action_tokenizer else None
+        )
+        if (self.action_tokenizer_path is not None
+                and not self.action_tokenizer_path.is_dir()):
+            raise ValueError(
+                f"action tokenizer path does not exist: {self.action_tokenizer_path}"
+            )
+        self.source_policy_id = str(
+            adapter.get("policy_id") or self.policy_path.name
+        )
         self.device = str(adapter.get("device", "cuda"))
         self.num_steps = int(adapter.get("num_steps", 10))
         self.n_action_steps = int(adapter.get("n_action_steps", 10))
@@ -388,6 +415,9 @@ class LeRobotLiberoPlusCollectionAdapter:
         self.observation_width = int(adapter.get("observation_width", 360))
         max_chunks = collection.get("max_action_chunks")
         self.max_action_chunks = int(max_chunks) if max_chunks is not None else None
+        self.reset_only = bool(collection.get("reset_only", False))
+        if self.reset_only and self.max_action_chunks != 0:
+            raise ValueError("reset_only collection requires max_action_chunks=0")
 
     def _resolve_suite_and_task(
         self, request: PerturbationRequest
@@ -453,14 +483,17 @@ class LeRobotLiberoPlusCollectionAdapter:
             observation_height=self.observation_height,
             observation_width=self.observation_width,
         )
-        bundle = _get_or_load_policy(
-            self.policy_path,
-            device=self.device,
-            num_steps=self.num_steps,
-            n_action_steps=self.n_action_steps,
-            env_cfg=env_cfg,
-            tokenizer_path=self.tokenizer_path,
-        )
+        bundle = None
+        if not self.reset_only:
+            bundle = _get_or_load_policy(
+                self.policy_path,
+                device=self.device,
+                num_steps=self.num_steps,
+                n_action_steps=self.n_action_steps,
+                env_cfg=env_cfg,
+                tokenizer_path=self.tokenizer_path,
+                action_tokenizer_path=self.action_tokenizer_path,
+            )
         # Keep one environment in-process: ForkableEnv captures process-global NumPy RNG.
         def make_single() -> LiberoEnv:
             return LiberoEnv(
@@ -479,12 +512,45 @@ class LeRobotLiberoPlusCollectionAdapter:
 
         vector_env = gym.vector.SyncVectorEnv([make_single])
         single = vector_env.envs[0]
-        policy = bundle["policy"]
         set_seed(request.seed)
         episode_started = time.perf_counter()
-        policy.reset()
         observation, _ = vector_env.reset(seed=[request.seed])
         forkable = ForkableEnv(single._env)
+
+        if self.reset_only:
+            from rase.collect.oracle_continuation import raw_libero_to_oracle_arrays
+
+            _, _, proprio = raw_libero_to_oracle_arrays(single._env)
+            snapshot = _snapshot(
+                forkable, observation, np.asarray(proprio, dtype=np.float32),
+                0, env_step=0,
+                source_policy=f"{self.source_policy_id}:{self.policy_path.name}",
+                action_chunk_size=self.n_action_steps, action_chunk_offset=0,
+                active_action_suffix=None, public_history=(),
+                public_action_history=(),
+            )
+            instruction = str(single.task_description)
+            vector_env.close()
+            clean_name = selected.name if libero_flavor == "clean" else None
+            return EpisodeResult(
+                outcome="failure",
+                task_id=f"{selected.suite}_{selected.task_id:06d}",
+                instruction=instruction, snapshots=(snapshot,),
+                suite=request.suite, init_state_id=init_state_id,
+                clean_task_name=clean_name, bddl_stem=clean_name,
+                libero_flavor=libero_flavor,
+                metrics={
+                    "reset_only": True, "source_actions_executed": 0,
+                    "episode_outcome_semantics": (
+                        "schema placeholder only; forbidden as a source-risk label"
+                    ),
+                    "episode_wall_s": round(time.perf_counter() - episode_started, 6),
+                },
+            )
+
+        assert bundle is not None
+        policy = bundle["policy"]
+        policy.reset()
 
         max_steps = int(single._max_episode_steps)
         if self.max_action_chunks is not None:
@@ -546,7 +612,7 @@ class LeRobotLiberoPlusCollectionAdapter:
                                 state.detach().cpu().numpy()[0],
                                 chunk_index,
                                 env_step=env_step,
-                                source_policy=f"smolvla:{self.policy_path.name}",
+                                source_policy=f"{self.source_policy_id}:{self.policy_path.name}",
                                 action_chunk_size=self.n_action_steps,
                                 action_chunk_offset=snapshot_offset,
                                 active_action_suffix=suffix,

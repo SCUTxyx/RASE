@@ -1,0 +1,127 @@
+{
+  "evidence": [
+    {
+      "id": "clean_baseline_seed0",
+      "path": "progress/2026-07-16_smolvla_clean_libero_baseline_seed0_nas10.md",
+      "present": true,
+      "status": "ready"
+    },
+    {
+      "id": "w7_w8_recoverability",
+      "path": "progress/2026-07-29_w8_direct_escalation_results.md",
+      "present": true,
+      "status": "ready"
+    },
+    {
+      "id": "w9c_selector_kill",
+      "path": "progress/2026-07-31_w9c_selector_gate_result.md",
+      "present": true,
+      "status": "ready"
+    },
+    {
+      "id": "w10_suite_boundary",
+      "path": "progress/2026-07-31_w10_object_spatial_benchmark.md",
+      "present": true,
+      "status": "ready"
+    },
+    {
+      "id": "pre_a0_candidate_neg",
+      "path": "progress/2026-08-03_rase_pre_a0_candidate_opportunity.md",
+      "present": true,
+      "status": "ready"
+    },
+    {
+      "id": "pre_a1_short_replan_neg",
+      "path": "progress/2026-08-03_rase_pre_a1_replan_mechanism.md",
+      "present": true,
+      "status": "ready"
+    },
+    {
+      "id": "pre_a2_duration_signal",
+      "path": "progress/2026-08-03_rase_pre_a2_recovery_duration.md",
+      "present": true,
+      "status": "ready"
+    },
+    {
+      "id": "pre_a3_protocol",
+      "path": "protocol/pre_a3_recovery_duration_v1.md",
+      "present": true,
+      "status": "ready"
+    }
+  ],
+  "figures_required": [
+    "recoverability_matrix",
+    "duration_response_and_harm",
+    "success_cost_pareto",
+    "cross_task_generalization_calibration"
+  ],
+  "method_gate": {
+    "allowed_next": [
+      "policy_relative_recoverability_tables",
+      "mechanism_falsification_chain",
+      "release_benchmark_artifacts",
+      "pre_a3_collection_and_live_duration_execution"
+    ],
+    "decision": "benchmark_diagnosis_only",
+    "design": "runs/rase_pre_a3_design120_v1.json",
+    "design_sha256": "db5d12e7ce62d542250ee559e31f14696488324d881a4267d219c997cf91ebf8",
+    "forbidden_next": [
+      "termination_model_training",
+      "candidate_critic_training",
+      "generative_world_model_training",
+      "ridge_mlp_rl_three_arm_selector"
+    ],
+    "hidden_gate_pass": false,
+    "hidden_status": "pending_confirmatory_execution",
+    "paper_track": "benchmark_diagnosis",
+    "protocol": "protocol/pre_a3_recovery_duration_v1.md",
+    "rationale": "PRE-A3 protocol is frozen, but hidden-test live closed-loop outcomes are not yet available. Keep method gates closed until preregistered confirmatory conditions pass.",
+    "schema_version": "rase-pre-a3-method-gate/v1",
+    "termination_model_gate": "closed",
+    "val_gate_pass": false,
+    "world_model_gate": "closed"
+  },
+  "metrics_required": [
+    "task_success",
+    "clean_regret",
+    "false_handback_harm",
+    "strong_policy_steps",
+    "wall_clock_s",
+    "gpu_seconds",
+    "peak_vram_mib"
+  ],
+  "paper_track": "benchmark_diagnosis",
+  "pending": [
+    {
+      "action": "Run configs/eval_base.yaml with seed=1 and record mean/CI",
+      "id": "clean_baseline_seed1"
+    },
+    {
+      "action": "Run configs/eval_base.yaml with seed=2 and record mean/CI",
+      "id": "clean_baseline_seed2"
+    },
+    {
+      "action": "Evaluate a second backbone pair under the same snapshot protocol",
+      "id": "second_policy_pair"
+    },
+    {
+      "action": "Collect 120-state pool and finish live closed-loop duration sweep",
+      "id": "pre_a3_confirmatory_results"
+    },
+    {
+      "action": "Export success/OFT-steps/harm/latency Pareto from PRE-A3 arms",
+      "id": "cost_pareto_tables"
+    },
+    {
+      "action": "Render recoverability matrix, duration curve, Pareto, calibration",
+      "id": "paper_figures"
+    }
+  ],
+  "schema_version": "rase-benchmark-release-manifest/v1",
+  "statistics_required": [
+    "task_cluster_bootstrap_95",
+    "exact_mcnemar",
+    "wilson_interval",
+    "preregistered_multiplicity_control"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "run_name": "r7a-pi0fast-independent-reset-pool-smoke-v2",
+  "pool": "runs/pre_c0_r7/smoke_reset_pool_v2",
+  "adapter": "rase.collect.lerobot_libero_plus_adapter:make_adapter",
+  "adapter_config": {
+    "policy_id": "pi0fast_libero",
+    "policy_path": "ckpts/pi0fast_libero",
+    "tokenizer_path": "ckpts/paligemma_tokenizer_35e4f46",
+    "action_tokenizer_path": "ckpts/pi0fast_action_tokenizer_79ae83e",
+    "device": "cuda",
+    "num_steps": 10,
+    "n_action_steps": 10
+  },
+  "sampling": {"design": "runs/pre_c0_r7/r7a_multi_episode_design_v1.json"},
+  "collection": {
+    "output_dir": "runs/pre_c0_r7/smoke_reset_pool_v2",
+    "episodes": 192,
+    "seed": 2026081207,
+    "action_chunks_per_episode": 0,
+    "max_action_chunks": 0,
+    "reset_only": true,
+    "snapshot_cadence_action_chunks": 1,
+    "successful_snapshot_retention": 1.0,
+    "dry_run": true,
+    "smoke_mode": true
+  },
+  "protocol": {
+    "version": "rase-r7-multi-episode-source-risk/v1",
+    "design": "runs/pre_c0_r7/r7a_multi_episode_design_v1.json",
+    "design_sha256": "9b78cf470e1c659d26b3789c5e113a6f51470c4e6a950cb146fc87c8c207f72f",
+    "expected_episodes": 192,
+    "expected_tasks": 48,
+    "episodes_per_task": 4,
+    "selection_uses_outcomes": false
+  }
+}

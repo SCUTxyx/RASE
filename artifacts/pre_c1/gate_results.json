@@ -1,0 +1,41 @@
+{
+  "abstention_track": "not_required",
+  "clean_retention_drop_pp": 0.0,
+  "decision": "capacity_or_data_review",
+  "gate_pass": false,
+  "n_recovery_states": 10,
+  "n_retention_states": 1,
+  "naming": "recovery LoRA / OFT action distillation",
+  "not_runtime_oft": true,
+  "not_smolvla_flow_api_guidance": true,
+  "pass_conditions": {
+    "clean_retention_drop_le_threshold": true,
+    "recovery_ci_lower_positive": false,
+    "recovery_gain_ge_threshold": false
+  },
+  "recovery_bootstrap": {
+    "ci95_lower_positive": false,
+    "ci95_pp": [
+      0.0,
+      0.0
+    ],
+    "n_episodes": 6,
+    "point_estimate_pp": 0.0
+  },
+  "recovery_gain_pp": 0.0,
+  "recovery_successes": {
+    "adapted": 0,
+    "base": 0
+  },
+  "retention_successes": {
+    "adapted_off": 1,
+    "base": 1
+  },
+  "same_backbone_recovery_method": "closed",
+  "schema_version": "rase-pre-c1-recovery-gate/v1",
+  "thresholds": {
+    "clean_retention_drop_pp": 2.0,
+    "recovery_gain_pp": 8.0
+  },
+  "world_model_gate": "closed"
+}

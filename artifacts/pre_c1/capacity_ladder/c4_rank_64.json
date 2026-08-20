@@ -1,0 +1,52 @@
+{
+  "locked_shared": {
+    "batch_schedule": {
+      "clean_batches": 1,
+      "cycle_length": 10,
+      "recovery_batches": 9
+    },
+    "gate": {
+      "clean_retention_drop_pp": 2.0,
+      "recovery_gain_pp": 8.0
+    },
+    "loss": {
+      "auxiliary_sampled_action_mse": false,
+      "horizon_weighting": "piecewise",
+      "normalize_weights_to_mean_one": true,
+      "type": "native_flow_matching",
+      "weights": {
+        "0:4": 4.0,
+        "4:8": 2.0,
+        "8:": 1.0
+      }
+    },
+    "recovery_source_weights": {
+      "original_recovery": 0.2778,
+      "student_state_recovery": 0.7222
+    },
+    "selected_horizon": null,
+    "train_epochs": 5,
+    "train_seed": 2026080405
+  },
+  "lora_rank": 64,
+  "optimizer": {
+    "lr": 0.0001,
+    "weight_decay": 0.01
+  },
+  "step": "rank_64",
+  "target_modules": [
+    "q_proj",
+    "v_proj",
+    "k_proj",
+    "o_proj",
+    "gate_proj",
+    "up_proj",
+    "down_proj",
+    "action_in_proj",
+    "action_out_proj",
+    "state_proj",
+    "action_time_mlp_in",
+    "action_time_mlp_out"
+  ],
+  "train_mode": "lora"
+}

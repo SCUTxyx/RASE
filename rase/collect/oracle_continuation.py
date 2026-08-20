@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import deque
 from collections.abc import Mapping
+import hashlib
 from typing import Any
 
 import numpy as np
@@ -59,18 +60,28 @@ class OracleChunkContinuation:
         instruction: str,
         env_id: int = 0,
         control_env: Any | None = None,
+        record_chunk_trace: bool = False,
     ) -> None:
         self.client = client
         self.control_env = control_env
         self.instruction = instruction
         self.env_id = int(env_id)
+        self.record_chunk_trace = bool(record_chunk_trace)
         self._queue: deque[np.ndarray] = deque()
+        self._emitted_actions = 0
+        self.chunk_query_records: list[dict[str, Any]] = []
 
     def bind_control_env(self, control_env: Any) -> None:
         self.control_env = control_env
 
     def reset(self) -> None:
         self._queue.clear()
+        self._emitted_actions = 0
+        self.chunk_query_records.clear()
+
+    @staticmethod
+    def _array_digest(value: np.ndarray) -> str:
+        return hashlib.sha256(np.ascontiguousarray(value).tobytes()).hexdigest()
 
     def act(self, observation: Mapping[str, Any], *, task: str) -> np.ndarray:
         del observation
@@ -95,6 +106,20 @@ class OracleChunkContinuation:
             actions = np.asarray(outputs["actions"], dtype=np.float32)
             if actions.ndim != 3 or actions.shape[0] != 1 or actions.shape[-1] != 7:
                 raise ValueError(f"unexpected oracle actions shape {actions.shape}")
+            if self.record_chunk_trace:
+                self.chunk_query_records.append({
+                    "query_index": len(self.chunk_query_records),
+                    "action_offset": self._emitted_actions,
+                    "agentview_sha256": self._array_digest(agentview),
+                    "agentview_shape": list(agentview.shape),
+                    "wrist_sha256": self._array_digest(wrist),
+                    "wrist_shape": list(wrist.shape),
+                    "proprio_sha256": self._array_digest(proprio),
+                    "proprio_shape": list(proprio.shape),
+                    "action_chunk_sha256": self._array_digest(actions[0]),
+                    "action_chunk_shape": list(actions[0].shape),
+                })
             for step in actions[0]:
                 self._queue.append(step)
+        self._emitted_actions += 1
         return self._queue.popleft()

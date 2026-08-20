@@ -1,0 +1,43 @@
+# Canonical SmolVLA clean LIBERO baseline, seed 1.
+schema_version: 1
+
+experiment:
+  name: smolvla_clean_libero_seed1_nas10
+  seed: 1
+
+policy:
+  provider: lerobot
+  checkpoint: ckpts/smolvla_libero
+  checkpoint_source: HuggingFaceVLA/smolvla_libero
+  frozen: true
+  device: cuda
+  num_steps: 10
+  n_action_steps: 10
+
+environment:
+  type: libero
+  variant: clean
+  suites:
+    - libero_spatial
+    - libero_object
+    - libero_goal
+    - libero_10
+  action_mode: relative
+  init_states: true
+  renderer:
+    mujoco_gl: egl
+    pyopengl_platform: egl
+
+evaluation:
+  episodes_per_task: 50
+  batch_size: 2
+  save_videos: true
+  output_root: runs
+
+provenance:
+  python: "3.12"
+  lerobot: "0.5.1"
+  libero_plus_commit: "4976dc3"
+  env_lock: env.lock.md
+  require_git_sha: true
+  require_resolved_config: true

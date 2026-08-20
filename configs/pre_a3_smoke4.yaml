@@ -1,0 +1,36 @@
+version: 1
+run_name: rase_pre_a3_smoke4_live_duration
+mode: live-oft-duration
+
+pool: runs/rase_ui_phase1a_replacement48_initial_pool_v2
+output_dir: runs/rase_pre_a3_smoke4_live_duration_v1
+
+sample:
+  strategy: explicit_frozen_json
+
+protocol:
+  phase: pre_a3_plumbing_smoke
+  cohort: pre_a0_subset4
+  expected_n_states: 4
+  formal_set_labels: false
+  execution_mode: live_closed_loop_oft_prefix
+  durations: [0, 8, 16, 32]
+  include_persistent_oft: true
+  note: Plumbing smoke only. Forbidden for confirmatory claims.
+
+adapter:
+  policy_path: ckpts/smolvla_libero
+  tokenizer_path: ckpts/SmolVLM2-500M-Instruct
+  libero_plus_root: /root/autodl-tmp/src/LIBERO-plus
+  libero_clean_root: /root/autodl-tmp/src/LIBERO
+  device: cuda
+  num_steps: 10
+  n_action_steps: 10
+  observation_height: 360
+  observation_width: 360
+  continuation_temperature: 0.5
+
+scheduler:
+  max_attempts: 3
+  lease_seconds: 3600
+  worker: pre-a3-smoke4

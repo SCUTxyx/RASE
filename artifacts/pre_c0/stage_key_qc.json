@@ -1,0 +1,96 @@
+{
+  "by_cell": {
+    "camera:L1": {
+      "episodes": 8,
+      "fallback_episodes": 0,
+      "fallback_rate": 0.0,
+      "reliable_episodes": 8,
+      "reliable_rate": 1.0
+    },
+    "clean:L0": {
+      "episodes": 8,
+      "fallback_episodes": 0,
+      "fallback_rate": 0.0,
+      "reliable_episodes": 8,
+      "reliable_rate": 1.0
+    },
+    "robot:L1": {
+      "episodes": 8,
+      "fallback_episodes": 0,
+      "fallback_rate": 0.0,
+      "reliable_episodes": 8,
+      "reliable_rate": 1.0
+    }
+  },
+  "by_suite": {
+    "Goal": {
+      "episodes": 6,
+      "fallback_episodes": 0,
+      "fallback_rate": 0.0,
+      "reliable_episodes": 6,
+      "reliable_rate": 1.0
+    },
+    "Long": {
+      "episodes": 6,
+      "fallback_episodes": 0,
+      "fallback_rate": 0.0,
+      "reliable_episodes": 6,
+      "reliable_rate": 1.0
+    },
+    "Object": {
+      "episodes": 6,
+      "fallback_episodes": 0,
+      "fallback_rate": 0.0,
+      "reliable_episodes": 6,
+      "reliable_rate": 1.0
+    },
+    "Spatial": {
+      "episodes": 6,
+      "fallback_episodes": 0,
+      "fallback_rate": 0.0,
+      "reliable_episodes": 6,
+      "reliable_rate": 1.0
+    }
+  },
+  "n_episodes": 24,
+  "ordering": {
+    "all_strict": true,
+    "duplicate_key_episodes": [],
+    "strict_order_episodes": 24,
+    "violations": []
+  },
+  "provenance": {
+    "analyzer": "scripts/analyze_deviation_timeline.py",
+    "source_design_sha256": "981d9599622d5823ab619cb3225abe133a8dd53a20266c3b031752790df13efe",
+    "source_pool_manifest_sha256": "d1fc12888a05ccba482b719779c5f0e1a6bf65018944e700e033517c56b6fe1e"
+  },
+  "qc_pass": true,
+  "reliability": {
+    "mean_score": 0.8333333333333334,
+    "mean_signal_coverage": 0.8333333333333334,
+    "min_score": 0.8333333333333334,
+    "min_signal_coverage": 0.8333333333333334,
+    "reliable_episodes": 24,
+    "reliable_rate": 1.0,
+    "unreliable_episode_ids": []
+  },
+  "schema_version": "rase-pre-c0-deviation-timeline-analysis/v1",
+  "source_schema_version": "rase-pre-c0-deviation-keys/v1",
+  "stage_counts": {
+    "T0": 24,
+    "T1": 24,
+    "T2": 24,
+    "T3": 24,
+    "T4": 24
+  },
+  "temporal_fallback": {
+    "episode_ids": [],
+    "episodes": 0,
+    "rate": 0.0,
+    "reason_counts": {
+      "T1_relative_soft_filled": 5,
+      "T2_soft_filled": 13,
+      "T3_soft_filled": 22
+    }
+  }
+}

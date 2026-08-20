@@ -1,0 +1,33 @@
+{
+  "drop_suffix": true,
+  "keep_triggers": [
+    "anchor_start",
+    "first_divergence",
+    "progress_stall"
+  ],
+  "max_query_index": 8,
+  "n_input": 1880,
+  "n_selected": 372,
+  "rejected": {
+    "late_query": 122,
+    "original_downsampled": 418,
+    "suffix_dropped": 968
+  },
+  "role_counts": {
+    "clean_retention": 10,
+    "student_state_recovery": 362
+  },
+  "schema_version": "rase-pre-c1-2-revised-dataset-qc/v1",
+  "source_counts": {
+    "clean_retention": 10,
+    "student_query_state": 362
+  },
+  "splits": {
+    "leakage_episode_overlap": [],
+    "n_train_episodes": 9,
+    "n_train_rows": 366,
+    "n_val_episodes": 3,
+    "n_val_rows": 6
+  },
+  "training_objective_note": "short-horizon corrective / early recoverable occupancy; terminal 8pp is final gate only"
+}

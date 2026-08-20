@@ -1,0 +1,33 @@
+{
+  "cell_counts": {
+    "camera:L1": 88,
+    "clean:L0": 189,
+    "robot:L1": 151
+  },
+  "hard_stop": false,
+  "leakage_episode_overlap": [],
+  "min_clean_states": 4,
+  "min_successful_recovery_states": 16,
+  "min_train_chunks": 200,
+  "missing_oft_teacher": 0,
+  "n_attempted_failure_states": 114,
+  "n_clean_retention": 10,
+  "n_failed_oft_states": 79,
+  "n_recovery_chunks": 418,
+  "n_samples": 428,
+  "n_successful_recovery_states": 35,
+  "n_train_recovery_chunks": 311,
+  "schema_version": "rase-pre-c1-1-dataset-qc/v1",
+  "splits": {
+    "n_train_episodes": 10,
+    "n_train_rows": 315,
+    "n_val_episodes": 4,
+    "n_val_rows": 113
+  },
+  "suite_counts": {
+    "Goal": 85,
+    "Long": 80,
+    "Object": 226,
+    "Spatial": 37
+  }
+}

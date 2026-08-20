@@ -1,0 +1,29 @@
+{
+  "schema_version": "rase-vnext-deployment-scenarios/v1",
+  "status": "frozen",
+  "frozen_before_outcome": true,
+  "note": "Frozen before A2/A3 results. S0 reproduces the original Deployment FAIL and is never rewritten; S1/S2 are conditional deployment scenarios.",
+  "lambda_policy": "lambda is mapped to interpretable budgets, not an arbitrary weight: e.g. acceptable success loss per 100ms extra latency, or fallback quota. Raw success x latency Pareto frontier is reported alongside.",
+  "scenarios": {
+    "S0_current_cheap_fallback": {
+      "definition": "Current protocol cost weights (query 0.02, fallback 0.1, latency 0.01); fallback is cheap and always available.",
+      "expected": "Reproduce Deployment FAIL (frozen comparison group).",
+      "baseline": "always_fallback",
+      "constraint": "none"
+    },
+    "S1_latency_budgeted": {
+      "definition": "Fallback available but subject to a hard latency/deadline budget: total decision+execution wall time must stay within T_budget; beyond budget the request is either aborted or downgraded to continue.",
+      "baseline": "quota/latency-aware fallback",
+      "constraint": "T_budget scanning over {10s, 30s, 60s, 120s} decision-point incremental wall time (per 100ms acceptable success loss mapping)",
+      "lambda_map": "success_loss_per_100ms in {0.001, 0.002, 0.005}"
+    },
+    "S2_fallback_constrained": {
+      "definition": "Fallback unavailable, rate-limited, or callable for only a fraction of requests (quota q); counterfactual/resource-constraint scenario.",
+      "baseline": "quota-aware fallback (q fraction of units get fallback, rest continue)",
+      "constraint": "quota q scanning over {0.3, 0.5, 0.7}; never used to overturn S0 FAIL",
+      "note": "Only an anti-factual / resource-constraint scenario; cannot overturn S0 cheap-fallback FAIL."
+    }
+  },
+  "deployment_pass_condition": "In at least one preregistered scenario/budget interval, selector's CI lower bound is non-inferior to the target baseline AND it significantly reduces the constrained resource (latency or fallback calls); otherwise FAIL.",
+  "oracle_stop_rule": "If the oracle upper bound cannot beat always-fallback under the preregistered budgets, close that scenario without tuning margin/model."
+}

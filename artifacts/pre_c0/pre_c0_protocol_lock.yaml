@@ -1,0 +1,37 @@
+candidate_arms:
+  current_suffix: 1
+  execution_horizons:
+  - 1
+  - 2
+  - 4
+  fresh_replan_k: 4
+  strict_resample_k: 8
+config_path: /root/autodl-tmp/RASE/configs/collect_pre_c0_deviation_pilot24.json
+design_path: /root/autodl-tmp/RASE/runs/rase_pre_c0_design24_v1.json
+design_sha256: 981d9599622d5823ab619cb3225abe133a8dd53a20266c3b031752790df13efe
+frozen_before_gate_a_outcomes: true
+gate_a:
+  bootstrap_replicates: 10000
+  bootstrap_seed: 2026080405
+  cluster_unit: episode_id
+  max_control_harm_rate: 0.05
+  min_rescue_suites: 2
+  min_rescue_tasks: 3
+  natural_headroom_pp: 5.0
+n_episodes: 24
+n_states: 48
+policy_checkpoint: /root/autodl-tmp/RASE/ckpts/smolvla_libero
+policy_checkpoint_sha256: null
+pool_manifest_sha256: 59477dd5a85fc6cb51eb7efa546a984ed0ad03be1008cc427b46f88f9d067fd9
+pool_path: /root/autodl-tmp/RASE/runs/rase_pre_c0_deviation_pilot24_pool_v1
+schema_version: rase-pre-c0-protocol-lock/v1
+sealed:
+  hidden_test24: sealed
+  pre_a3_method_gate: closed
+  pre_b_allowed: false
+  world_model_gate: closed
+stage_keys_path: /root/autodl-tmp/RASE/runs/rase_pre_c0_deviation_stage_keys_v1.json
+stage_keys_sha256: a1fa25744f0070c91feb7d592c8e662257177c9385ac19d942fd5da596dff130
+stages:
+- T1
+- T3

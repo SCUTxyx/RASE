@@ -1,0 +1,84 @@
+schema_version: rase-pre-c1-protocol-lock/v1
+phase: PRE-C1
+method: recovery_lora_oft_action_distillation
+naming: recovery LoRA / OFT action distillation
+not_runtime_oft: true
+not_smolvla_flow_api_guidance: true
+
+predecessor:
+  gate_a_decision: runs/rase_pre_c0_decision_v1.json
+  gate_a_natural_headroom_pp: 2.0833333333333335
+  gate_b_decision: runs/rase_pre_c0_guided_decision_v1.json
+  gate_b_guided_gain_pp: 0.0
+  frozen_same_policy_recovery: NOGO
+
+sources:
+  pre_c0_protocol_lock: artifacts/pre_c0/pre_c0_protocol_lock.yaml
+  pre_c0_48_state_manifest: artifacts/pre_c0/pre_c0_48_state_manifest.json
+  pre_c0_pool: runs/rase_pre_c0_deviation_pilot24_pool_v1
+  pre_c0_rollouts: runs/rase_pre_c0_same_policy_pilot48_v1
+  config: configs/collect_pre_c0_deviation_pilot24.json
+  smolvla_checkpoint: ckpts/smolvla_libero
+  oft_checkpoints:
+    Spatial: ckpts/oft_spatial
+    Object: ckpts/oft_object
+    Goal: ckpts/oft_goal
+    Long: ckpts/oft_10
+
+dataset:
+  stages: [T1, T3]
+  include_dual_labels: [oft_only, consensus_recoverable]
+  exclude_dual_labels: [both_fail]
+  require_current_failure_for_recovery: true
+  clean_retention_cell: clean:L0
+  clean_retention_source_outcome: success
+  min_recovery_states: 8
+  min_clean_states: 4
+  split_seed: 2026080405
+  val_episode_fraction: 0.25
+  teacher_chunk_steps: 10
+
+lora:
+  rank: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules:
+    - q_proj
+    - v_proj
+    - k_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+    - action_in_proj
+    - action_out_proj
+  freeze_vlm_backbone: true
+  train_lm_expert_only: true
+
+train:
+  seed: 2026080405
+  epochs: 5
+  batch_size: 1
+  lr: 1.0e-4
+  weight_decay: 0.01
+  retain_loss_weight: 0.5
+  grad_clip: 1.0
+  device: cuda
+  note: batch_size fixed to 1 due to variable-length language tokens
+
+gate:
+  recovery_gain_pp: 8.0
+  clean_retention_drop_pp: 2.0
+  bootstrap_replicates: 2000
+  bootstrap_seed: 2026080405
+  cluster_unit: episode_id
+  ci95_lower_must_be_positive: true
+
+sealed:
+  hidden_test24: sealed
+  pre_a3_method_gate: closed
+  pre_b_allowed: false
+  world_model_gate: closed
+  gate_a_thresholds_frozen: true
+  gate_b_thresholds_frozen: true
+  recovery_adapter_gate: open_for_audit

@@ -29,6 +29,16 @@ def _numpy():
     return np
 
 
+def _mujoco():
+    try:
+        import mujoco
+    except ImportError as exc:  # pragma: no cover
+        raise UnsupportedEnvironmentError(
+            "ForkableEnv full-state restore requires the mujoco bindings"
+        ) from exc
+    return mujoco
+
+
 def _qualified_name(value: Any) -> str:
     cls = value if isinstance(value, type) else type(value)
     return f"{cls.__module__}.{cls.__qualname__}"
@@ -82,6 +92,42 @@ _CONTROLLER_FIELDS = (
     "action_scale",
     "action_input_transform",
     "action_output_transform",
+    # Runtime caches written by ``update()`` and read by ``run_controller()``.
+    # When ``new_update`` is False (e.g. at the moment a boundary snapshot is
+    # taken mid-episode), ``run_controller()`` consumes these cached values as-is;
+    # leaving them out of the snapshot let a restored env replay the *previous*
+    # run's stale cache and diverge from the live trajectory.
+    "ee_pos",
+    "ee_ori_mat",
+    "ee_pos_vel",
+    "ee_ori_vel",
+    "joint_pos",
+    "joint_vel",
+    "J_pos",
+    "J_ori",
+    "J_full",
+    "mass_matrix",
+)
+# Controller fields present in historical StatePool bundles (built before the
+# runtime-cache fields above were captured).  Legacy pool payloads have no
+# ``mujoco_data`` and no cache fields, so their controller restore must use
+# this narrower, byte-compatible set.
+_CONTROLLER_CACHE_FIELDS = frozenset(
+    {
+        "ee_pos",
+        "ee_ori_mat",
+        "ee_pos_vel",
+        "ee_ori_vel",
+        "joint_pos",
+        "joint_vel",
+        "J_pos",
+        "J_ori",
+        "J_full",
+        "mass_matrix",
+    }
+)
+_CONTROLLER_LEGACY_FIELDS = tuple(
+    field for field in _CONTROLLER_FIELDS if field not in _CONTROLLER_CACHE_FIELDS
 )
 _INTERPOLATOR_FIELDS = ("step", "start", "goal")
 _ROBOT_VALUE_FIELDS = ("torques",)
@@ -149,6 +195,101 @@ def _restore_fields(obj: Any, state: Mapping[str, Any], fields: Iterable[str], r
     _require_attributes(obj, fields, role)
     for field in fields:
         setattr(obj, field, copy.deepcopy(state[field]))
+
+
+# `bvh_active` is the broad-phase bounding-volume-hierarchy activity buffer,
+# a ~1.1 MB internal acceleration structure that mj_forward() rebuilds
+# deterministically on every step.  Storing it would dominate snapshot size for
+# no benefit.  Everything else in raw MjData -- including warm-start / solver
+# buffers that mj_forward() does *not* recompute (qacc_warmstart, ...) and
+# state like qpos/qvel/act/time/ctrl/userdata/mocap -- is captured verbatim.
+_MUJOCO_DATA_EXCLUDE = frozenset({"bvh_active"})
+
+
+def _raw_mujoco_data(sim: Any) -> Any:
+    data = getattr(sim, "data", None)
+    raw = getattr(data, "_data", None)
+    if raw is None:
+        raise UnsupportedEnvironmentError(
+            "sim.data must expose a raw mujoco _data for full-state restore"
+        )
+    return raw
+
+
+def _raw_mujoco_model(sim: Any) -> Any:
+    data = getattr(sim, "data", None)
+    model = getattr(data, "_model", None)
+    raw_model = getattr(model, "_model", None)
+    if raw_model is None:
+        raise UnsupportedEnvironmentError(
+            "sim.data._model must expose a raw mujoco model for full-state restore"
+        )
+    return raw_model
+
+
+def _capture_mujoco_data(sim: Any) -> dict[str, Any]:
+    """Capture every raw MjData field that can affect a future sim.step().
+
+    A restored ``mjData`` must be bit-identical to the live one before the next
+    step for the fork to be side-effect free.  ``sim.get_state()`` only covers
+    qpos/qvel/act/udd_state; the solver warm-start buffers (qacc_warmstart,
+    dof_island, efc_JT, ...) and counters (ncon, nefc, solver_iter) are left
+    stale by set_state + forward and silently change collision / solving.
+    """
+    np = _numpy()
+    raw = _raw_mujoco_data(sim)
+    fields: dict[str, Any] = {}
+    for name in dir(raw):
+        if name.startswith("_") or name in _MUJOCO_DATA_EXCLUDE:
+            continue
+        try:
+            value = getattr(raw, name)
+        except Exception:
+            continue
+        if isinstance(value, np.ndarray):
+            fields[name] = np.ascontiguousarray(value).copy()
+        elif isinstance(value, (bool, int, float)):
+            fields[name] = value
+    return fields
+
+
+def _restore_mujoco_data(sim: Any, fields: Mapping[str, Any]) -> None:
+    """Swap in a fresh raw MjData populated verbatim from a captured snapshot.
+
+    Creating a fresh MjData and assigning the captured fields resets every
+    internal buffer that forward()/step() are allowed to mutate, so the
+    read-only solver buffers (efc_JT, efc_aref, ...) start from their canonical
+    state instead of whatever the live data last computed.  Fields that cannot
+    be assigned (sized buffers written during the previous solve) are left at
+    their zeroed/identity defaults.
+
+    ``sim.forward()`` is deliberately *not* called here.  The captured data is
+    the exact post-step state of the live env, and a fresh ``mj_forward(qpos)``
+    recomputes FK geometry differently from the solver-corrected post-step
+    values (contact-settled free bodies keep their corrected ``xpos``/``geom_*``
+    across steps; a fresh forward snaps them back).  Any read between restore
+    and the next step -- e.g. the boundary feature extraction -- must see the
+    same geometry the live source rollout rendered.  The next ``env.step()``
+    calls ``sim.forward()`` itself, so stepping stays correct.
+    """
+    np = _numpy()
+    mujoco = _mujoco()
+    model = _raw_mujoco_model(sim)
+    fresh = mujoco.MjData(model)
+    for name, value in fields.items():
+        try:
+            if isinstance(value, np.ndarray):
+                setattr(fresh, name, np.ascontiguousarray(value).copy())
+            else:
+                setattr(fresh, name, value)
+        except Exception:
+            # Read-only or size-mismatched buffer: leave the fresh default in
+            # place; the next mj_forward()/mj_step() rebuilds these.
+            continue
+    # Swap the underlying raw MjData of the live wrapper (robosuite MjData
+    # delegates attribute access to ``._data``), so every external reference
+    # to ``sim.data`` still sees the restored state.
+    sim.data._data = fresh
 
 
 def _capture_rng_object(rng: Any) -> dict[str, Any]:
@@ -400,6 +541,7 @@ class ForkableEnv:
 
         payload = {
             "sim_state": np.asarray(self.env.sim.get_state().flatten()).copy(),
+            "mujoco_data": _capture_mujoco_data(self.env.sim),
             "env_counters": _copy_fields(self._task_env, _ENV_COUNTER_FIELDS),
             "robots": robots,
             "observables": observables,
@@ -438,7 +580,7 @@ class ForkableEnv:
                 "snapshot task fingerprint does not match the current task/model"
             )
 
-        expected_payload = {
+        legacy_payload = {
             "sim_state",
             "env_counters",
             "robots",
@@ -446,13 +588,23 @@ class ForkableEnv:
             "obs_cache",
             "rng",
         }
-        if set(snapshot.payload) != expected_payload:
+        full_payload = {*legacy_payload, "mujoco_data"}
+        if set(snapshot.payload) not in (legacy_payload, full_payload):
             raise SnapshotError("snapshot payload keys differ from the supported schema")
         state = snapshot.payload
 
-        # 1. MuJoCo state and derived kinematics.
-        self.env.sim.set_state_from_flattened(np.asarray(state["sim_state"]).copy())
-        self.env.sim.forward()
+        # 1. MuJoCo state and derived kinematics.  A restored raw MjData must be
+        # bit-identical to the live one: set_state_from_flattened + forward
+        # leaves solver warm-start / contact buffers stale and silently changes
+        # later steps, so we swap in a fresh MjData populated verbatim from the
+        # capture (without re-forwarding -- the captured geometry is already the
+        # solver-corrected post-step state the live source rollout rendered).
+        # Legacy pool bundles (no ``mujoco_data``) keep the old restore path.
+        if "mujoco_data" in state:
+            _restore_mujoco_data(self.env.sim, state["mujoco_data"])
+        else:
+            self.env.sim.set_state_from_flattened(np.asarray(state["sim_state"]).copy())
+            self.env.sim.forward()
 
         # 2. Episode bookkeeping.
         _restore_fields(
@@ -462,6 +614,9 @@ class ForkableEnv:
         # 3. Controller goals/interpolators, then robot history buffers.
         if len(state["robots"]) != len(self._task_env.robots):
             raise SnapshotError("robot count differs from snapshot")
+        # Legacy pool bundles predate the runtime controller caches; restoring
+        # them with the full field set would reject their historical payload.
+        controller_fields = _CONTROLLER_FIELDS if "mujoco_data" in state else _CONTROLLER_LEGACY_FIELDS
         for index, (robot, robot_state) in enumerate(
             zip(self._task_env.robots, state["robots"])
         ):
@@ -473,7 +628,7 @@ class ForkableEnv:
             _restore_fields(
                 controller,
                 robot_state["controller"],
-                _CONTROLLER_FIELDS,
+                controller_fields,
                 f"controller[{index}]",
             )
             for name in ("interpolator_pos", "interpolator_ori"):

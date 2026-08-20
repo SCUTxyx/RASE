@@ -1,11 +1,37 @@
 # RASE research-plan index
 
-更新：2026-07-31
+更新：2026-08-13
 
 ## 当前唯一执行主线
 
+[`RASE_NEXT_STEPS_EXECUTION_PLAN_CVPR2027.md`](RASE_NEXT_STEPS_EXECUTION_PLAN_CVPR2027.md)
+是当前 canonical research plan；
+[`RASE_IDEA_DETAILED_CVPR2027.md`](../outputs/RASE_IDEA_DETAILED_CVPR2027.md)
+是当前 canonical idea；
+[`RASE_RL_AND_PUBLIC_DATASETS_DETAILED_PLAN.md`](RASE_RL_AND_PUBLIC_DATASETS_DETAILED_PLAN.md)
+是 RL / 公开数据专题计划。发生冲突时，这三份 2026-08-13 文档优先于旧 v4、旧
+next-steps 与旧 RL selector 指南，但不能覆盖已经冻结的实验结果和 gate。
+
+当前执行 overlay：
+[`RASE_CURRENT_EXECUTION_OVERLAY_2026-08-13.md`](RASE_CURRENT_EXECUTION_OVERLAY_2026-08-13.md)。
+其作用是把长计划映射到服务器实时状态；只有 overlay 中标记为 unlocked 的步骤可以执行。
+
+R7-A、R8-B、R9-C 与 R10-B 的正式负结果继续有效。当前只解锁 R10-B
+closed-loop chunk-input root-cause diagnostic；risk model、selector、RL、world model、
+validation 与 test 仍锁定。
+
+以下内容为历史计划索引，保留用于审计，不再作为当前执行入口。
+
 [`RASE_top_conference_execution_v4.md`](RASE_top_conference_execution_v4.md)
-是当前 canonical research plan。发生冲突时，v4 优先于本目录其他文档。
+自 2026-08-13 起为 historical research plan。
+2026-08-04 起，PRE-A3 协议与论文姿态补充见：
+
+- [`protocol/pre_a3_recovery_duration_v1.md`](../protocol/pre_a3_recovery_duration_v1.md)
+- [`progress/2026-08-04_rase_pre_a3_protocol_freeze.md`](../progress/2026-08-04_rase_pre_a3_protocol_freeze.md)
+- [`progress/2026-08-04_rase_method_gate_and_paper_track.md`](../progress/2026-08-04_rase_method_gate_and_paper_track.md)
+
+在 PRE-A3 hidden confirmatory pass 前，方法门保持关闭，论文主线仍为
+**benchmark / diagnosis**；safe-handback 为条件性下一方法。
 
 ### 2026-07-31 outcome addendum（当前状态）
 

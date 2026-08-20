@@ -1,0 +1,64 @@
+{
+  "schema_version": "rase-r8a-recoverability-hazard-protocol/v1",
+  "status": "frozen",
+  "frozen_at": "2026-08-13",
+  "scientific_scope": "zero-collection, zero-training model-free feasibility audit",
+  "inputs": {
+    "dataset_sha256": "5678e8c6cb811918cb4f1879c2c97da47535426f3dae898305ac1a163f21bd50",
+    "dataset_report_sha256": "0b1a4e53738ef9bc4921c757c1fe8cd35f427f3ea541963df6082f10e90411e1",
+    "exclusions_sha256": "587ddd9d4237473e879219fc204a15b94f23107d2eb80c43b2f72ff7dc0f10b9",
+    "readiness_sha256": "88527b6f439444c46dff46ba8d1abf541277cedd1f58cb64d9ad1cce09ad7011",
+    "protocol_sha256": "c09307998d55bc0a865416c6531cee47c06e7120a752c145183b524c67ad7047"
+  },
+  "boundaries": [0, 8, 16],
+  "transitions": [[0, 8], [8, 16]],
+  "label_definition": {
+    "success_probability": "persistent_successes / persistent_trials",
+    "certain_safe": "persistent_successes == persistent_trials and trials >= 1",
+    "certain_unsafe": "persistent_successes == 0 and trials >= 1",
+    "hard_hazard_positive": "certain_safe at transition start and certain_unsafe at transition end",
+    "probability_drop": "p_success(start) - p_success(end)",
+    "ambiguous_endpoint": "0 < persistent_successes < persistent_trials",
+    "nonmonotonic": "any later recoverability gain after an earlier loss; reported, not gated"
+  },
+  "cohort_policy": {
+    "formal_oracle_roles": ["natural"],
+    "label_support_roles": ["natural", "enrichment"],
+    "enrichment_may_not_enter_formal_oracle": true,
+    "require_complete_boundaries": true
+  },
+  "cost_policy": {
+    "teacher_cost": "arm_teacher_step_quantiles[:, ENTER_PERSISTENT_OFT, q50]",
+    "oracle": "maximize empirical arm success probability, then minimize median OFT steps",
+    "source_teacher_cost": 0.0,
+    "delayed_source_steps_are_not_counted_as_teacher_steps": true
+  },
+  "gates": {
+    "minimum_complete_support_groups": 120,
+    "minimum_hard_hazard_positive_groups": 40,
+    "minimum_hard_hazard_positive_tasks": 16,
+    "minimum_hard_hazard_positive_per_suite": 6,
+    "minimum_positive_transitions_per_horizon": 10,
+    "maximum_ambiguous_transition_fraction": 0.15,
+    "minimum_natural_groups_per_policy": 40,
+    "minimum_natural_tasks_per_policy": 12,
+    "oracle_success_gap_vs_t0_min": -0.05,
+    "oracle_teacher_savings_vs_t0_min": 0.30,
+    "oracle_expected_paired_harm_max": 0.05,
+    "minimum_oracle_arms_used": 2,
+    "require_four_suites": true,
+    "minimum_policy_pairs_passing_oracle": 1
+  },
+  "decision_rule": {
+    "pass": "all pooled support gates and at least one per-policy natural oracle gate pass",
+    "on_pass": "unlock R8-A1 repeated probabilistic boundary pilot only",
+    "on_fail": "do not train or collect; stop or redesign the source/fallback pair or hazard label",
+    "does_not_unlock": [
+      "risk model training",
+      "selector training",
+      "world-model features",
+      "validation",
+      "test"
+    ]
+  }
+}

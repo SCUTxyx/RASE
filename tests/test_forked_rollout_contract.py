@@ -85,9 +85,17 @@ def test_inprocess_continuation_resets_action_selection_metrics():
     )
     continuation._action_select_calls = 7
     continuation._action_select_elapsed_s = 1.25
+    continuation._model_forward_calls = 3
+    continuation._action_queue_resets = 2
+    # reset() is the receding-horizon boundary hook; it must NOT zero cumulative
+    # counters (they report totals per rollout). reset_metrics() does.
     continuation.reset()
+    assert continuation.metrics()["action_select_calls"] == 7
+    continuation.reset_metrics()
     assert continuation.metrics()["action_select_calls"] == 0
     assert continuation.metrics()["action_select_elapsed_s"] == 0.0
+    assert continuation.metrics()["model_forward_calls"] == 0
+    assert continuation.metrics()["action_queue_resets"] == 0
     assert "excludes environment stepping" in continuation.metrics()["measurement_scope"]
 
 

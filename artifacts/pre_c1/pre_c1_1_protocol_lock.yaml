@@ -1,0 +1,92 @@
+schema_version: rase-pre-c1-1-protocol-lock/v1
+phase: PRE-C1.1
+method: recovery_lora_oft_action_distillation_long_success
+naming: recovery LoRA / OFT action distillation
+not_runtime_oft: true
+not_smolvla_flow_api_guidance: true
+
+predecessor:
+  pre_c1_decision: runs/rase_pre_c1_decision_v1.json
+  pre_c1_decision_label: capacity_or_data_review
+  pre_c1_recovery_gain_pp: 0.0
+  pre_c1_failure_root_cause: short_failed_oft_teacher_chunks_h10
+  gate_a_natural_headroom_pp: 2.0833333333333335
+  gate_b_guided_gain_pp: 0.0
+
+sources:
+  pre_c0_48_state_manifest: artifacts/pre_c0/pre_c0_48_state_manifest.json
+  pre_c0_pool: runs/rase_pre_c0_deviation_pilot24_pool_v1
+  pre_c0_rollouts: runs/rase_pre_c0_same_policy_pilot48_v1
+  config: configs/collect_pre_c0_deviation_pilot24.json
+  smolvla_checkpoint: ckpts/smolvla_libero
+  oft_checkpoints:
+    Spatial: ckpts/oft_spatial
+    Object: ckpts/oft_object
+    Goal: ckpts/oft_goal
+    Long: ckpts/oft_10
+
+dataset:
+  stages: [T0, T1, T2, T3, T4]
+  require_current_failure_for_recovery: false
+  keep_only_successful_oft: true
+  record_every_oft_chunk: true
+  # Collection fix #3 after hard-stops at 5/42 then 9/42 on T1/T3 failures:
+  # expand teachers to same-pool T0/T2/T4 stage keys (more successful states).
+  teacher_horizon_mode: persistent_min128_from_fork
+  teacher_horizon_steps: 0
+  teacher_horizon_steps_attempted_fixed: 128
+  teacher_min_steps_from_fork: 128
+  teacher_stage_expand: [T0, T2, T4]
+  clean_retention_cell: clean:L0
+  clean_retention_source_outcome: success
+  min_successful_recovery_states: 16
+  min_train_chunks: 200
+  min_clean_states: 4
+  split_seed: 2026080405
+  val_episode_fraction: 0.25
+
+lora:
+  rank: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules:
+    - q_proj
+    - v_proj
+    - k_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+    - action_in_proj
+    - action_out_proj
+  freeze_vlm_backbone: true
+  train_lm_expert_only: true
+
+train:
+  seed: 2026080405
+  epochs: 5
+  batch_size: 1
+  lr: 1.0e-4
+  weight_decay: 0.01
+  retain_loss_weight: 0.5
+  grad_clip: 1.0
+  device: cuda
+
+gate:
+  recovery_gain_pp: 8.0
+  clean_retention_drop_pp: 2.0
+  bootstrap_replicates: 2000
+  bootstrap_seed: 2026080405
+  cluster_unit: episode_id
+  ci95_lower_must_be_positive: true
+  note: thresholds unchanged from PRE-C1
+
+sealed:
+  hidden_test24: sealed
+  pre_a3_method_gate: closed
+  pre_b_allowed: false
+  world_model_gate: closed
+  gate_a_thresholds_frozen: true
+  gate_b_thresholds_frozen: true
+  pre_c1_thresholds_frozen: true
+  recovery_adapter_gate: open_for_audit

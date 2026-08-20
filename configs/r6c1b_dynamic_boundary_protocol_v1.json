@@ -1,0 +1,108 @@
+{
+  "schema_version": "rase-r6b1-dynamic-boundary-protocol/v1",
+  "status": "r6c1b_expansion_frozen",
+  "date": "2026-08-11",
+  "scientific_scope": "R6-C.1B targeted re-collection: early-window t={0,8,16} boundaries, new candidate states, and new rollout seed indices; enrichment vs natural-eval separation",
+  "parent_protocol": "configs/r6b1_dynamic_boundary_protocol_v1.json",
+  "parent_initial_keys": "runs/rase_ui_phase1a_replacement48_initial_keys_v2.json",
+  "qualified_source_policies": [
+    {
+      "policy_id": "pi0fast_libero",
+      "dynamic_seed_indices": [0, 1],
+      "reason": "R6-C.1A gate PASSED; new seed 1 adds failure support"
+    },
+    {
+      "policy_id": "pi05_libero",
+      "dynamic_seed_indices": [0, 1, 2, 3],
+      "reason": "R6-C.1A gate failed only on positive count (6<10); seeds 2-3 add source-failure support"
+    }
+  ],
+  "scheduled_boundaries": [0, 8, 16],
+  "early_window": {
+    "decision_points": [0, 8, 16],
+    "after_t16_decision": "if source chosen at t16, lock source to termination; if switch, OFT persistent to termination (no emergency trigger)",
+    "note": "t=8 is newly collected; R6-C.1A used t={0,16} only"
+  },
+  "cohort": {
+    "existing_states": 48,
+    "new_eval_states": 48,
+    "enrichment_candidates": 96,
+    "suites": ["libero_spatial", "libero_object", "libero_goal", "libero_10"],
+    "split": "development"
+  },
+  "data_split": {
+    "natural_development_eval": "48 new pool states (pre-registered metadata only) under the new seed plan, merged with the existing B1.2 natural cohort; enters the natural-distribution gate",
+    "train_enrichment": "screening-selected hard cases (source failure / difficult success); may be over-sampled in training folds, NEVER in the eval gate",
+    "fold_binding": "all states, seeds and replicas of the same task_id stay in the same outer fold"
+  },
+  "reproducibility": {
+    "strict_parity_only_for": "existing (state, policy, seed) triples with a frozen R6-A reference",
+    "new_triples": "rep0/rep1 repeat the exact same rollout_seed; if success/terminal steps/boundary labels disagree, run rep2 only for affected triples; source-success flips after rep2 are excluded from hard labels; stable-label step differences remain replica-level cost trials",
+    "natural_replica_evaluation": "natural rep0 only; rep1/rep2 may augment outer-fold training but never threshold calibration or OOF evaluation"
+  },
+  "deployment_features": [
+    "two RGB observations",
+    "8D proprioception",
+    "task instruction",
+    "source policy identity",
+    "source action proposal",
+    "elapsed progress",
+    "causal recent observation/action history"
+  ],
+  "supervision_only_features": [
+    "OFT action at the restored boundary",
+    "source final success",
+    "future source success horizons",
+    "persistent success if entered now",
+    "persistent teacher steps if entered now"
+  ],
+  "forbidden_model_inputs": [
+    "suite label",
+    "perturbation dimension",
+    "task ordinal or task ID",
+    "future outcomes",
+    "counterfactual OFT result",
+    "simulator state unavailable at deployment"
+  ],
+  "evaluation": {
+    "outer_folds": 5,
+    "training_seeds": [10, 11, 12, 13, 14],
+    "per_policy_gates": {
+      "success_gap_min": -0.05,
+      "false_continue_rate_max": 0.05,
+      "teacher_step_savings_min": 0.2,
+      "absolute_paired_harm_max": 0.05
+    },
+    "required_passing_training_seeds": 4
+    ,
+    "threshold_selection": "outer-train task-held-out natural calibration split; never outer validation labels; each outer fold keeps its own threshold",
+    "bootstrap": "task-cluster resampling of frozen fold-specific trajectory decisions; never average fold thresholds",
+    "execution_order": [
+      "source-only screening go/no-go",
+      "explicit approval for OFT label collection",
+      "reproducibility freeze",
+      "per-VLA five-seed OOF decisive gate",
+      "shared descriptor-conditioned FiLM OOF",
+      "optional generalization ladder"
+    ],
+    "per_vla_stop_rule": "clear failure terminates the current learned-selector escalation; one diagnostic iteration is allowed only for a predeclared near-pass (both VLAs >=3/5 passing seeds and every mean primary metric within 2pp of its limit)"
+  },
+  "cohort_use": {
+    "outer_training": ["natural", "train_enrichment", "replicate_training"],
+    "threshold_calibration": ["natural"],
+    "outer_oof_evaluation": ["natural"]
+  },
+  "conditional_missed_rescue": {
+    "status": "reported_not_gated",
+    "note": "reported with task-cluster bootstrap intervals; no 5% hard gate until a power analysis supports it (Pi0.5 rescue positives too few)"
+  },
+  "world_model_lock": {
+    "status": "locked",
+    "unlock_condition": "both VLAs pass >=4/5 seeds of the no-WM R6-C.1 gate"
+  },
+  "validation_test_lock": {
+    "independent_validation": "locked",
+    "test": "sealed",
+    "paired_closed_loop_100_plus": "sealed"
+  }
+}

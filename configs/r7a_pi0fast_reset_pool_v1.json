@@ -1,0 +1,48 @@
+{
+  "run_name": "r7a-pi0fast-independent-reset-pool-v1",
+  "pool": "runs/pre_c0_r7/r7a_pi0fast_reset_pool_v1",
+  "adapter": "rase.collect.lerobot_libero_plus_adapter:make_adapter",
+  "adapter_config": {
+    "policy_id": "pi0fast_libero",
+    "policy_path": "ckpts/pi0fast_libero",
+    "tokenizer_path": "ckpts/paligemma_tokenizer_35e4f46",
+    "action_tokenizer_path": "ckpts/pi0fast_action_tokenizer_79ae83e",
+    "libero_plus_root": "/root/autodl-tmp/src/LIBERO-plus",
+    "libero_clean_root": "/root/autodl-tmp/src/LIBERO",
+    "device": "cuda",
+    "num_steps": 10,
+    "n_action_steps": 10,
+    "observation_height": 360,
+    "observation_width": 360,
+    "capture_decision_context_v2": false,
+    "snapshot_offset_steps": 0,
+    "public_history_steps": 4
+  },
+  "sampling": {
+    "design": "runs/pre_c0_r7/r7a_multi_episode_design_v1.json"
+  },
+  "collection": {
+    "output_dir": "runs/pre_c0_r7/r7a_pi0fast_reset_pool_v1",
+    "episodes": 192,
+    "seed": 2026081207,
+    "action_chunks_per_episode": 0,
+    "max_action_chunks": 0,
+    "reset_only": true,
+    "snapshot_cadence_action_chunks": 1,
+    "successful_snapshot_retention": 1.0,
+    "dry_run": false,
+    "smoke_mode": false
+  },
+  "protocol": {
+    "version": "rase-r7-multi-episode-source-risk/v1",
+    "purpose": "development-only pre-action reset states; pool episode_outcome is a schema placeholder and forbidden as a label",
+    "design": "runs/pre_c0_r7/r7a_multi_episode_design_v1.json",
+    "design_sha256": "9b78cf470e1c659d26b3789c5e113a6f51470c4e6a950cb146fc87c8c207f72f",
+    "expected_episodes": 192,
+    "expected_tasks": 48,
+    "episodes_per_task": 4,
+    "selection_uses_outcomes": false,
+    "all_states_of_task_share_outer_fold": true,
+    "independent_validation_and_test_sealed": true
+  }
+}

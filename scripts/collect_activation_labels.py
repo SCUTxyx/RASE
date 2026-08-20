@@ -1,0 +1,570 @@
+#!/usr/bin/env python3
+"""PRE-C0-R2: Collect F0 activation labels on task-disjoint calibration tasks.
+
+Runs B0 episodes with OFT oracle tracking. At deviation events (||a_S - a_T|| > threshold),
+clean regions (deviation < low_threshold), and recovery states, snapshots the env and
+runs both Base and F0 repair arms to produce binary activation labels.
+
+Label: 1 = "F0 should be active" (Base fails, F0 succeeds at this state)
+Label: 0 = "F0 should not be active" (Base succeeds, or both fail and F0 doesn't help)
+
+The collection split is explicit.  Training on the same ``dev`` tasks used by
+the final 40-episode evaluation is data leakage, so R2 defaults to ``train``.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import time
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+
+def seed_everything(seed: int):
+    import random
+    random.seed(seed)
+    np.random.seed(seed)
+    import torch
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+
+def _progress(control_env: Any) -> float:
+    try:
+        pos = getattr(control_env.env, "_eef_xpos", None)
+        if pos is not None:
+            return float(np.linalg.norm(np.asarray(pos)))
+    except Exception:
+        pass
+    return 0.0
+
+
+def _proprio(obs: dict) -> np.ndarray:
+    p = np.asarray(obs.get("robot0_eef_pos", np.zeros(3)), dtype=np.float32).flatten()
+    q = np.asarray(obs.get("robot0_eef_quat", np.zeros(4)), dtype=np.float32).flatten()
+    return np.concatenate([p, q])[:7].astype(np.float32)
+
+
+def _proprio_padded() -> np.ndarray:
+    p = np.zeros(3, dtype=np.float32)
+    q = np.zeros(4, dtype=np.float32)
+    return np.concatenate([p, q, np.zeros(1, dtype=np.float32)]).astype(np.float32)
+
+
+# ── Feature extraction (lean: no SmolVLA latent) ─────────────────────
+
+PROPRIO_DIM = 8      # 7 real + 1 pad
+ACTION_DIM = 7
+HISTORY_WINDOW = 8
+PER_STEP_DIM = PROPRIO_DIM + ACTION_DIM + 1 + ACTION_DIM  # 23
+HISTORY_INPUT_DIM = HISTORY_WINDOW * PER_STEP_DIM          # 184
+
+# Lean obs_features: proprio(7) + action(7) + stats(2) = 16 (no latent)
+LEAN_OBS_DIM = 7 + 7 + 2  # 16
+
+
+def build_lean_obs_features(proprio: np.ndarray, student_action: np.ndarray,
+                            context_len: int, progress_delta: float) -> np.ndarray:
+    p = np.asarray(proprio, dtype=np.float32).flatten()[:7]
+    a = np.asarray(student_action, dtype=np.float32).flatten()[:7]
+    p_pad = np.zeros(7, dtype=np.float32)
+    a_pad = np.zeros(7, dtype=np.float32)
+    p_pad[:len(p)] = p
+    a_pad[:len(a)] = a
+    # This is context length, not a true stagnation duration.  Keep the field
+    # definition identical at train and eval time.
+    stag = np.array([min(context_len / HISTORY_WINDOW, 1.0),
+                      np.clip(progress_delta, -1.0, 1.0)], dtype=np.float32)
+    return np.concatenate([p_pad, a_pad, stag]).astype(np.float32)
+
+
+def build_history_tensor(history: list[dict], window: int = HISTORY_WINDOW) -> np.ndarray:
+    arr = np.zeros((window, PER_STEP_DIM), dtype=np.float32)
+    recent = history[-window:] if len(history) >= window else history
+    for hi, h in enumerate(recent):
+        p = np.asarray(h.get("proprio", np.zeros(PROPRIO_DIM)), dtype=np.float32).flatten()
+        a = np.asarray(h.get("student_action", np.zeros(ACTION_DIM)), dtype=np.float32).flatten()
+        p_pad = np.zeros(PROPRIO_DIM, dtype=np.float32)
+        a_pad = np.zeros(ACTION_DIM, dtype=np.float32)
+        p_pad[:min(len(p), PROPRIO_DIM)] = p[:PROPRIO_DIM]
+        a_pad[:min(len(a), ACTION_DIM)] = a[:ACTION_DIM]
+        idx = hi + window - len(recent)
+        if 0 <= idx < window:
+            arr[idx, :PROPRIO_DIM] = p_pad
+            arr[idx, PROPRIO_DIM:PROPRIO_DIM + ACTION_DIM] = a_pad
+            arr[idx, PROPRIO_DIM + ACTION_DIM] = float(h.get("progress", 0))
+            arr[idx, PROPRIO_DIM + ACTION_DIM + 1:PROPRIO_DIM + ACTION_DIM + 1 + ACTION_DIM] = a_pad
+    return arr
+
+
+# ── B0 rollout with deviation-based snapshotting ─────────────────────
+
+def run_b0_with_deviation_sampling(handle, bundle, client, instruction,
+                                    max_steps: int,
+                                    dev_high: float = 0.15,
+                                    dev_low: float = 0.05,
+                                    dev_recover: float = 0.10,
+                                    max_snapshots_per_ep: int = 5,
+                                    ) -> dict:
+    """Run B0 and snapshot at deviation-significant timesteps.
+
+    Sampling rules:
+      - first_deviation: first step where ||a_S - a_T|| > dev_high
+      - clean: first step where ||a_S - a_T|| < dev_low (and t > 20, after episode has developed)
+      - recovery: first step where deviation drops below dev_recover after having been above dev_high
+      - late: a step near 70% of max_steps (only if still running)
+    """
+    from rase.envs.forkable_env import ForkableEnv
+    from rase.collect.policy_step import as_batched_action, select_env_action, success_from_info
+    from rase.collect.pool_candidates import observation_from_libero_env
+    from rase.collect.oracle_continuation import OracleChunkContinuation
+
+    forkable = ForkableEnv(handle.control_env)
+    obs = observation_from_libero_env(handle.vector_env.envs[0])
+    oft = OracleChunkContinuation(client, instruction=instruction,
+                                   control_env=handle.control_env)
+
+    snapshots = []
+    has_deviation_high = False
+    snapshot_types_seen = set()
+    history = []
+
+    for t in range(max_steps):
+        student_action = select_env_action(bundle, obs, task=instruction)
+        teacher_action = oft.act(obs, task=instruction)
+
+        dev = float(np.linalg.norm(student_action.flatten()[:7] - teacher_action.flatten()[:7]))
+
+        progress_val = _progress(handle.control_env)
+        proprio_val = _proprio(obs)
+
+        # Update history BEFORE deciding snapshot (snapshot state = current obs)
+        history.append({
+            "proprio": proprio_val.copy(),
+            "student_action": student_action.flatten().copy(),
+            "progress": float(progress_val),
+            "deviation": dev,
+        })
+
+        # ── Snapshot decisions ──
+        should_snapshot = False
+        snap_type = ""
+
+        if len(snapshots) < max_snapshots_per_ep and t >= 5:
+            # First deviation (skip t < 5: initial action mismatch is normal)
+            if dev > dev_high and not has_deviation_high and "first_dev" not in snapshot_types_seen:
+                should_snapshot = True
+                snap_type = "first_dev"
+                has_deviation_high = True
+
+            # Clean region
+            elif (dev < dev_low and t > 20
+                  and not has_deviation_high
+                  and "clean" not in snapshot_types_seen):
+                should_snapshot = True
+                snap_type = "clean"
+
+            # Recovery
+            elif (has_deviation_high and dev < dev_recover
+                  and "recovery" not in snapshot_types_seen):
+                should_snapshot = True
+                snap_type = "recovery"
+
+            # Uniform deployment negatives reduce the train/eval covariate gap:
+            # the gate is queried online, not only at privileged OFT-deviation
+            # events.
+            elif t == 20 and "uniform_early" not in snapshot_types_seen:
+                should_snapshot = True
+                snap_type = "uniform_early"
+
+            elif t == min(100, int(max_steps * 0.5)) and "uniform_mid" not in snapshot_types_seen:
+                should_snapshot = True
+                snap_type = "uniform_mid"
+
+            # Late step
+            elif t == int(max_steps * 0.7) and len(snapshots) < 3:
+                should_snapshot = True
+                snap_type = "late"
+
+        if should_snapshot:
+            try:
+                snap = forkable.snapshot()
+                snapshots.append({
+                    "t": t,
+                    "type": snap_type,
+                    "deviation": float(dev),
+                    "snapshot": snap,
+                    "features": {
+                        "proprio": proprio_val.tolist(),
+                        "student_action": student_action.flatten().tolist(),
+                        "deviation": float(dev),
+                        "progress": float(progress_val),
+                        "history_snapshot": [
+                            {"proprio": h["proprio"].tolist(),
+                             "student_action": h["student_action"].tolist(),
+                             "progress": h["progress"],
+                             "deviation": h.get("deviation", 0.0)}
+                            for h in history[-HISTORY_WINDOW:]
+                        ],
+                    },
+                })
+                snapshot_types_seen.add(snap_type)
+            except Exception as e:
+                print(f"    WARNING: snapshot at t={t} type={snap_type}: {e}")
+
+        # Step env forward
+        obs, reward, term, trunc, info = handle.vector_env.step(as_batched_action(student_action))
+        obs = observation_from_libero_env(handle.vector_env.envs[0])
+        terminated = bool(np.asarray(term).reshape(-1)[0])
+        truncated = bool(np.asarray(trunc).reshape(-1)[0])
+
+        if terminated or truncated:
+            success = success_from_info(info)
+            return {"success": success, "steps": t + 1, "snapshots": snapshots,
+                    "history": history}
+
+    return {"success": False, "steps": max_steps, "snapshots": snapshots,
+            "history": history}
+
+
+# ── Repair arm runners ───────────────────────────────────────────────
+
+def run_repair_base(handle, bundle, instruction, max_steps) -> dict:
+    from rase.collect.policy_step import as_batched_action, select_env_action, success_from_info
+    from rase.collect.pool_candidates import observation_from_libero_env
+    obs = observation_from_libero_env(handle.vector_env.envs[0])
+    for t in range(max_steps):
+        action = select_env_action(bundle, obs, task=instruction)
+        obs, reward, term, trunc, info = handle.vector_env.step(as_batched_action(action))
+        obs = observation_from_libero_env(handle.vector_env.envs[0])
+        terminated = bool(np.asarray(term).reshape(-1)[0])
+        truncated = bool(np.asarray(trunc).reshape(-1)[0])
+        if terminated or truncated:
+            return {"success": success_from_info(info), "steps": t + 1, "arm": "Base"}
+    return {"success": False, "steps": max_steps, "arm": "Base"}
+
+
+def run_repair_f0(handle, bundle, constant_delta, instruction, max_steps) -> dict:
+    from rase.collect.policy_step import as_batched_action, select_env_action, success_from_info
+    from rase.collect.pool_candidates import observation_from_libero_env
+    obs = observation_from_libero_env(handle.vector_env.envs[0])
+    delta = np.array(constant_delta, dtype=np.float32)
+    for t in range(max_steps):
+        student_action = select_env_action(bundle, obs, task=instruction)
+        delta_clipped = np.clip(delta, -0.5, 0.5)
+        mixed = np.clip(student_action.flatten() + delta_clipped, -1.0, 1.0)
+        obs, reward, term, trunc, info = handle.vector_env.step(as_batched_action(mixed.reshape(1, -1)))
+        obs = observation_from_libero_env(handle.vector_env.envs[0])
+        terminated = bool(np.asarray(term).reshape(-1)[0])
+        truncated = bool(np.asarray(trunc).reshape(-1)[0])
+        if terminated or truncated:
+            return {"success": success_from_info(info), "steps": t + 1, "arm": "F0"}
+    return {"success": False, "steps": max_steps, "arm": "F0"}
+
+
+# ── Feature extraction for training data ─────────────────────────────
+
+def extract_features_from_snapshot(snap_data: dict, f0_c: list[float],
+                                    history_window: int = HISTORY_WINDOW) -> dict:
+    """Extract lean features from a snapshot for gate training.
+
+    Returns a dict with history, obs_features, student_action, plugin_delta, delta_norm.
+    No SmolVLA latent.
+    """
+    feats = snap_data["features"]
+    history = feats["history_snapshot"]
+    proprio = np.array(feats["proprio"], dtype=np.float32)
+    student_action = np.array(feats["student_action"], dtype=np.float32)
+    deviation = float(feats.get("deviation", 0.0))
+    progress = float(feats.get("progress", 0.0))
+
+    # Build lean obs_features
+    context_len = min(len(history), history_window)
+    progress_delta = 0.0
+    if len(history) >= 2:
+        progress_delta = history[-1]["progress"] - history[-2]["progress"]
+
+    obs_feat = build_lean_obs_features(proprio, student_action, context_len, progress_delta)
+
+    # Build history tensor
+    hist_tensor = np.zeros((history_window, PER_STEP_DIM), dtype=np.float32)
+    if history:
+        hist_list = [{
+            "proprio": np.array(h["proprio"], dtype=np.float32),
+            "student_action": np.array(h["student_action"], dtype=np.float32),
+            "progress": float(h.get("progress", 0.0)),
+        } for h in history]
+        hist_tensor = build_history_tensor(hist_list, window=history_window)
+
+    # Plugin delta (F0 constant vector)
+    c = np.array(f0_c, dtype=np.float32)
+    delta_norm = float(np.linalg.norm(c))
+
+    return {
+        "history": hist_tensor.tolist(),
+        "history_flat": hist_tensor.flatten().tolist(),
+        "obs_features_lean": obs_feat.tolist(),
+        "student_action": student_action.tolist(),
+        "plugin_delta": c.tolist(),
+        "delta_norm": delta_norm,
+        "deviation": deviation,
+        "progress": progress,
+    }
+
+
+# ── Main ─────────────────────────────────────────────────────────────
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--protocol", type=Path,
+                        default=ROOT / "runs/route_c_final/protocol_frozen.json")
+    parser.add_argument("--f0-vector", type=Path,
+                        default=ROOT / "runs/pre_c0_r0/f0_constant_vector.json")
+    parser.add_argument("--output-dir", type=Path,
+                        default=ROOT / "runs/pre_c0_r1")
+    parser.add_argument("--suite", type=str, default="libero_spatial")
+    parser.add_argument("--split", type=str, default="train",
+                        choices=["train", "dev"],
+                        help="source split; R2 training data must use train")
+    parser.add_argument("--task-limit", type=int, default=4)
+    parser.add_argument("--seed", type=int, default=20260808)
+    parser.add_argument("--n-episodes-per-task", type=int, default=6)
+    parser.add_argument("--max-steps", type=int, default=300)
+    parser.add_argument("--oft-port", type=int, default=5555)
+    parser.add_argument("--snapshot-limit", type=int, default=60,
+                        help="Total snapshots to collect across all episodes")
+    parser.add_argument("--dev-high", type=float, default=0.15,
+                        help="Deviation threshold for first-deviation snapshot")
+    parser.add_argument("--dev-low", type=float, default=0.05,
+                        help="Deviation threshold for clean-region snapshot")
+    parser.add_argument("--dev-recover", type=float, default=0.10,
+                        help="Deviation threshold for recovery snapshot")
+    parser.add_argument("--max-snapshots-per-episode", type=int, default=3)
+    args = parser.parse_args()
+
+    output_dir = args.output_dir.resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    protocol = json.loads(args.protocol.read_text(encoding="utf-8"))
+    policy_path = Path(protocol["student_identity"]["checkpoint_path"])
+    vlm_cache = protocol.get("vlm_cache_path", "")
+
+    from rase.collect.forked_rollout import load_smolvla_policy_bundle
+    bundle = load_smolvla_policy_bundle(
+        policy_path, device="cuda",
+        tokenizer_path=vlm_cache if vlm_cache else None,
+        observation_height=360, observation_width=360,
+    )
+
+    f0_data = json.loads(args.f0_vector.read_text(encoding="utf-8"))
+    f0_c = f0_data["f0_constant_vector_c"]
+    print(f"F0 constant vector: |c|={np.linalg.norm(f0_c):.6f}")
+
+    from rase.oracle.client import OracleClient
+    client = OracleClient(f"tcp://127.0.0.1:{args.oft_port}", timeout_ms=60000)
+
+    from rase.collect.libero_env_factory import make_libero_env_for_task
+    from rase.envs.forkable_env import ForkableEnv
+    from rase.recovery.action_cache import reset_policy_action_cache, reset_policy_history
+
+    task_ids = protocol["splits"][args.suite][args.split]
+    task_ids = task_ids[:args.task_limit]
+    print(f"Suite: {args.suite}, Split: {args.split}, Tasks: {task_ids}")
+    print(f"Target: {args.snapshot_limit} snapshots")
+
+    # ── Phase 1: Collect snapshots with deviation-based sampling ──────
+    all_snapshots = []
+    snapshot_idx = 0
+    ep_count = 0
+
+    for task_idx, task_id in enumerate(task_ids):
+        for ep_i in range(args.n_episodes_per_task):
+            if len(all_snapshots) >= args.snapshot_limit:
+                break
+            seed_val = (args.seed * 31 + task_idx * 1009 + ep_i * 7) % (2**31)
+            init_state = ep_i % 50
+
+            seed_everything(seed_val)
+            bundle["policy"].reset()
+
+            handle = make_libero_env_for_task(task_id, init_state_id=init_state,
+                                               seed=seed_val, libero_flavor="clean")
+            instruction = str(getattr(handle.vector_env.envs[0], "task_description", "") or "")
+
+            result = run_b0_with_deviation_sampling(
+                handle, bundle, client, instruction, args.max_steps,
+                dev_high=args.dev_high, dev_low=args.dev_low,
+                dev_recover=args.dev_recover,
+                max_snapshots_per_ep=args.max_snapshots_per_episode,
+            )
+            handle.close()
+            time.sleep(2.0)
+
+            ep_count += 1
+            for snap_data in result["snapshots"]:
+                snap_data["task_id"] = task_id
+                snap_data["suite"] = args.suite
+                snap_data["episode_success"] = result["success"]
+                snap_data["seed"] = seed_val
+                snap_data["init_state_id"] = init_state
+                snap_data["snapshot_id"] = snapshot_idx
+                snap_data["source_split"] = args.split
+                snap_data["episode_id"] = f"{task_id}:{init_state}:{seed_val}"
+                all_snapshots.append(snap_data)
+                snapshot_idx += 1
+
+            snap_types = [s["type"] for s in result["snapshots"]]
+            print(f"  [{ep_count}] {task_id} s={result['success']} ({result['steps']} steps) "
+                  f"dev_snapshots={snap_types} "
+                  f"(total: {len(all_snapshots)})")
+
+        if len(all_snapshots) >= args.snapshot_limit:
+            break
+
+    print(f"\nPhase 1: {len(all_snapshots)} snapshots from {ep_count} episodes")
+
+    # ── Phase 2: Run repair arms (Base + F0 only) ────────────────────
+    labels_path = output_dir / "activation_labels.jsonl"
+    with open(labels_path, "w") as lf:
+        for i, snap_data in enumerate(all_snapshots):
+            print(f"\n[{i+1}/{len(all_snapshots)}] Snapshot {snap_data['snapshot_id']} "
+                  f"t={snap_data['t']} type={snap_data['type']} "
+                  f"task={snap_data['task_id']} dev={snap_data['deviation']:.4f}")
+
+            seed_everything(snap_data["seed"])
+            handle = make_libero_env_for_task(
+                snap_data["task_id"],
+                init_state_id=snap_data["init_state_id"],
+                seed=snap_data["seed"],
+                libero_flavor="clean",
+            )
+            forkable = ForkableEnv(handle.control_env)
+            forkable.restore(snap_data["snapshot"])
+            bundle["policy"].reset()
+            reset_policy_action_cache(bundle["policy"])
+            reset_policy_history(bundle["policy"])
+            instruction = str(getattr(handle.vector_env.envs[0], "task_description", "") or "")
+
+            # Run Base
+            base_result = run_repair_base(handle, bundle, instruction, args.max_steps)
+            handle.close()
+            time.sleep(1.0)
+
+            # Run F0 on fresh env
+            seed_everything(snap_data["seed"])
+            handle = make_libero_env_for_task(
+                snap_data["task_id"],
+                init_state_id=snap_data["init_state_id"],
+                seed=snap_data["seed"],
+                libero_flavor="clean",
+            )
+            forkable = ForkableEnv(handle.control_env)
+            forkable.restore(snap_data["snapshot"])
+            bundle["policy"].reset()
+            reset_policy_action_cache(bundle["policy"])
+            reset_policy_history(bundle["policy"])
+
+            f0_result = run_repair_f0(handle, bundle, f0_c, instruction, args.max_steps)
+            handle.close()
+            time.sleep(1.0)
+
+            # Determine label
+            base_s = base_result["success"]
+            f0_s = f0_result["success"]
+            if not base_s and f0_s:
+                label = 1  # F0 rescues
+                label_type = "positive"
+            elif base_s and not f0_s:
+                label = 0  # F0 harms
+                label_type = "negative_harm"
+            elif base_s and f0_s:
+                label = 0  # neutral: Base already works, no need to activate
+                label_type = "negative_neutral"
+            else:
+                label = 0  # both fail
+                label_type = "negative_both_fail"
+
+            # Extract features
+            features = extract_features_from_snapshot(snap_data, f0_c)
+
+            row = {
+                "snapshot_id": snap_data["snapshot_id"],
+                "task_id": snap_data["task_id"],
+                "suite": snap_data["suite"],
+                "source_split": snap_data["source_split"],
+                "episode_id": snap_data["episode_id"],
+                "feature_schema_version": "rase-activation-gate-lean/v2",
+                "snapshot_type": snap_data.get("type", "unknown"),
+                "snapshot_t": snap_data["t"],
+                "deviation": snap_data["deviation"],
+                "episode_success": snap_data["episode_success"],
+                "seed": snap_data["seed"],
+                "init_state_id": snap_data["init_state_id"],
+                "base_success": base_s,
+                "f0_success": f0_s,
+                "label": label,
+                "label_type": label_type,
+                "features": features,
+            }
+            lf.write(json.dumps(row, default=str) + "\n")
+            lf.flush()
+
+            pos = "POS" if label == 1 else "NEG"
+            print(f"    Base: {'OK' if base_s else 'FAIL'} F0: {'OK' if f0_s else 'FAIL'} "
+                  f"→ label={label} ({label_type}) [{pos}]")
+
+    # ── Summary ──────────────────────────────────────────────────────
+    with open(labels_path) as f:
+        all_labels = [json.loads(line) for line in f if line.strip()]
+
+    positives = sum(1 for r in all_labels if r["label"] == 1)
+    negatives = sum(1 for r in all_labels if r["label"] == 0)
+    harm = sum(1 for r in all_labels if r["label_type"] == "negative_harm")
+    both_fail = sum(1 for r in all_labels if r["label_type"] == "negative_both_fail")
+    neutral = sum(1 for r in all_labels if r["label_type"] == "negative_neutral")
+    rescue = sum(1 for r in all_labels if r["label_type"] == "positive")
+
+    # H_activation estimate from snapshots
+    base_rate = sum(1 for r in all_labels if r["base_success"]) / max(len(all_labels), 1)
+    f0_rate = sum(1 for r in all_labels if r["f0_success"]) / max(len(all_labels), 1)
+    s_best_fixed = max(base_rate, f0_rate)
+    s_oracle = sum(1 for r in all_labels
+                   if (r["base_success"] or r["f0_success"])) / max(len(all_labels), 1)
+    h_activation = s_oracle - s_best_fixed
+
+    print(f"\n{'='*60}")
+    print(f"COLLECTION SUMMARY")
+    print(f"{'='*60}")
+    print(f"Total snapshots: {len(all_labels)}")
+    print(f"  Positive (rescue): {rescue}")
+    print(f"  Negative: {negatives}")
+    print(f"    - harm: {harm}")
+    print(f"    - neutral: {neutral}")
+    print(f"    - both fail: {both_fail}")
+    print(f"Base success rate: {base_rate:.1%}")
+    print(f"F0 success rate:   {f0_rate:.1%}")
+    print(f"S_best_fixed:      {s_best_fixed:.1%}")
+    print(f"S_oracle:          {s_oracle:.1%}")
+    print(f"H_activation:      {h_activation*100:.1f}pp")
+    print(f"\nSaved to: {labels_path}")
+    print(f"\nGate: H_activation={h_activation*100:.1f}pp")
+    if h_activation >= 0.05:
+        print(f"  >= 5pp: WORTH training binary gate")
+    elif h_activation >= 0.03:
+        print(f"  3-5pp: MARGINAL — could train but benefit small")
+    else:
+        print(f"  < 3pp: deterministic envelope is sufficient")
+
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

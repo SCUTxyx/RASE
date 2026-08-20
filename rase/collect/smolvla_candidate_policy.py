@@ -7,6 +7,7 @@ that noise (``temperature=1.0`` matches LeRobot's default ``sample_noise``).
 from __future__ import annotations
 
 import hashlib
+import json
 from collections.abc import Mapping
 from contextlib import nullcontext
 from dataclasses import dataclass
@@ -29,6 +30,37 @@ def checkpoint_sha256(path: str | Path) -> str:
         for chunk in iter(lambda: handle.read(1 << 20), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def action_tensor_sha256(actions: Any) -> str:
+    """Hash a canonical float32 ``[T,7]`` action tensor."""
+    array = np.ascontiguousarray(np.asarray(actions, dtype=np.float32))
+    if array.ndim != 2 or array.shape[1] != 7 or not np.all(np.isfinite(array)):
+        raise ValueError(f"actions must be finite [T,7], got {array.shape}")
+    return hashlib.sha256(array.tobytes(order="C")).hexdigest()
+
+
+def cache_initialization_fingerprint(
+    *,
+    state_key: str,
+    observation_sha256: str,
+    history_sha256: str,
+    policy_sha256: str,
+    reset_policy: bool,
+) -> str:
+    """Fingerprint the evidence and reset semantics used for one generation."""
+    if not all((state_key, observation_sha256, history_sha256, policy_sha256)):
+        raise ValueError("cache initialization fingerprint fields must be non-empty")
+    payload = {
+        "state_key": state_key,
+        "observation_sha256": observation_sha256,
+        "history_sha256": history_sha256,
+        "policy_sha256": policy_sha256,
+        "reset_policy": bool(reset_policy),
+    }
+    return hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
 
 
 def flow_matching_noise(

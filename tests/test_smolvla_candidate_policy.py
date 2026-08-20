@@ -7,7 +7,11 @@ import pytest
 
 from rase.collect.candidates import generate_candidates
 from rase.collect.pool_candidates import candidate_base_seed, diversity_summary
-from rase.collect.smolvla_candidate_policy import flow_matching_noise
+from rase.collect.smolvla_candidate_policy import (
+    action_tensor_sha256,
+    cache_initialization_fingerprint,
+    flow_matching_noise,
+)
 
 
 def test_flow_matching_noise_scales_with_temperature():
@@ -112,3 +116,22 @@ def test_generate_candidates_chunk_length_ten():
     )
     assert artifact.actions.shape == (8, 10, 7)
     assert artifact.metadata.diversity.mean_pairwise_endpoint_l2 > 0
+
+
+def test_corrective_provenance_hashes_are_stable_and_sensitive():
+    actions = np.zeros((10, 7), dtype=np.float32)
+    first = action_tensor_sha256(actions)
+    assert first == action_tensor_sha256(actions.copy())
+    actions[0, 0] = 1
+    assert first != action_tensor_sha256(actions)
+    kwargs = {
+        "state_key": "sp1_deadbeef",
+        "observation_sha256": "obs",
+        "history_sha256": "history",
+        "policy_sha256": "policy",
+        "reset_policy": True,
+    }
+    cache = cache_initialization_fingerprint(**kwargs)
+    assert cache == cache_initialization_fingerprint(**kwargs)
+    kwargs["reset_policy"] = False
+    assert cache != cache_initialization_fingerprint(**kwargs)

@@ -19,7 +19,9 @@ from rase.eval.collapse import CollapseError, atomic_write_json
 
 _LOCK = threading.Lock()
 _PATCHED = False
-_POLICY_CACHE: dict[tuple[str, str, int, int, str | None], dict[str, Any]] = {}
+_POLICY_CACHE: dict[
+    tuple[str, str, int, int, str | None, str | None], dict[str, Any]
+] = {}
 
 
 def catalog_task_to_suite_index(task_id: int) -> int:
@@ -113,9 +115,13 @@ def _resolve_local_vlm_path(tokenizer_path: Path | None) -> str | None:
     resolved = Path(tokenizer_path).expanduser().resolve()
     if not resolved.is_dir():
         raise CollapseError(f"tokenizer/VLM path does not exist: {resolved}")
-    if not (resolved / "config.json").is_file():
+    if not (
+        (resolved / "config.json").is_file()
+        or (resolved / "tokenizer_config.json").is_file()
+    ):
         raise CollapseError(
-            f"tokenizer/VLM path missing config.json (not a HF model dir): {resolved}"
+            "tokenizer/VLM path lacks config.json or tokenizer_config.json "
+            f"(not a HF model/tokenizer dir): {resolved}"
         )
     return str(resolved)
 
@@ -128,9 +134,14 @@ def _get_or_load_policy(
     n_action_steps: int,
     env_cfg: Any,
     tokenizer_path: Path | None = None,
+    action_tokenizer_path: Path | None = None,
 ) -> dict[str, Any]:
     resolved_tokenizer = _resolve_local_vlm_path(tokenizer_path)
-    key = (str(policy_path.resolve()), device, num_steps, n_action_steps, resolved_tokenizer)
+    resolved_action_tokenizer = _resolve_local_vlm_path(action_tokenizer_path)
+    key = (
+        str(policy_path.resolve()), device, num_steps, n_action_steps,
+        resolved_tokenizer, resolved_action_tokenizer,
+    )
     with _LOCK:
         cached = _POLICY_CACHE.get(key)
         if cached is not None:
@@ -147,9 +158,23 @@ def _get_or_load_policy(
             policy_cfg.n_action_steps = n_action_steps
         if hasattr(policy_cfg, "num_steps"):
             policy_cfg.num_steps = num_steps
+        # Evaluation must not inherit training-oriented memory/compile knobs from
+        # public checkpoints.  In particular, Pi0/Pi0Fast checkpoints may ship
+        # with these enabled even though no gradients are computed here.
+        if hasattr(policy_cfg, "compile_model"):
+            policy_cfg.compile_model = False
+        if hasattr(policy_cfg, "gradient_checkpointing"):
+            policy_cfg.gradient_checkpointing = False
         # Must rewrite before make_policy: VLM weights load from vlm_model_name.
         if resolved_tokenizer is not None and hasattr(policy_cfg, "vlm_model_name"):
             policy_cfg.vlm_model_name = resolved_tokenizer
+        if resolved_tokenizer is not None and hasattr(policy_cfg, "text_tokenizer_name"):
+            policy_cfg.text_tokenizer_name = resolved_tokenizer
+        if (
+            resolved_action_tokenizer is not None
+            and hasattr(policy_cfg, "action_tokenizer_name")
+        ):
+            policy_cfg.action_tokenizer_name = resolved_action_tokenizer
 
         policy = make_policy(cfg=policy_cfg, env_cfg=env_cfg)
         policy.eval()
@@ -162,6 +187,17 @@ def _get_or_load_policy(
             preprocessor_overrides["tokenizer_processor"] = {
                 "tokenizer_name": resolved_tokenizer
             }
+        # Only FAST checkpoints contain the separate action-tokenizer processor.
+        # Pi0.5 uses ``tokenizer_processor`` plus its own state-tokenizer step;
+        # injecting a FAST-only override makes LeRobot reject the saved pipeline.
+        if resolved_action_tokenizer is not None:
+            action_overrides = {}
+            action_overrides["action_tokenizer_name"] = resolved_action_tokenizer
+            # LeRobot's FAST processor constructs a second PaliGemma tokenizer
+            # internally; overriding only ``tokenizer_processor`` is insufficient.
+            if resolved_tokenizer is not None:
+                action_overrides["paligemma_tokenizer_name"] = resolved_tokenizer
+            preprocessor_overrides["action_tokenizer_processor"] = action_overrides
         preprocessor, postprocessor = make_pre_post_processors(
             policy_cfg=policy_cfg,
             pretrained_path=str(policy_path),
@@ -232,6 +268,11 @@ def evaluate(
         tokenizer_path=(
             Path(str(resolved_config["tokenizer_path"]))
             if resolved_config.get("tokenizer_path")
+            else None
+        ),
+        action_tokenizer_path=(
+            Path(str(resolved_config["action_tokenizer_path"]))
+            if resolved_config.get("action_tokenizer_path")
             else None
         ),
     )

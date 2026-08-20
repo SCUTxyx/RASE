@@ -1,0 +1,27 @@
+{
+  "schema_version": "rase-r5-b24-result-lock/v1",
+  "repository_commit": "8d8212643893935368152efce4bc571bb83b59db",
+  "dataset_sha256": "01c748d21cc424182983135bdbdecc254905e19f2b7b5b048fdfda62f5535e13",
+  "collection_report_sha256": "0438d624624ae53780c6f4b0500a15cbcea410120b6d83f8c447fe4eacf770b3",
+  "probabilistic_summary_sha256": "18de510df5851414cd36929a2fc6a6642905b458bb429f43e38494d8bf5f9e81",
+  "decision_sha256": "b61df6ddf2f26f084538ea67724546599023409711fffeff7fe14355e9602291",
+  "source_risk_opportunity_sha256": "f1a575fa051f7b9d5975b1d67586654cc2685c977eabdd3e4adaf081dd7e1243",
+  "post_collection_audit_code": {
+    "summarizer_sha256": "92cb5c02a9c2ecc68c5b39810462c3552d24d8af4beed05ea88e8d3dde362a89",
+    "decision_analyzer_sha256": "2214f5a7daf976220ac6f9bff1442091029b4742452a2b196b6e3fcbf3161a4a",
+    "source_risk_auditor_sha256": "8ac8af9ed2d1cfb8983606524f0d9ed7f7dc80e3f21acc4c6e6027b239a193d1",
+    "trainer_with_interlock_sha256": "0ed2132a62400400f9965ba1ebc68166d1e79b323f954fa64e365b379b8a0651",
+    "five_seed_runner_with_interlock_sha256": "166e7b5c2717d1878d3bb3aafda690e527e014aa7642a8a73e5dacd5d32df022",
+    "tests_sha256": "20ad4f1f4a0d305be275b86a0c33685e1104aa785212350ed53868c05d3d6ee1"
+  },
+  "protocol_gate_status": "ready",
+  "probability_opportunity_gate_status": "not_ready",
+  "decision": "stop_safe_handback_model",
+  "downstream_locks": {
+    "b24_model_training": "closed",
+    "second_vla_model_evaluation": "closed",
+    "world_model": "closed",
+    "validation": "closed",
+    "test": "sealed"
+  }
+}

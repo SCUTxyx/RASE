@@ -1,0 +1,53 @@
+{
+  "batch_schedule": {
+    "clean_batches": 1,
+    "cycle_length": 10,
+    "recovery_batches": 9
+  },
+  "dagger_qc": {
+    "anchor_ids": [
+      "sp1_0b79453cd8e5cbe3ab667527ad4daa05",
+      "sp1_39cb47f5b2b2b372bf217b860e0eb422",
+      "sp1_3d04a36d3f686aa0b58ca47573af2041",
+      "sp1_91bab71a542721f62ec8bf28ec446dad",
+      "sp1_a858a183b4a980e9d59875bdf5714f9d",
+      "sp1_c793922aa32734e3fade1391144d9834",
+      "sp1_ca72ec230b818264d3155a0eba8d6611",
+      "sp1_d9692ec51653bfcd48e3d294bf56fc88",
+      "sp1_def8dd2b1b28714d4bd9f581897fc962"
+    ],
+    "anchors_covered": 9,
+    "median_teacher_recovery_length": 110.0,
+    "n_oft_queries": 484,
+    "n_rows": 1452,
+    "query_state_chunks": 484,
+    "schema_version": "rase-pre-c1-2-dagger-qc/v1",
+    "successful_teacher_rows": 1452,
+    "teacher_suffix_chunks": 968,
+    "unique_student_query_states": 484
+  },
+  "n_samples": 1880,
+  "recovery_source_weights": {
+    "original_recovery": 0.2778,
+    "student_state_recovery": 0.7222
+  },
+  "role_counts": {
+    "clean_retention": 10,
+    "original_recovery": 418,
+    "student_state_recovery": 1452
+  },
+  "schema_version": "rase-pre-c1-2-dataset-qc/v1",
+  "source_counts": {
+    "clean_retention": 10,
+    "original_recovery": 418,
+    "student_query_state": 484,
+    "teacher_suffix_after_student_query": 968
+  },
+  "splits": {
+    "leakage_episode_overlap": [],
+    "n_train_episodes": 10,
+    "n_train_rows": 1416,
+    "n_val_episodes": 4,
+    "n_val_rows": 464
+  }
+}

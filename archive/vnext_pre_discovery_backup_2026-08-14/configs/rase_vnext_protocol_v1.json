@@ -1,0 +1,67 @@
+{
+  "schema_version": "rase-vnext-protocol/v1",
+  "status": "draft_locked",
+  "activation_gate": {
+    "audit": "runs/pre_c0_r10/r10b_chunk_input_divergence_audit_v1.json",
+    "required_schema": "rase-r10b-chunk-input-divergence-audit/v2"
+  },
+  "targets": {
+    "T1": "short_horizon_source_risk",
+    "T2": "intervention_urgency",
+    "T3": "cost_aware_correction_operator_value"
+  },
+  "utility": {
+    "success_reward": 1.0,
+    "harm_weight": null,
+    "query_weight": null,
+    "fallback_weight": null,
+    "latency_weight": null,
+    "cost_units": {
+      "harm": null,
+      "query": null,
+      "fallback": null,
+      "latency": null
+    },
+    "sensitivity_grid": null
+  },
+  "operators": [
+    {"operator_id": "continue.source", "kind": "continue", "candidate_ids": []},
+    {"operator_id": "requery.source", "kind": "requery", "candidate_ids": []},
+    {"operator_id": "resample.source", "kind": "resample", "candidate_ids": ["candidate.0", "candidate.1"]},
+    {"operator_id": "fallback.persistent", "kind": "fallback", "candidate_ids": []},
+    {"operator_id": "abort.safe", "kind": "abort", "candidate_ids": []}
+  ],
+  "collection": {
+    "discovery_repeats": 3,
+    "confirmation_repeats": 5,
+    "outcome_dependent_sampling": false,
+    "discovery_tasks_per_suite": 2,
+    "discovery_roots_per_task": 2,
+    "decision_points": [
+      {"decision_point_id": "source.fraction.0_33", "rule": "source_elapsed_fraction", "value": 0.33},
+      {"decision_point_id": "source.fraction.0_67", "rule": "source_elapsed_fraction", "value": 0.67}
+    ],
+    "source_policies": ["pi05.libero", "pi0fast.libero"],
+    "seed_layers": ["init_state_id", "environment_seed", "source_sampling_seed", "operator_seed", "exact_repeat_replica"]
+  },
+  "gates": {
+    "feasibility": {
+      "minimum_completed_branch_fraction": null,
+      "minimum_unmasked_operator_fraction": null,
+      "minimum_nondegenerate_outcome_fraction": null
+    },
+    "opportunity": {
+      "minimum_oracle_minus_best_fixed": null,
+      "bootstrap_confidence": 0.95,
+      "minimum_root_winner_fraction": 0.1,
+      "minimum_winner_operators": 2,
+      "minimum_tasks": null,
+      "minimum_suites": 3,
+      "required_policies": ["pi05.libero", "pi0fast.libero"]
+    }
+  },
+  "locks": [
+    "learned_risk", "selector", "world_model", "validation", "test",
+    "third_vla", "second_benchmark", "public_data", "reinforcement_learning"
+  ]
+}

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import contextlib
+import copy
 import hashlib
 import json
 import os
@@ -152,13 +153,30 @@ def bundle_to_env_snapshot(loaded: LoadedState):
     for field in ("env_counters", "robots", "observables", "obs_cache"):
         if field not in controller:
             raise ValueError(f"controller_state missing {field!r} for {loaded.state_key}")
+    # StatePool v1 stores a flattened MuJoCo ``sim_state`` but not the raw
+    # ``mujoco_data`` block used by full ForkableEnv snapshots.  Newer writers
+    # may nevertheless include runtime controller caches in ``robots``.  That
+    # hybrid payload cannot be restored: ForkableEnv correctly chooses its
+    # legacy controller schema when raw mujoco_data is absent.  Canonicalize
+    # only the in-memory compatibility view by dropping caches that are
+    # recomputed before ``run_controller``; stored bytes/checksums stay intact.
+    controller_cache_fields = {
+        "ee_pos", "ee_ori_mat", "ee_pos_vel", "ee_ori_vel",
+        "joint_pos", "joint_vel", "J_pos", "J_ori", "J_full", "mass_matrix",
+    }
+    robots = copy.deepcopy(controller["robots"])
+    for robot in robots:
+        state = robot.get("controller")
+        if isinstance(state, dict):
+            for field in controller_cache_fields:
+                state.pop(field, None)
     return EnvSnapshot(
         task_fingerprint=fingerprint,
         version=SNAPSHOT_VERSION,
         payload={
             "sim_state": np.asarray(loaded.sim_state).copy(),
             "env_counters": controller["env_counters"],
-            "robots": controller["robots"],
+            "robots": robots,
             "observables": controller["observables"],
             "obs_cache": controller["obs_cache"],
             "rng": loaded.rng_state,

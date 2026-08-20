@@ -1,0 +1,85 @@
+{
+  "schema_version": "rase-r6b1-dynamic-boundary-protocol/v1",
+  "status": "frozen_after_r6b0_no_go_before_multisuite_collection",
+  "date": "2026-08-10",
+  "scientific_scope": "development-only source-risk and persistent-takeover feasibility",
+  "parent_initial_keys": "runs/rase_ui_phase1a_replacement48_initial_keys_v2.json",
+  "qualified_source_policies": [
+    {
+      "policy_id": "pi0fast_libero",
+      "dynamic_seed_indices": [0],
+      "reason": "R6-A seed0/seed1 success and executed-step outcomes were identical on all 48 frozen states"
+    },
+    {
+      "policy_id": "pi05_libero",
+      "dynamic_seed_indices": [0, 1],
+      "reason": "R6-A contained four success-label flips and 36/48 executed-step differences across seeds"
+    }
+  ],
+  "corrective_policy": "suite-specific deterministic OpenVLA-OFT persistent continuation",
+  "scheduled_boundaries": [0, 16, 32, 64, 96, 128],
+  "cohort": {
+    "states": 48,
+    "true_tasks": 48,
+    "suites": ["libero_spatial", "libero_object", "libero_goal", "libero_10"],
+    "states_per_suite": 12,
+    "split": "development"
+  },
+  "grouping": "state_key:policy_id:seed_index; all rows from a group and true task stay in one fold",
+  "deployment_features": [
+    "two RGB observations",
+    "8D proprioception",
+    "task instruction",
+    "source policy identity",
+    "source action proposal",
+    "elapsed progress",
+    "causal recent observation/action history"
+  ],
+  "supervision_only_features": [
+    "OFT action at the restored boundary",
+    "source final success",
+    "future source success horizons",
+    "persistent success if entered now",
+    "persistent teacher steps if entered now"
+  ],
+  "forbidden_model_inputs": [
+    "suite label",
+    "perturbation dimension",
+    "task ordinal or task ID",
+    "future outcomes",
+    "counterfactual OFT result",
+    "simulator state unavailable at deployment"
+  ],
+  "baseline_model": {
+    "world_model": false,
+    "heads": [
+      "source short-horizon/final failure risk",
+      "persistent success",
+      "persistent cost quantiles"
+    ],
+    "ensemble": "three task-bootstrap members",
+    "uncertainty": "1.64-sigma conservative bound",
+    "controller": "CONTINUE_SOURCE or ENTER_PERSISTENT_OFT with two-boundary dwell"
+  },
+  "evaluation": {
+    "outer_folds": 5,
+    "training_seeds": [10, 11, 12, 13, 14],
+    "calibration": "cross-fitted predictions from training tasks with binomial uncertainty",
+    "per_policy_gates": {
+      "success_gap_min": -0.05,
+      "false_continue_rate_max": 0.05,
+      "teacher_step_savings_min": 0.2
+    },
+    "required_passing_training_seeds": 4
+  },
+  "world_model_lock": {
+    "status": "locked",
+    "only_allowed_ablation": "pre-registered multi-step residual/disagreement",
+    "unlock_condition": "no-world-model dynamic baseline is complete and a state-level Pareto comparison is possible"
+  },
+  "validation_test_lock": {
+    "independent_validation": "locked until both qualified policies pass at least 4/5 development OOF seeds",
+    "test": "sealed until independent validation passes",
+    "paired_closed_loop_100_plus": "sealed until independent validation passes"
+  }
+}

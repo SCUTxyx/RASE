@@ -28,8 +28,25 @@ from .w9c_schedule import (
     load_w9c_schedule,
 )
 from .w9c_schedule import requests_for_batch as w9c_requests_for_batch
+from .pre_a3_schedule import PROTOCOL_VERSION as PRE_A3_PROTOCOL_VERSION
+from .pre_a3_schedule import load_pre_a3_design, requests_from_design
+from .pre_c0 import PROTOCOL_VERSION as PRE_C0_PROTOCOL_VERSION
+from .pre_c0 import load_pre_c0_design
+from .pre_c0 import requests_from_design as pre_c0_requests_from_design
+from .r7_schedule import PROTOCOL_VERSION as R7_PROTOCOL_VERSION
+from .r7_schedule import load_design as load_r7_design
+from .r7_schedule import requests_from_design as r7_requests_from_design
 
 CLEAN_CONTROL_PROTOCOLS = frozenset({W9B_PROTOCOL_VERSION, W9C_PROTOCOL_VERSION})
+SCHEDULED_PROTOCOLS = frozenset(
+    {
+        W9B_PROTOCOL_VERSION,
+        W9C_PROTOCOL_VERSION,
+        PRE_A3_PROTOCOL_VERSION,
+        PRE_C0_PROTOCOL_VERSION,
+        R7_PROTOCOL_VERSION,
+    }
+)
 # Backward-compatible alias used by older imports/tests.
 PROTOCOL_VERSION = W9B_PROTOCOL_VERSION
 
@@ -74,6 +91,8 @@ class DryRunAdapter:
         self, request: PerturbationRequest, episode_id: str, cadence: int
     ) -> EpisodeResult:
         outcome = "success" if request.index % 5 == 0 else "failure"
+        steps = ([0] if self.action_chunks == 0 else
+                 list(snapshot_steps(self.action_chunks, cadence)))
         snapshots = tuple(
             EpisodeSnapshot(
                 step=step,
@@ -87,7 +106,7 @@ class DryRunAdapter:
                 },
                 proprio=np.asarray([step, request.level], dtype=np.float32),
             )
-            for step in snapshot_steps(self.action_chunks, cadence)
+            for step in steps
         )
         return EpisodeResult(
             outcome=outcome,
@@ -107,13 +126,45 @@ def load_config(path: Path) -> dict[str, Any]:
     with path.open(encoding="utf-8") as stream:
         config = json.load(stream)
     collection = config["collection"]
-    if int(collection["snapshot_cadence_action_chunks"]) != 2:
+    protocol = dict(config.get("protocol") or {})
+    version = protocol.get("version")
+    cadence = int(collection["snapshot_cadence_action_chunks"])
+    # PRE-A3 recovery120 needs reset/step-0 snapshots only (cadence=1, max_chunks=1).
+    if version == PRE_A3_PROTOCOL_VERSION:
+        if cadence != 1:
+            raise ValueError(
+                "PRE-A3 recovery120 snapshot cadence must be 1 action chunk"
+            )
+        maximum = int(
+            collection.get(
+                "max_action_chunks", collection.get("action_chunks_per_episode", 0)
+            )
+        )
+        if maximum != 1:
+            raise ValueError("PRE-A3 recovery120 max_action_chunks must be 1")
+    elif version == PRE_C0_PROTOCOL_VERSION:
+        if cadence != 1:
+            raise ValueError("PRE-C0 trajectory snapshot cadence must be 1 action chunk")
+        if int(collection.get("max_action_chunks", 0)) < 2:
+            raise ValueError("PRE-C0 requires full trajectories, not reset-only snapshots")
+        if float(collection["successful_snapshot_retention"]) != 1.0:
+            raise ValueError("PRE-C0 must retain all success controls")
+    elif version == R7_PROTOCOL_VERSION:
+        if cadence != 1:
+            raise ValueError("R7 reset pool snapshot cadence must be one chunk")
+        if not bool(collection.get("reset_only", False)):
+            raise ValueError("R7 reset pool requires reset_only=true")
+        if int(collection.get("max_action_chunks", -1)) != 0:
+            raise ValueError("R7 reset pool must execute zero source action chunks")
+        if int(collection.get("action_chunks_per_episode", -1)) != 0:
+            raise ValueError("R7 reset pool action_chunks_per_episode must be zero")
+        if float(collection["successful_snapshot_retention"]) != 1.0:
+            raise ValueError("R7 must retain every scheduled reset state")
+    elif cadence != 2:
         raise ValueError("NGC Step 1 snapshot cadence must be 2 action chunks")
     retention = float(collection["successful_snapshot_retention"])
     if not 0.0 <= retention <= 1.0:
         raise ValueError("successful snapshot retention must be within [0, 1]")
-    protocol = dict(config.get("protocol") or {})
-    version = protocol.get("version")
     if version == W9B_PROTOCOL_VERSION:
         _validate_w9b_config(config)
     elif version == W9C_PROTOCOL_VERSION:
@@ -213,6 +264,8 @@ def _scheduled_requests(
         batch_id = int(collection.get("schedule_batch_id", 1))
         requests = w9b_requests_for_batch(payload, batch_id)
         label = "W9B"
+        if len(requests) != BATCH_SIZES[batch_id - 1]:
+            raise ValueError(f"{label} schedule batch has the wrong number of rows")
     elif version == W9C_PROTOCOL_VERSION:
         payload = load_w9c_schedule(
             Path(str(protocol["schedule_path"])),
@@ -221,10 +274,62 @@ def _scheduled_requests(
         batch_id = int(collection.get("schedule_batch_id", 1))
         requests = w9c_requests_for_batch(payload, batch_id)
         label = "W9C"
+        if len(requests) != BATCH_SIZES[batch_id - 1]:
+            raise ValueError(f"{label} schedule batch has the wrong number of rows")
+    elif version == PRE_A3_PROTOCOL_VERSION:
+        design_path = Path(
+            str(protocol.get("design") or (config.get("sampling") or {}).get("design"))
+        )
+        payload = load_pre_a3_design(
+            design_path,
+            expected_sha256=(
+                str(protocol["design_sha256"])
+                if protocol.get("design_sha256")
+                else None
+            ),
+        )
+        requests = requests_from_design(payload, seed=int(collection["seed"]))
+        label = "PRE-A3"
+        expected = int(protocol.get("expected_episodes") or collection["episodes"])
+        if len(requests) != expected:
+            raise ValueError(
+                f"{label} schedule has {len(requests)} rows, expected {expected}"
+            )
+    elif version == PRE_C0_PROTOCOL_VERSION:
+        design_path = Path(
+            str(protocol.get("design") or (config.get("sampling") or {}).get("design"))
+        )
+        payload = load_pre_c0_design(
+            design_path,
+            expected_sha256=(
+                str(protocol["design_sha256"])
+                if protocol.get("design_sha256")
+                else None
+            ),
+        )
+        requests = pre_c0_requests_from_design(
+            payload, seed=int(collection["seed"])
+        )
+        label = "PRE-C0"
+        expected = int(protocol.get("expected_episodes") or collection["episodes"])
+        if len(requests) != expected:
+            raise ValueError(
+                f"{label} schedule has {len(requests)} rows, expected {expected}"
+            )
+    elif version == R7_PROTOCOL_VERSION:
+        design_path = Path(str(protocol.get("design") or (config.get("sampling") or {}).get("design")))
+        payload = load_r7_design(
+            design_path,
+            expected_sha256=(str(protocol["design_sha256"])
+                             if protocol.get("design_sha256") else None),
+        )
+        requests = r7_requests_from_design(payload, seed=int(collection["seed"]))
+        label = "R7"
+        expected = int(protocol.get("expected_episodes") or collection["episodes"])
+        if len(requests) != expected:
+            raise ValueError(f"R7 schedule has {len(requests)} rows, expected {expected}")
     else:
-        raise ValueError(f"unsupported clean-control protocol version {version!r}")
-    if len(requests) != BATCH_SIZES[batch_id - 1]:
-        raise ValueError(f"{label} schedule batch has the wrong number of rows")
+        raise ValueError(f"unsupported scheduled protocol version {version!r}")
     if int(collection["episodes"]) != len(requests):
         raise ValueError(f"{label} collection.episodes does not match schedule batch")
     return requests, payload
@@ -310,10 +415,10 @@ def collect(config: Mapping[str, Any], *, force_dry_run: bool = False) -> dict[s
     sampling = dict(config.get("sampling") or {})
     protocol = dict(config.get("protocol") or {})
     schedule_payload: dict[str, Any] | None = None
-    if protocol.get("version") in CLEAN_CONTROL_PROTOCOLS:
+    if protocol.get("version") in SCHEDULED_PROTOCOLS:
         if protocol.get("version") == W9B_PROTOCOL_VERSION:
             _validate_w9b_config(config)
-        else:
+        elif protocol.get("version") == W9C_PROTOCOL_VERSION:
             _validate_w9c_config(config)
         requests, schedule_payload = _scheduled_requests(config)
     else:
@@ -355,7 +460,11 @@ def collect(config: Mapping[str, Any], *, force_dry_run: bool = False) -> dict[s
     episodes_skipped_resume = 0
     for request in requests:
         episode_id = request.episode_id or f"ep-{seed:08x}-{request.index:08d}"
-        if schedule_payload is not None and request.init_state_id is None:
+        if (
+            schedule_payload is not None
+            and protocol.get("version") in CLEAN_CONTROL_PROTOCOLS
+            and request.init_state_id is None
+        ):
             raise ValueError("clean-control schedule row is missing init_state_id")
         if request.index in skip_indices:
             episodes_skipped_crash += 1
@@ -402,13 +511,17 @@ def collect(config: Mapping[str, Any], *, force_dry_run: bool = False) -> dict[s
         result = adapter.run_episode(request, episode_id, cadence)
         if schedule_payload is not None:
             expected_task = _scheduled_task_id(request)
+            init_mismatch = (
+                request.init_state_id is not None
+                and result.init_state_id != request.init_state_id
+            )
             if (
                 result.task_id != expected_task
                 or result.suite != request.suite
-                or result.init_state_id != request.init_state_id
+                or init_mismatch
             ):
                 raise ValueError(
-                    "clean-control schedule row differs from actual suite/task/init: "
+                    "scheduled row differs from actual suite/task/init: "
                     f"expected=({request.suite},{expected_task},{request.init_state_id}) "
                     f"actual=({result.suite},{result.task_id},{result.init_state_id})"
                 )
@@ -485,13 +598,27 @@ def collect(config: Mapping[str, Any], *, force_dry_run: bool = False) -> dict[s
         "episode_metrics": episode_metrics,
     }
     if schedule_payload is not None:
-        summary["provenance"] = {
-            "protocol_version": protocol["version"],
-            "schedule_sha256": protocol["schedule_sha256"],
-            "schedule_path": protocol["schedule_path"],
-            "schedule_batch_id": int(collection.get("schedule_batch_id", 1)),
-            "git_commit": _git_commit(),
-        }
+        if protocol.get("version") in {
+            PRE_A3_PROTOCOL_VERSION,
+            PRE_C0_PROTOCOL_VERSION,
+            R7_PROTOCOL_VERSION,
+        }:
+            summary["provenance"] = {
+                "protocol_version": protocol["version"],
+                "design": protocol.get("design")
+                or (config.get("sampling") or {}).get("design"),
+                "design_sha256": schedule_payload.get("design_sha256")
+                or protocol.get("design_sha256"),
+                "git_commit": _git_commit(),
+            }
+        else:
+            summary["provenance"] = {
+                "protocol_version": protocol["version"],
+                "schedule_sha256": protocol["schedule_sha256"],
+                "schedule_path": protocol["schedule_path"],
+                "schedule_batch_id": int(collection.get("schedule_batch_id", 1)),
+                "git_commit": _git_commit(),
+            }
         summary["scheduled_episodes"] = [
             {
                 "episode_id": request.episode_id,

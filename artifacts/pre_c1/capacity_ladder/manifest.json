@@ -1,0 +1,18 @@
+{
+  "configs": [
+    "/root/autodl-tmp/RASE/artifacts/pre_c1/capacity_ladder/c4_expand_lora_targets.json",
+    "/root/autodl-tmp/RASE/artifacts/pre_c1/capacity_ladder/c4_rank_32.json",
+    "/root/autodl-tmp/RASE/artifacts/pre_c1/capacity_ladder/c4_rank_64.json",
+    "/root/autodl-tmp/RASE/artifacts/pre_c1/capacity_ladder/c4_full_action_expert.json",
+    "/root/autodl-tmp/RASE/artifacts/pre_c1/capacity_ladder/c4_top_cross_modal_layers.json"
+  ],
+  "note": "Run only after E4 gate fail; one step at a time; do not retune lr from gate.",
+  "order": [
+    "expand_lora_targets",
+    "rank_32",
+    "rank_64",
+    "full_action_expert",
+    "top_cross_modal_layers"
+  ],
+  "schema_version": "rase-pre-c1-2-capacity-ladder/v1"
+}

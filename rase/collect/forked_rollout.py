@@ -15,7 +15,10 @@ import numpy as np
 from rase.collect.candidates import seed_everything
 from rase.collect.libero_env_factory import LiberoEnvHandle, make_libero_env_for_task
 from rase.collect.policy_step import (
+    InferenceEvent,
+    _CaptureContext,
     as_batched_action,
+    capture_inference_event,
     current_timestep,
     select_env_action,
     success_from_info,
@@ -147,22 +150,78 @@ class InProcessSmolVLAContinuation:
         self,
         policy_bundle: Mapping[str, Any],
         *,
-        temperature: float = 0.5,
+        temperature: float | None = 0.5,
         seed: int | None = None,
     ) -> None:
         self.policy_bundle = policy_bundle
-        self.temperature = float(temperature)
+        self.temperature = float(temperature) if temperature is not None else None
         self.seed = seed
         self._amp = None
         self._action_select_calls = 0
         self._action_select_elapsed_s = 0.0
+        self._model_forward_calls = 0
+        self._action_queue_resets = 0
+        # Native inference-event provenance (immutable events; queue cursor
+        # bookkeeping lives on the continuation, never on the event).
+        self._capture = _CaptureContext(capture_enabled=False)
 
-    def reset(self) -> None:
+    @property
+    def capture_enabled(self) -> bool:
+        return self._capture.capture_enabled
+
+    def enable_capture(self, *, horizon: int = 10) -> None:
+        self._capture.capture_enabled = True
+        self._capture.capture_horizon = int(horizon)
+
+    def note_boundary_step(self, step: int) -> None:
+        self._capture.boundary_step = int(step)
+
+    def current_inference_event(self) -> InferenceEvent | None:
+        index = self._capture.current_event_index
+        if index is None:
+            return None
+        return self._capture.events[index]
+
+    def consumed_in_current_event(self) -> int:
+        return self._capture.consumed_in_current
+
+    def reset_metrics(self) -> None:
+        """Zero cumulative counters (call once per rollout, not at receding boundaries)."""
         self._action_select_calls = 0
         self._action_select_elapsed_s = 0.0
+        self._model_forward_calls = 0
+        self._action_queue_resets = 0
+
+    def reset(self) -> None:
+        """Clear policy action queue / RNG for a fresh forward on next act().
+
+        Does not zero cumulative forward counters so receding-horizon boundaries
+        can still report total ``model_forward_calls`` for a rollout.
+        """
+        self._action_queue_resets += 1
         if self.seed is not None:
             seed_everything(int(self.seed))
         self.policy_bundle["policy"].reset()
+
+    def _action_queue_empty(self) -> bool:
+        policy = self.policy_bundle["policy"]
+        # pi0-fast maintains ``_action_queue`` and leaves ``_queues`` empty, so
+        # it must be checked first; LeRobot policies use ``_queues`` only.
+        action_queue = getattr(policy, "_action_queue", None)
+        if action_queue is not None:
+            return len(action_queue) == 0
+        queues = getattr(policy, "_queues", None)
+        if isinstance(queues, dict):
+            action_q = queues.get("action")
+            if action_q is None:
+                # LeRobot uses ACTION constant; fall back to any single queue.
+                if len(queues) == 1:
+                    action_q = next(iter(queues.values()))
+                else:
+                    action_q = None
+            if action_q is not None:
+                return len(action_q) == 0
+        return True
 
     def act(self, observation: Mapping[str, Any], *, task: str) -> np.ndarray:
         import torch
@@ -175,9 +234,23 @@ class InProcessSmolVLAContinuation:
                 if bool(getattr(policy.config, "use_amp", False))
                 else nullcontext()
             )
+        will_forward = self._action_queue_empty()
         started = time.perf_counter()
         try:
             with torch.no_grad(), self._amp:
+                if will_forward and self._capture.capture_enabled:
+                    first, event = capture_inference_event(
+                        self.policy_bundle,
+                        observation,
+                        task=task,
+                        boundary_step=self._capture.boundary_step,
+                        generation_seed=self.seed,
+                        horizon=self._capture.capture_horizon,
+                    )
+                    self._capture.events.append(event)
+                    self._capture.current_event_index = len(self._capture.events) - 1
+                    self._capture.consumed_in_current = 1
+                    return first
                 return select_env_action(
                     self.policy_bundle,
                     observation,
@@ -187,16 +260,45 @@ class InProcessSmolVLAContinuation:
         finally:
             self._action_select_calls += 1
             self._action_select_elapsed_s += time.perf_counter() - started
+            if will_forward:
+                self._model_forward_calls += 1
+            elif self._capture.capture_enabled and self._capture.current_event_index is not None:
+                self._capture.consumed_in_current += 1
 
     def metrics(self) -> dict[str, float | int | str]:
         return {
             "measurement_scope": (
-                "wall time inside SmolVLA select_env_action; includes cached action "
+                "wall time inside LeRobot select_env_action; includes cached action "
                 "queue access and model forward passes, excludes environment stepping"
             ),
             "action_select_calls": self._action_select_calls,
             "action_select_elapsed_s": self._action_select_elapsed_s,
+            "model_forward_calls": self._model_forward_calls,
+            "action_queue_resets": self._action_queue_resets,
         }
+
+
+class InProcessLeRobotContinuation(InProcessSmolVLAContinuation):
+    """Generic frozen LeRobot VLA continuation using its native action sampler.
+
+    Native inference events are captured by default (``capture_horizon`` steps
+    of env-space actions per event); pass ``capture=False`` to keep the legacy
+    queue-only behaviour.
+    """
+
+    def __init__(
+        self,
+        policy_bundle: Mapping[str, Any],
+        *,
+        seed: int | None = None,
+        capture: bool = True,
+        capture_horizon: int = 10,
+    ) -> None:
+        # None is important: only SmolVLA accepts the explicit flow-noise kwarg
+        # used by the legacy temperature path. Pi0Fast/Pi0.5 sample natively.
+        super().__init__(policy_bundle, temperature=None, seed=seed)
+        self._capture.capture_enabled = bool(capture)
+        self._capture.capture_horizon = int(capture_horizon)
 
 
 class FixedActionContinuation:
@@ -375,23 +477,28 @@ def run_one_forked_rollout(
         restored.close()
 
 
-def load_smolvla_policy_bundle(
+def load_lerobot_policy_bundle(
     policy_path: str | Path,
     *,
     device: str = "cuda",
     num_steps: int = 10,
     n_action_steps: int = 10,
     tokenizer_path: str | Path | None = None,
+    action_tokenizer_path: str | Path | None = None,
     observation_height: int = 360,
     observation_width: int = 360,
 ) -> dict[str, Any]:
-    """Load the same cached LeRobot policy bundle used by collection."""
+    """Load a cached frozen LeRobot policy bundle used by collection."""
     from lerobot.envs.configs import LiberoEnv as LiberoEnvConfig
 
     from rase.backends.lerobot_libero_plus import _get_or_load_policy
 
     path = Path(policy_path).expanduser().resolve()
     tok = Path(tokenizer_path).expanduser().resolve() if tokenizer_path else None
+    action_tok = (
+        Path(action_tokenizer_path).expanduser().resolve()
+        if action_tokenizer_path else None
+    )
     env_cfg = LiberoEnvConfig(
         task="libero_spatial",
         task_ids=[0],
@@ -407,4 +514,29 @@ def load_smolvla_policy_bundle(
         n_action_steps=n_action_steps,
         env_cfg=env_cfg,
         tokenizer_path=tok,
+        action_tokenizer_path=action_tok,
+    )
+
+
+def load_smolvla_policy_bundle(
+    policy_path: str | Path,
+    *,
+    device: str = "cuda",
+    num_steps: int = 10,
+    n_action_steps: int = 10,
+    tokenizer_path: str | Path | None = None,
+    action_tokenizer_path: str | Path | None = None,
+    observation_height: int = 360,
+    observation_width: int = 360,
+) -> dict[str, Any]:
+    """Backward-compatible SmolVLA name for the generic LeRobot loader."""
+    return load_lerobot_policy_bundle(
+        policy_path,
+        device=device,
+        num_steps=num_steps,
+        n_action_steps=n_action_steps,
+        tokenizer_path=tokenizer_path,
+        action_tokenizer_path=action_tokenizer_path,
+        observation_height=observation_height,
+        observation_width=observation_width,
     )

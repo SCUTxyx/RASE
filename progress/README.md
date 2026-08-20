@@ -1,14 +1,85 @@
 # Experiment progress records
 
+- [CVPR 2027 canonical document refresh and execution overlay (2026-08-13)](2026-08-13_cvpr2027_document_refresh_and_execution_overlay.md):
+  新版 canonical idea、主执行计划和 RL/公开数据专题计划已替换旧入口；冻结实验记录不变。
+  当前只解锁 R10-B per-chunk root-cause diagnostic，所有 learned stages 仍锁定。
+- [R6-B0 multi-VLA OOF result (2026-08-10)](2026-08-10_r6b0_multivla_oof_results.md):
+  R6-A found two valid policy-pair opportunities, but the 48-task one-boundary
+  learner fails the strict 5-seed per-VLA gate. A deployable-language diagnostic
+  improves Pi0Fast AUROC but not stability. R6-B1 must collect grouped dynamic
+  source-trajectory boundaries before any world-model or validation claim.
+- [R6-B1 dynamic collector parity smoke (2026-08-10)](2026-08-10_r6b1_dynamic_collector_parity.md):
+  Pi0Fast and Pi0.5 each exactly reproduce their frozen R6-A trajectory before
+  counterfactual labels are retained. A cross-suite outcome-balanced pilot is
+  the next gate.
+
 This directory is tracked. It contains concise, reviewable records of completed
 or blocked experiments; large logs, videos, checkpoints, and raw outputs belong
 under ignored artifact directories.
 
 ## Start here
 
+- [Current RASE status](CURRENT.md):
+  R10-B deterministic case/control reproducibility 正式 FAIL；full-action trace 已定位为
+  closed-loop divergence。当前服务器正在运行冻结的 18-group/K3 per-chunk input/output
+  根因诊断。risk model、selector、RL、world model、validation 与 test 均未解锁。
+- [R5-B24 result and R6 direction (2026-08-09)](2026-08-09_r5_b24_results_and_r6_direction.md):
+  B24 完成 24 states / 122 boundaries / 610 continuations，protocol **READY**，但
+  opportunity **NOT READY**：仅 4 个 finite-safe，真正 recovery-created 仅 **1/24**，
+  0 个 populated positive stopping bins；历史二元与 all-K 标签一致率 60.66%，11/24
+  sampled non-monotonic。正式停止 safe-handback 模型、第二 VLA/world-model/test 继续
+  关闭。QC71 source-risk privileged 上界保持 persistent 65/71 成功但仅节省 21.89%，
+  需捕获 91.35% oracle savings 才达 20%，故先做多 policy-pair 的 model-free R6 screen。
+- [R5-B24 paired probability opportunity lock (2026-08-09)](2026-08-09_r5_b24_paired_opportunity_lock.md):
+  冻结24个train task各1个state（21 finite-safe + 3 persistent-failure support）、
+  h={0,16,32,64,96,128}、K=5和跨boundary common random numbers。只有live
+  finite-safe≥20、≥3 tasks、≥2 populated bins、conservative oracle savings≥25%
+  才重新训练；否则第二VLA/world-model/test继续关闭。
+- [R5-A16 probability labels and five-seed OOF result (2026-08-09)](2026-08-09_r5_a16_probability_and_oof_results.md):
+  A16 协议 gate **READY**（16/16 parity、56 boundaries、280 repeats），但 conservative
+  oracle savings 仅 **11.39%**；标签 13/56 非退化、4/16 sampled non-monotonic 但
+  0 个 Wilson-separated drop。Beta-binomial 多头 5-seed OOF 为 **0/5 PASS**：gap
+  −6.25 至 −16.25pp、false handback 6.25–16.25%、savings 9.19–27.85%。第二 VLA、
+  world-model、validation/test 全部保持关闭，下一步回到独立 opportunity-enriched
+  development cohort。
+- [R5 probabilistic controller execution plan (2026-08-09)](2026-08-09_r5_probabilistic_controller_execution_plan.md):
+  冻结 A16→Beta-binomial 多头→固定 task folds 的 5-seed OOF→第二 VLA→世界模型
+  Pareto 消融→独立 validation/test 的执行顺序；补充单类 head fail-closed、旧 val 已转为
+  development、世界模型 AUC-only 不得入主模型等约束。
+- [R5-A16 probability-label protocol lock (2026-08-09)](2026-08-09_r5_a16_probability_protocol_lock.md):
+  冻结 16 个 fresh development states、4 boundaries、K=5、最多 320 continuation；A16
+  只测标签熵/非单调性和协议稳定性。persistent parity、repeat 完整性、四 suite/八 task
+  覆盖全部通过后才训练 Beta-binomial 多头模型；5-seed OOF 必须至少 4/5 同时满足
+  success gap≥−5pp、false handback≤5%、savings≥20%，否则不开第二 VLA。
+- [R5 probabilistic smoke4 and RASE idea rewrite (2026-08-09)](2026-08-09_r5_probabilistic_smoke4_and_idea_rewrite.md):
+  主 idea 已改写为多 VLA、策略条件、概率风险/恢复/交还控制。四套件 same-snapshot
+  K=5 pilot 的 protocol gate 通过：4 states、8 boundaries、40 continuations，3/8
+  boundaries 为非退化概率；Spatial h0/h64 为 **4/5→0/5**，Goal 为 **3/5→4/5**，
+  Object/Long 均 **0/5→0/5**，全部 LCB<0.5。故推进 16-state 概率标签 pilot，模型训练、
+  frozen test 和大规模闭环继续关闭。
+- [R5 seed stability and validation-boundary repeatability (2026-08-09)](2026-08-09_r5_seed_stability_and_val_repeatability.md):
+  修正协议 5-seed 为 **0/5 gates pass**；AUC 0.922--0.932 但 success 仅
+  **81.69--85.92% vs persistent 91.55%**，38.0% states 的交还时刻随 seed 变化。
+  真 val smoke persistent parity 4/4，但历史/新标签仅 22/27 一致；新协议重测为
+  25/26 一致，Goal 仍出现标签/轨迹漂移；same-snapshot K=5 又得到 h0 3/5、h64
+  5/5（LCB 仅 0.649）。故暂停单次二元标签的 full-val，转概率标签、扩充独立
+  calibration cohort，test 继续封存。
+- [R4-D protocol re-audit and corrected delta results (2026-08-09)](2026-08-09_r4d_protocol_reaudit_and_delta_results.md):
+  原 0.6M checkpoint 的工程导出仍有效，但 OOF fold 复用、state-level stopping 计算、M4
+  全量重叠、M5 success/bootstrap 公式及教师缓存配对均存在协议错误。修正版 hard-label
+  baseline 为 AUC **0.9221**、success **84.51% vs persistent 91.55%**、savings
+  **21.09%**，安全 gate **FAIL**；精确 V-JEPA delta 也未改善 Pareto，主线转为扩数据与
+  conservative calibration。
+- [PRE-C0-R2 gate scaling result (2026-08-08)](2026-08-08_pre_c0_r2_gate_scaling_results.md):
+  62 task-disjoint spatial-train snapshots give `H_activation=4.84pp`; grouped OOF gate has
+  no threshold satisfying rescue/harm constraints, so learned-gate dev eval is stopped.
+  Envelope-only is 31/40 vs B0 27/40 and legacy bounded F0 32/40; gate branch is `NO-GO`.
 - [RASE full project narrative (2026-07-31)](2026-07-31_rase_full_project_narrative.md):
   **单文件总览**：原计划、各阶段实验、计划转化、W9C/W10 结论、可/不可主张、后续选项。
   新读者应先读此文，再下钻各次实验记录。
+- [PRE-C1.2 kickoff (2026-08-05)](2026-08-05_pre_c1_2_kickoff.md):
+  C1.1 zero recovery → successor / same-H sweep / student-query DAgger / native prefix flow；
+  protocol `artifacts/pre_c1/pre_c1_2_protocol_lock.yaml`。
 
 ## Recorded baselines
 
@@ -158,6 +229,23 @@ under ignored artifact directories.
   64 步被救回，但 32 步误伤一个 base success，persistent OFT 仍为 **11/12**。
   结论升级为 recovery duration / safe handback 的机制信号；先做 task-disjoint
   replication，再决定是否训练 conservative termination model，world model 继续关闭。
+- [PRE-A3 protocol freeze](2026-08-04_rase_pre_a3_protocol_freeze.md):
+  冻结 120-state task-disjoint live closed-loop duration 协议、72/24/24 split、
+  预注册 gate 与 runner/analysis；confirmatory 结果待采集执行。
+- [PRE-A3 smoke4 kickoff](2026-08-04_rase_pre_a3_smoke4_kickoff.md) /
+  [results](2026-08-04_rase_pre_a3_smoke4_results.md):
+  4-state live closed-loop plumbing **PASS**；finite rescue 0、persistent 4/4，
+  h=32 误伤 1 个 base success；method gate 保持关闭。
+- [Method gate and paper track](2026-08-04_rase_method_gate_and_paper_track.md):
+  在 PRE-A3 hidden pass 前冻结为 **benchmark/diagnosis**；termination/world-model
+  gate 关闭。
+- [Paper claim freeze update](2026-08-04_rase_paper_claim_freeze_update.md):
+  更新可/不可主张边界与正文结构；条件性 safe-handback method 仍 gated。
+- [PRE-B safe-handback scaffold](2026-08-04_rase_pre_b_safe_handback_scaffold.md):
+  PRE-B 数据与 calibrated baselines 已实现但 gate 关闭；仅允许 scaffold，禁止 claim。
+- [Benchmark release strengthening](2026-08-04_rase_benchmark_release_strengthening.md):
+  release manifest、seed1/2 配置与第二 policy-pair 协议已就绪；多 seed/第二 backbone
+  执行待 GPU。
 - [RASE full project narrative](2026-07-31_rase_full_project_narrative.md):
   从立项到 W10 的完整流程叙事（与上方 Start here 同一文件）。
 

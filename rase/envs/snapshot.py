@@ -12,7 +12,7 @@ from typing import Any, Mapping
 
 
 SNAPSHOT_FORMAT = "rase.forkable_env"
-SNAPSHOT_VERSION = 1
+SNAPSHOT_VERSION = 2
 
 
 class SnapshotError(RuntimeError):

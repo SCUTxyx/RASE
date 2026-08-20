@@ -1,0 +1,34 @@
+{
+  "schema_version": "rase-pre-c1-2-locked-failure-keys/v1",
+  "source_eval": "runs/rase_pre_c1_1_eval_v1.json",
+  "state_keys": [
+    "sp1_0b79453cd8e5cbe3ab667527ad4daa05",
+    "sp1_39cb47f5b2b2b372bf217b860e0eb422",
+    "sp1_3d04a36d3f686aa0b58ca47573af2041",
+    "sp1_91bab71a542721f62ec8bf28ec446dad",
+    "sp1_a858a183b4a980e9d59875bdf5714f9d",
+    "sp1_c793922aa32734e3fade1391144d9834",
+    "sp1_ca72ec230b818264d3155a0eba8d6611",
+    "sp1_d9692ec51653bfcd48e3d294bf56fc88",
+    "sp1_def8dd2b1b28714d4bd9f581897fc962"
+  ],
+  "by_suite": {
+    "Object": [
+      "sp1_0b79453cd8e5cbe3ab667527ad4daa05",
+      "sp1_91bab71a542721f62ec8bf28ec446dad",
+      "sp1_ca72ec230b818264d3155a0eba8d6611"
+    ],
+    "Goal": [
+      "sp1_39cb47f5b2b2b372bf217b860e0eb422",
+      "sp1_a858a183b4a980e9d59875bdf5714f9d",
+      "sp1_c793922aa32734e3fade1391144d9834"
+    ],
+    "Spatial": [
+      "sp1_3d04a36d3f686aa0b58ca47573af2041"
+    ],
+    "Long": [
+      "sp1_d9692ec51653bfcd48e3d294bf56fc88",
+      "sp1_def8dd2b1b28714d4bd9f581897fc962"
+    ]
+  }
+}

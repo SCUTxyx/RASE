@@ -1,0 +1,314 @@
+#!/usr/bin/env python3
+"""PRE-C0-R1 Step A3: Train F0 binary activation gate.
+
+A lightweight binary classifier (BCE loss) that learns P(activate_F0 | s).
+Uses lean features: no SmolVLA 128-D latent.
+
+Input: activation_labels.jsonl from collect_activation_labels.py
+Output: runs/pre_c0_r1/gate_checkpoint.pt
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+import numpy as np
+import torch
+import torch.nn as nn
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+
+class LeanActivationGate(nn.Module):
+    """Lightweight binary gate using lean features (no SmolVLA latent).
+
+    Inputs:
+      - history: [B, 8, 23] or [B, 184] — proprio(8)+action(7)+progress(1)+action(7)
+      - obs_features: [B, 16] — proprio(7)+action(7)+stats(2)
+      - student_action: [B, 7]
+      - plugin_delta: [B, 7]
+      - delta_norm: [B, 1]
+    """
+
+    def __init__(
+        self,
+        proprio_dim: int = 8,
+        action_dim: int = 7,
+        history_window: int = 8,
+        obs_feature_dim: int = 16,
+        hidden_dim: int = 48,
+        num_layers: int = 1,
+        dropout: float = 0.1,
+    ):
+        super().__init__()
+        self.proprio_dim = proprio_dim
+        self.action_dim = action_dim
+        self.history_window = history_window
+        self.obs_feature_dim = obs_feature_dim
+
+        history_input_dim = history_window * (proprio_dim + action_dim + 1 + action_dim)
+        self.history_encoder = nn.Sequential(
+            nn.Linear(history_input_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+        )
+
+        self.obs_encoder = nn.Sequential(
+            nn.Linear(obs_feature_dim, hidden_dim),
+            nn.ReLU(),
+        )
+
+        self.delta_encoder = nn.Sequential(
+            nn.Linear(action_dim + 1, 16),
+            nn.ReLU(),
+        )
+
+        layers = []
+        in_dim = hidden_dim * 2 + action_dim + 16
+        for _ in range(num_layers):
+            layers.append(nn.Linear(in_dim, hidden_dim))
+            layers.append(nn.ReLU())
+            layers.append(nn.Dropout(dropout))
+            in_dim = hidden_dim
+        layers.append(nn.Linear(hidden_dim, 1))
+        self.head = nn.Sequential(*layers)
+
+        self.apply(self._init_weights)
+
+    def _init_weights(self, m):
+        if isinstance(m, nn.Linear):
+            nn.init.xavier_uniform_(m.weight, gain=0.1)
+            if m.bias is not None:
+                nn.init.zeros_(m.bias)
+
+    def forward(
+        self,
+        history: torch.Tensor,
+        obs_features: torch.Tensor,
+        student_action: torch.Tensor,
+        plugin_delta: torch.Tensor,
+        delta_norm: torch.Tensor,
+    ) -> torch.Tensor:
+        h_enc = self.history_encoder(history.view(history.size(0), -1))
+        o_enc = self.obs_encoder(obs_features.view(obs_features.size(0), -1))
+        d_enc = self.delta_encoder(
+            torch.cat([plugin_delta.view(plugin_delta.size(0), -1),
+                       delta_norm.view(delta_norm.size(0), -1)], dim=-1)
+        )
+        combined = torch.cat([h_enc, o_enc, student_action, d_enc], dim=-1)
+        logit = self.head(combined)
+        return logit.squeeze(-1)
+
+    @torch.no_grad()
+    def predict(self, history, obs_features, student_action,
+                plugin_delta, delta_norm) -> float:
+        h_t = torch.from_numpy(np.asarray(history, dtype=np.float32)).float().unsqueeze(0)
+        o_t = torch.from_numpy(np.asarray(obs_features, dtype=np.float32)).float().unsqueeze(0)
+        a_t = torch.from_numpy(np.asarray(student_action, dtype=np.float32)).float().reshape(1, -1)
+        d_t = torch.from_numpy(np.asarray(plugin_delta, dtype=np.float32)).float().reshape(1, -1)
+        n_t = torch.tensor([[float(delta_norm)]], dtype=torch.float32)
+
+        logit = self.forward(h_t, o_t, a_t, d_t, n_t)
+        return torch.sigmoid(logit).item()
+
+
+def load_labels(jsonl_path: Path) -> list[dict]:
+    rows = []
+    for line in jsonl_path.read_text().strip().split("\n"):
+        if line.strip():
+            rows.append(json.loads(line))
+    return rows
+
+
+def build_batch(rows: list[dict], device: str = "cuda") -> dict:
+    histories = []
+    obs_feats = []
+    actions = []
+    deltas = []
+    delta_norms = []
+    labels = []
+
+    for r in rows:
+        f = r["features"]
+        histories.append(np.array(f.get("history_flat", f.get("history", [])), dtype=np.float32).flatten())
+        obs_feats.append(np.array(f.get("obs_features_lean", f.get("obs_features", [])), dtype=np.float32))
+        actions.append(np.array(f["student_action"], dtype=np.float32))
+        deltas.append(np.array(f["plugin_delta"], dtype=np.float32))
+        delta_norms.append(float(f.get("delta_norm", 0)))
+        labels.append(float(r["label"]))
+
+    return {
+        "history": torch.from_numpy(np.stack(histories)).to(device),
+        "obs_features": torch.from_numpy(np.stack(obs_feats)).to(device),
+        "student_action": torch.from_numpy(np.stack(actions)).to(device),
+        "plugin_delta": torch.from_numpy(np.stack(deltas)).to(device),
+        "delta_norm": torch.tensor(delta_norms, dtype=torch.float32).unsqueeze(-1).to(device),
+        "label": torch.tensor(labels, dtype=torch.float32).to(device),
+    }
+
+
+def compute_class_weight(rows: list[dict]) -> float:
+    n_pos = sum(1 for r in rows if r["label"] == 1)
+    n_neg = sum(1 for r in rows if r["label"] == 0)
+    if n_pos == 0:
+        return 1.0
+    return n_neg / n_pos
+
+
+def train_gate(
+    rows: list[dict],
+    device: str = "cuda",
+    epochs: int = 200,
+    lr: float = 1e-3,
+    batch_size: int = 16,
+    hidden_dim: int = 48,
+    val_split: float = 0.2,
+    seed: int = 20260807,
+) -> dict:
+    import random
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+
+    # Shuffle and split
+    indices = list(range(len(rows)))
+    random.shuffle(indices)
+    val_n = max(1, int(len(rows) * val_split))
+    val_indices = set(indices[:val_n])
+    train_rows = [rows[i] for i in indices if i not in val_indices]
+    val_rows = [rows[i] for i in indices if i in val_indices]
+
+    print(f"Train: {len(train_rows)}, Val: {len(val_rows)}")
+    pos_train = sum(1 for r in train_rows if r["label"] == 1)
+    neg_train = sum(1 for r in train_rows if r["label"] == 0)
+    print(f"  Pos/Neg: {pos_train}/{neg_train}")
+
+    pos_weight = compute_class_weight(train_rows)
+    if pos_train == 0 or neg_train == 0:
+        pos_weight = 1.0
+    print(f"  Pos weight: {pos_weight:.2f}")
+
+    train_batch = build_batch(train_rows, device)
+    val_batch = build_batch(val_rows, device)
+
+    model = LeanActivationGate(
+        obs_feature_dim=16,
+        hidden_dim=hidden_dim,
+        num_layers=1,
+        dropout=0.1,
+    ).to(device)
+
+    loss_fn = nn.BCEWithLogitsLoss(pos_weight=torch.tensor(pos_weight, dtype=torch.float32).to(device))
+    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
+
+    best_val_loss = float("inf")
+    best_state = None
+    history = {"train_loss": [], "val_loss": [], "val_acc": []}
+
+    for epoch in range(epochs):
+        model.train()
+        optimizer.zero_grad()
+        logits = model(
+            train_batch["history"], train_batch["obs_features"],
+            train_batch["student_action"], train_batch["plugin_delta"],
+            train_batch["delta_norm"],
+        )
+        loss = loss_fn(logits, train_batch["label"])
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+        optimizer.step()
+
+        model.eval()
+        with torch.no_grad():
+            val_logits = model(
+                val_batch["history"], val_batch["obs_features"],
+                val_batch["student_action"], val_batch["plugin_delta"],
+                val_batch["delta_norm"],
+            )
+            val_loss = loss_fn(val_logits, val_batch["label"]).item()
+            val_preds = (torch.sigmoid(val_logits) >= 0.5).float()
+            val_acc = (val_preds == val_batch["label"]).float().mean().item()
+
+        history["train_loss"].append(float(loss.item()))
+        history["val_loss"].append(float(val_loss))
+        history["val_acc"].append(float(val_acc))
+
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
+            best_state = {k: v.cpu().clone() for k, v in model.state_dict().items()}
+
+        if epoch % 20 == 0 or epoch == epochs - 1:
+            print(f"  Epoch {epoch:3d}/{epochs}: train_loss={loss.item():.4f} "
+                  f"val_loss={val_loss:.4f} val_acc={val_acc:.1%}")
+
+    model.load_state_dict(best_state)
+    print(f"Best val_loss: {best_val_loss:.4f}")
+
+    return {
+        "model": model,
+        "history": history,
+        "best_val_loss": best_val_loss,
+        "n_train": len(train_rows),
+        "n_val": len(val_rows),
+    }
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--labels-path", type=Path,
+                        default=ROOT / "runs/pre_c0_r1/activation_labels.jsonl")
+    parser.add_argument("--output-dir", type=Path,
+                        default=ROOT / "runs/pre_c0_r1")
+    parser.add_argument("--device", type=str, default="cuda")
+    parser.add_argument("--epochs", type=int, default=200)
+    parser.add_argument("--lr", type=float, default=1e-3)
+    parser.add_argument("--batch-size", type=int, default=16)
+    parser.add_argument("--hidden-dim", type=int, default=48)
+    parser.add_argument("--no-save", action="store_true",
+                        help="Skip saving checkpoint (dry run)")
+    args = parser.parse_args()
+
+    if not args.labels_path.is_file():
+        print(f"ERROR: Labels file not found: {args.labels_path}")
+        print("Run collect_activation_labels.py first.")
+        return 1
+
+    output_dir = args.output_dir.resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    rows = load_labels(args.labels_path)
+    print(f"Loaded {len(rows)} labeled snapshots")
+
+    result = train_gate(
+        rows, device=args.device, epochs=args.epochs,
+        lr=args.lr, batch_size=args.batch_size,
+        hidden_dim=args.hidden_dim,
+    )
+
+    if not args.no_save:
+        ckpt_path = output_dir / "gate_checkpoint.pt"
+        torch.save(
+            {
+                "model_state_dict": result["model"].state_dict(),
+                "config": {
+                    "obs_feature_dim": result["model"].obs_feature_dim,
+                    "hidden_dim": 48,
+                    "num_layers": 1,
+                },
+                "history": result["history"],
+                "best_val_loss": result["best_val_loss"],
+            },
+            ckpt_path,
+        )
+        print(f"Saved: {ckpt_path}")
+
+    print(f"\nTraining complete. Best val_loss: {result['best_val_loss']:.4f}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

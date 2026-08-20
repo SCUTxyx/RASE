@@ -1,0 +1,46 @@
+{
+  "schema_version": "rase-pre-c0-r5-a16-oof-code-lock/v1",
+  "frozen_at": "2026-08-09T18:56:00+08:00",
+  "frozen_before_a16_labels_inspected": true,
+  "a16_manifest": "runs/pre_c0_r5/probability_pilot16_manifest_v1.json",
+  "a16_manifest_sha256": "cdaf205aa0887b94cc73879a92e40b67667fd07ce74085f7f45cba3ed9047279",
+  "a16_output": "runs/pre_c0_r5/boundary_probability_pilot16_v2",
+  "collection": {
+    "boundaries": [0, 16, 64, 128],
+    "handback_repeats": 5,
+    "parallel_workers": 2,
+    "collector_sha256": "0f3eded6ebaf63c7e348d8e8d2464119964cde997ff2bb20be51e88c5f2aec6a"
+  },
+  "model": {
+    "folds": 4,
+    "ensemble_size": 3,
+    "epochs": 160,
+    "batch_size": 64,
+    "learning_rate": 0.0003,
+    "hidden_dim": 128,
+    "dwell": 2,
+    "lcb_z": 1.6448536269514722,
+    "split_seed": 20260820,
+    "training_seeds": [20260820, 20260821, 20260822, 20260823, 20260824],
+    "student_vla_adapter": "smolvla",
+    "teacher_vla_adapter": "oft",
+    "probabilistic_handback_student_sha256": "6451347d2920368070b333b2901276cbe6f8e04ffb22648a42204793719b0440",
+    "probabilistic_losses_sha256": "db8b6bb94564868467f54cf7d313a20cbc76bd502cf69a2e8aaca7f33c8b9d09",
+    "trainer_sha256": "b6c9993300433f9bf0cafeea5aebdd615212cff36b93aa406c289407492d5f40",
+    "launcher_sha256": "b7c843abe28ad60958b8106fbb553ffe80892335aa5667a10fcc13df85f6ef9f",
+    "analyzer_sha256": "d50d16e36fa3105b61cc55c301344f6cdfae48d789f2f060e82722721d57e3a2",
+    "summarizer_sha256": "8968fe54331f14644d18040c6a0f9d833731081938bb8e9dbb32413d3c90ae58"
+  },
+  "gates": {
+    "empirical_success_gap_min": -0.05,
+    "conditional_expected_false_handback_max": 0.05,
+    "oft_savings_min": 0.20,
+    "required_seed_passes": 4,
+    "total_seeds": 5
+  },
+  "downstream_locks": {
+    "second_vla": "closed_until_seed_gate",
+    "world_model_features": "closed_until_seed_gate",
+    "test": "sealed"
+  }
+}
