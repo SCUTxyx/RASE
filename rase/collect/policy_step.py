@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import time
+from collections import deque
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any
@@ -133,8 +134,18 @@ def policy_state_fingerprint(policy_bundle: Mapping[str, Any]) -> str:
         items = container.values() if isinstance(container, dict) else container
         payload = b""
         for item in items:
-            value = item.detach().cpu().numpy() if hasattr(item, "detach") else np.asarray(item)
-            payload += np.ascontiguousarray(value).tobytes()
+            # LeRobot _queues is dict[str, deque[Tensor]], whereas pi0-fast's
+            # _action_queue is a deque[Tensor].  Hash deque elements rather
+            # than asking NumPy to coerce the container (which fails for CUDA
+            # tensors and obscures queue ordering).
+            nested = item if isinstance(item, (list, tuple, deque)) else (item,)
+            for value_item in nested:
+                value = (
+                    value_item.detach().cpu().numpy()
+                    if hasattr(value_item, "detach")
+                    else np.asarray(value_item)
+                )
+                payload += np.ascontiguousarray(value).tobytes()
         parts.append(f"{name}:{hashlib.sha256(payload).hexdigest()}")
     rng = _rng_state_dict()
     for name in ("numpy", "torch_cpu", "torch_cuda"):
@@ -177,6 +188,11 @@ def capture_inference_event(
     original = getattr(policy, "predict_action_chunk", None)
     if not callable(original):
         raise RuntimeError("policy does not expose predict_action_chunk for native capture")
+    # Current LeRobot SmolVLA's select_action calls the private
+    # _get_action_chunk directly, while Pi policies call predict_action_chunk.
+    # Intercept both paths so native capture remains an execution-aligned
+    # observation rather than a second reconstructed inference.
+    original_get = getattr(policy, "_get_action_chunk", None)
     captured: dict[str, Any] = {}
 
     def capture(*args: Any, **kwargs: Any) -> Any:
@@ -184,12 +200,21 @@ def capture_inference_event(
         captured["value"] = value.detach().clone()
         return value
 
+    def capture_get(*args: Any, **kwargs: Any) -> Any:
+        value = original_get(*args, **kwargs)
+        captured["value"] = value.detach().clone()
+        return value
+
     started = time.perf_counter()
     policy.predict_action_chunk = capture
+    if callable(original_get):
+        policy._get_action_chunk = capture_get
     try:
         first = select_env_action(policy_bundle, observation, task=task)
     finally:
         policy.predict_action_chunk = original
+        if callable(original_get):
+            policy._get_action_chunk = original_get
     wall_s = time.perf_counter() - started
     native = captured.get("value")
     if native is None:

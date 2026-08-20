@@ -1,0 +1,19 @@
+{
+  "schema_version": "rase-e3v-reference-config/v1",
+  "pool": "runs/rase_ui_phase0g_independent48_pool",
+  "adapter": {
+    "policy_path": "ckpts/smolvla_libero",
+    "libero_plus_root": "/root/autodl-tmp/src/LIBERO-plus",
+    "observation_height": 360,
+    "observation_width": 360
+  },
+  "oracle": {
+    "endpoint": "tcp://127.0.0.1:5555",
+    "request_timeout_ms": 120000
+  },
+  "scheduler": {
+    "max_attempts": 3,
+    "lease_seconds": 3600
+  },
+  "scientific_scope": "development_only_exact_root_reference_viability"
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": "rase-e3u-config/v1",
+  "pool": "runs/rase_pre_a3_recovery120_pool_v1",
+  "adapter_config": {
+    "policy_path": "ckpts/smolvla_libero",
+    "tokenizer_path": "ckpts/SmolVLM2-500M-Instruct",
+    "libero_plus_root": "/root/autodl-tmp/src/LIBERO-plus",
+    "device": "cuda",
+    "num_steps": 10,
+    "n_action_steps": 10,
+    "continuation_temperature": 0.5,
+    "observation_height": 360,
+    "observation_width": 360
+  },
+  "scientific_scope": "PRE-A3 train only; hidden test remains sealed"
+}
