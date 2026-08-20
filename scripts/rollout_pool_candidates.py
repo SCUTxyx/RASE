@@ -196,6 +196,33 @@ def _suite_from_task_id(task_id: str) -> str:
     raise ValueError(f"cannot map task_id to suite: {task_id}")
 
 
+def _continuation_seed(
+    rollout_seed_fn,
+    state_key: str,
+    candidate_index: int,
+    rollout_index: int,
+    *,
+    mode: str,
+) -> int:
+    """Derive the continuation seed under the preregistered pairing mode.
+
+    ``common_root_rollout`` is a common-random-number design: candidates at the
+    same root and repeat see the same continuation RNG stream.  Their first
+    chunks still use independent generation seeds stored in the candidate
+    artifact.  The legacy behavior remains the default for old configs.
+    """
+    if mode == "candidate_specific":
+        seed_candidate = candidate_index
+    elif mode == "common_root_rollout":
+        seed_candidate = 0
+    else:
+        raise ValueError(
+            "protocol.continuation_seed_mode must be candidate_specific or "
+            f"common_root_rollout, got {mode!r}"
+        )
+    return int(rollout_seed_fn(state_key, seed_candidate, rollout_index))
+
+
 def apply_screen_semantics(summary: dict[str, Any]) -> None:
     """Remove formal labels and expose only one-shot screen hit counts."""
     summary["formal_set_labels"] = False
@@ -325,6 +352,7 @@ def main() -> int:
     adaptive = dict(cfg.get("adaptive") or {})
     adapter = dict(cfg.get("adapter") or {})
     candidates_cfg = dict(cfg.get("candidates") or {})
+    protocol_cfg = dict(cfg.get("protocol") or {})
     scheduler_cfg = dict(cfg.get("scheduler") or {})
     oracle_cfg = dict(cfg.get("oracle") or {})
     k = int(candidates_cfg.get("k", 8))
@@ -348,6 +376,14 @@ def main() -> int:
         else float(adapter.get("continuation_temperature", 0.5))
     )
     adapter["continuation_temperature"] = continuation_temperature
+    continuation_seed_mode = str(
+        protocol_cfg.get("continuation_seed_mode", "candidate_specific")
+    )
+    if continuation_seed_mode not in {"candidate_specific", "common_root_rollout"}:
+        parser.error(
+            "protocol.continuation_seed_mode must be candidate_specific or "
+            "common_root_rollout"
+        )
 
     from rase.backends.lerobot_libero_plus import _patch_lerobot_init_states
     from rase.backends.libero_plus_paths import ensure_libero_plus_paths
@@ -438,6 +474,10 @@ def main() -> int:
             "continuation_temperature": continuation_temperature,
             "tokenizer_path": tokenizer_path,
         },
+        "protocol": {
+            **protocol_cfg,
+            "continuation_seed_mode": continuation_seed_mode,
+        },
         "scheduler_root": str(scheduler_root),
         "policy_path": str(policy_path),
         "policy_hash": policy_hash,
@@ -461,7 +501,8 @@ def main() -> int:
     print(
         f"ROLLOUT_START mode={mode} n_states={len(state_keys)} "
         f"k={k} n_first={n_first} n_total={n_total} "
-        f"cont_temp={continuation_temperature} out={output_dir} "
+        f"cont_temp={continuation_temperature} "
+        f"cont_seed_mode={continuation_seed_mode} out={output_dir} "
         f"run_behavior={'fresh' if fresh_run else 'resume'} "
         f"keys_sha256={selected_keys_checksum}",
         flush=True,
@@ -617,7 +658,13 @@ def main() -> int:
 
         def run_one(cand_index: int, rollout_index: int) -> dict[str, Any]:
             nonlocal completed_budget
-            seed = rollout_seed(state_key, cand_index, rollout_index)
+            seed = _continuation_seed(
+                rollout_seed,
+                state_key,
+                cand_index,
+                rollout_index,
+                mode=continuation_seed_mode,
+            )
             continuation = InProcessSmolVLAContinuation(
                 policy_bundle,
                 temperature=rollout_cfg.continuation_temperature,
@@ -659,6 +706,7 @@ def main() -> int:
                 **result.to_dict(),
                 "oracle": "smolvla",
                 "rollout_seed": seed,
+                "continuation_seed_mode": continuation_seed_mode,
                 "continuation_temperature": rollout_cfg.continuation_temperature,
             }
 
@@ -749,6 +797,7 @@ def main() -> int:
     )
     summary["mode"] = mode
     summary["run_behavior"] = "fresh" if fresh_run else "resume"
+    summary["continuation_seed_mode"] = continuation_seed_mode
     summary["state_keys_provenance"] = {
         **state_keys_provenance,
         "selected_state_keys_sha256": selected_keys_checksum,
