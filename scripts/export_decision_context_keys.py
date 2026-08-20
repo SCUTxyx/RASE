@@ -23,10 +23,22 @@ def select_records(
     records: list[dict],
     *,
     step: int | None = None,
+    steps: set[int] | None = None,
+    suites: set[str] | None = None,
+    task_ids: set[str] | None = None,
     one_per_episode: bool = False,
     max_states: int | None = None,
 ) -> list[dict]:
-    selected = [row for row in records if step is None or int(row["step"]) == step]
+    if step is not None and steps is not None:
+        raise ValueError("step and steps are mutually exclusive")
+    selected = [
+        row
+        for row in records
+        if (step is None or int(row["step"]) == step)
+        and (steps is None or int(row["step"]) in steps)
+        and (suites is None or str(row["suite"]) in suites)
+        and (task_ids is None or str(row["task_id"]) in task_ids)
+    ]
     if one_per_episode:
         by_episode = {}
         for row in selected:
@@ -52,6 +64,24 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--max-states", type=int, default=None)
     parser.add_argument("--step", type=int, default=None)
+    parser.add_argument(
+        "--steps",
+        type=str,
+        default=None,
+        help="Comma-separated state steps. Mutually exclusive with --step.",
+    )
+    parser.add_argument(
+        "--suite",
+        action="append",
+        default=[],
+        help="Keep this exact suite label; repeatable.",
+    )
+    parser.add_argument(
+        "--task-id",
+        action="append",
+        default=[],
+        help="Keep this exact task id; repeatable.",
+    )
     parser.add_argument("--one-per-episode", action="store_true")
     parser.add_argument("--expected-states", type=int, default=None)
     parser.add_argument(
@@ -65,6 +95,16 @@ def main() -> int:
         raise SystemExit("--max-states must be positive")
     if args.step is not None and args.step < 0:
         raise SystemExit("--step must be non-negative")
+    if args.step is not None and args.steps is not None:
+        raise SystemExit("--step and --steps are mutually exclusive")
+    steps = None
+    if args.steps is not None:
+        try:
+            steps = {int(value) for value in args.steps.split(",")}
+        except ValueError as exc:
+            raise SystemExit("--steps must contain comma-separated integers") from exc
+        if not steps or min(steps) < 0:
+            raise SystemExit("--steps must contain non-negative integers")
     if args.expected_states is not None and args.expected_states < 1:
         raise SystemExit("--expected-states must be positive")
 
@@ -106,6 +146,9 @@ def main() -> int:
         records = select_records(
             records,
             step=args.step,
+            steps=steps,
+            suites=set(args.suite) or None,
+            task_ids=set(args.task_id) or None,
             one_per_episode=args.one_per_episode,
             max_states=args.max_states,
         )
@@ -122,6 +165,9 @@ def main() -> int:
         "n_states": len(keys),
         "selection": {
             "step": args.step,
+            "steps": sorted(steps) if steps is not None else None,
+            "suites": args.suite,
+            "task_ids": args.task_id,
             "one_per_episode": args.one_per_episode,
             "max_states": args.max_states,
             "expected_states": args.expected_states,
