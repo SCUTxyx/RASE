@@ -15,16 +15,25 @@ export HF_HUB_OFFLINE=1
 export TRANSFORMERS_OFFLINE=1
 
 mkdir -p "$OUT"
-pids=()
-for range in 0:27 27:54 54:80; do
-  start=${range%%:*}
-  end=${range##*:}
-  "$PY" -u scripts/eval_g2a_pi0fast_clean.py \
-    --protocol "$PROTOCOL" --output-dir "$OUT" \
-    --start-index "$start" --end-index "$end" \
-    > "$OUT/shard_${start}_${end}.log" 2>&1 &
-  pids+=("$!")
+# Two workers fit the GPU. Stagger checkpoint loading to avoid simultaneous
+# 7.7-GB reads making the SSH host temporarily unresponsive.
+"$PY" -u scripts/eval_g2a_pi0fast_clean.py \
+  --protocol "$PROTOCOL" --output-dir "$OUT" \
+  --start-index 0 --end-index 40 > "$OUT/shard_0_40.log" 2>&1 &
+pids=("$!")
+for _ in $(seq 1 120); do
+  grep -q "All keys loaded successfully" "$OUT/shard_0_40.log" && break
+  sleep 5
 done
+if ! grep -q "All keys loaded successfully" "$OUT/shard_0_40.log"; then
+  echo "G2A first worker did not finish loading; refusing concurrent launch" >&2
+  wait "${pids[0]}" || true
+  exit 1
+fi
+"$PY" -u scripts/eval_g2a_pi0fast_clean.py \
+  --protocol "$PROTOCOL" --output-dir "$OUT" \
+  --start-index 40 --end-index 80 > "$OUT/shard_40_80.log" 2>&1 &
+pids+=("$!")
 
 status=0
 for pid in "${pids[@]}"; do

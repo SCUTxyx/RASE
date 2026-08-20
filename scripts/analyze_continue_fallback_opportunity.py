@@ -94,10 +94,11 @@ def analyze(
         if summary.get("schema_version") not in {
             "rase-oft-direct-escalation/v1",
             "rase-oft-decision-suffix/v1",
+            "rase-lerobot-direct-fallback/v1",
         }:
-            raise ValueError("unexpected OFT summary schema")
+            raise ValueError("unexpected direct-fallback summary schema")
         if summary.get("status") != "complete":
-            raise ValueError("OFT summary is incomplete")
+            raise ValueError("direct-fallback summary is incomplete")
         for row in summary.get("per_state") or []:
             key = str(row.get("state_key"))
             if key in fallback_by_key:
@@ -284,7 +285,7 @@ def analyze(
         "by_group": by_group,
         "label_provenance": {
             "continue": "full restored-state strict active-chunk continuation rollout success",
-            "fallback": "full restored-state direct OFT rollout success",
+            "fallback": "full restored-state direct frozen fallback-policy rollout success",
             "training_label_uses_cost": False,
             "proxy_consequence_label_used": False,
             "task_id_used_as_selector_feature": False,
