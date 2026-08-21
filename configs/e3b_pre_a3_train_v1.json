@@ -1,0 +1,24 @@
+{
+  "schema_version": "rase-e3b-config/v1",
+  "pool": "runs/rase_pre_a3_recovery120_pool_v1",
+  "adapter_config": {
+    "policy_path": "ckpts/smolvla_libero",
+    "tokenizer_path": "ckpts/SmolVLM2-500M-Instruct",
+    "libero_plus_root": "/root/autodl-tmp/src/LIBERO-plus",
+    "device": "cuda",
+    "num_steps": 10,
+    "n_action_steps": 10,
+    "continuation_temperature": 0.5,
+    "observation_height": 360,
+    "observation_width": 360
+  },
+  "protocol": {
+    "common_correction_horizon": 8,
+    "smolvla_generated_horizon": 10,
+    "oft_native_horizon": 8,
+    "smolvla_tail_policy": "discard_actions_8_9_and_requery_at_boundary",
+    "teacher_selection": "one_global_checkpoint_per_suite",
+    "selection_uses_outcomes": false
+  },
+  "scientific_scope": "PRE-A3 train only; val/test sealed"
+}
