@@ -1,0 +1,37 @@
+{
+  "schema_version": "rase-v6-stage0-config/v1",
+  "experiment": "V6 Stage 0 opportunity gate: single SmolVLA continue vs refresh",
+  "pool": null,
+  "adapter_config": {
+    "policy_path": "ckpts/smolvla_libero",
+    "tokenizer_path": "ckpts/SmolVLM2-500M-Instruct",
+    "libero_plus_root": "/root/autodl-tmp/src/LIBERO-plus",
+    "device": "cuda",
+    "num_steps": 10,
+    "n_action_steps": 10,
+    "observation_height": 360,
+    "observation_width": 360
+  },
+  "protocol": {
+    "source_policy": "SmolVLA only (frozen)",
+    "source_temperature": 0.5,
+    "downstream_controller": "same frozen SmolVLA fixed mu",
+    "downstream_temperature": 0.5,
+    "native_chunk_horizon": 10,
+    "decision_cursors": [3, 5, 8],
+    "requested_cursor_fractions": [0.25, 0.5, 0.75],
+    "actual_cursor_fractions": [0.3, 0.5, 0.8],
+    "rounding_rule": "native SmolVLA chunk has H=10; nearest integer cursors are 3,5,8 and are recorded per root",
+    "r_new_k": 4,
+    "r_new_estimand": "mean over independent R-new seeds, estimating expected K=1 refresh; max is diagnostic only",
+    "same_seed_contract": "R-same uses the source native event generation seed with a fresh boundary observation",
+    "fixed_downstream_contract": "each root uses one downstream seed and temperature shared by C, R-same, and all R-new branches",
+    "selection_uses_outcomes": false,
+    "strict_fingerprint": false
+  },
+  "eligibility": {
+    "pilot": "R-new-better roots >=3 and continue-better roots >=3",
+    "formal": "AC_R >= 0.05; task-cluster bootstrap 95% CI lower >0; P(A_R>0)>=0.05; P(A_R<0)>=0.05",
+    "stop": "if formal AC_R <0.03, change domain or source and do not train the head"
+  }
+}

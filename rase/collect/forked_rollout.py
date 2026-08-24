@@ -246,6 +246,7 @@ class InProcessSmolVLAContinuation:
                         boundary_step=self._capture.boundary_step,
                         generation_seed=self.seed,
                         horizon=self._capture.capture_horizon,
+                        temperature=self.temperature,
                     )
                     self._capture.events.append(event)
                     self._capture.current_event_index = len(self._capture.events) - 1

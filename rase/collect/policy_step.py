@@ -174,6 +174,7 @@ def capture_inference_event(
     boundary_step: int,
     generation_seed: int | None = None,
     horizon: int = 10,
+    temperature: float | None = None,
 ) -> tuple[np.ndarray, InferenceEvent]:
     """Run one inference and return ``(executed_first, InferenceEvent)``.
 
@@ -210,7 +211,17 @@ def capture_inference_event(
     if callable(original_get):
         policy._get_action_chunk = capture_get
     try:
-        first = select_env_action(policy_bundle, observation, task=task)
+        # Capture must use the *same* sampling path as execution.  In
+        # particular, SmolVLA's flow-matching temperature controls the initial
+        # noise draw.  Omitting it here made an ostensibly matched-seed
+        # re-query silently compare a deterministic/default forward to a
+        # temperature-sampled source chunk.
+        first = select_env_action(
+            policy_bundle,
+            observation,
+            task=task,
+            temperature=temperature,
+        )
     finally:
         policy.predict_action_chunk = original
         if callable(original_get):
